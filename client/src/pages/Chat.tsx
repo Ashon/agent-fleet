@@ -1,7 +1,8 @@
+import Breadcrumb from '@/components/Breadcrumb'
+import { api } from '@/services/api'
+import { Agent } from '@agentfleet/types'
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams, Navigate } from 'react-router-dom'
-import Breadcrumb from '../components/Breadcrumb'
-import { Agent, mockAgents } from '../mocks/agents'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
 interface Message {
   id: string
@@ -29,11 +30,18 @@ export default function Chat() {
 
   useEffect(() => {
     // TODO: API 연동 시 실제 데이터 조회 로직 구현
-    const foundAgent = mockAgents.find((a) => a.id === id)
-    if (foundAgent) {
-      setAgent(foundAgent)
+    if (!id) {
+      return
     }
-    setIsLoading(false)
+
+    api.getAgent(id).then((agent) => {
+      if (!agent) {
+        navigate('/404')
+        return
+      }
+      setAgent(agent)
+      setIsLoading(false)
+    })
   }, [id])
 
   useEffect(() => {
@@ -91,7 +99,6 @@ export default function Chat() {
             {agent.status}
           </div>
         </div>
-        <div className="text-sm text-base-content/60">Model: {agent.model}</div>
       </div>
 
       <div className="flex flex-col h-[calc(100vh-12rem)]">

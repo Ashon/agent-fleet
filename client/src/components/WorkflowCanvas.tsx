@@ -1,5 +1,5 @@
+import { Workflow, WorkflowEdge, WorkflowNode } from '@agentfleet/types'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Workflow, WorkflowNode, WorkflowEdge } from '../mocks/workflows'
 
 interface WorkflowCanvasProps {
   workflow: Workflow
@@ -41,7 +41,7 @@ export default function WorkflowCanvas({
         setSelectedNode(nodeId)
       }
     },
-    [isDragging]
+    [isDragging],
   )
 
   const handleNodeDragStart = useCallback(
@@ -60,7 +60,7 @@ export default function WorkflowCanvas({
         y: e.clientY - (node.position.y + rect.top - scrollTop),
       })
     },
-    [nodes]
+    [nodes],
   )
 
   const handleNodeDrag = useCallback(
@@ -77,25 +77,25 @@ export default function WorkflowCanvas({
           50,
           Math.min(
             canvasSize.width - 50,
-            e.clientX - rect.left + scrollLeft - dragStart.x
-          )
+            e.clientX - rect.left + scrollLeft - dragStart.x,
+          ),
         ),
         y: Math.max(
           50,
           Math.min(
             canvasSize.height - 50,
-            e.clientY - rect.top + scrollTop - dragStart.y
-          )
+            e.clientY - rect.top + scrollTop - dragStart.y,
+          ),
         ),
       }
 
       setNodes((prev) =>
         prev.map((n) =>
-          n.id === selectedNode ? { ...n, position: newPosition } : n
-        )
+          n.id === selectedNode ? { ...n, position: newPosition } : n,
+        ),
       )
     },
-    [isDragging, selectedNode, dragStart, canvasSize]
+    [isDragging, selectedNode, dragStart, canvasSize],
   )
 
   const handleNodeDragEnd = useCallback(() => {
@@ -106,7 +106,7 @@ export default function WorkflowCanvas({
     if (isDragging) {
       window.addEventListener(
         'mousemove',
-        handleNodeDrag as unknown as EventListener
+        handleNodeDrag as unknown as EventListener,
       )
       window.addEventListener('mouseup', handleNodeDragEnd)
     }
@@ -114,7 +114,7 @@ export default function WorkflowCanvas({
     return () => {
       window.removeEventListener(
         'mousemove',
-        handleNodeDrag as unknown as EventListener
+        handleNodeDrag as unknown as EventListener,
       )
       window.removeEventListener('mouseup', handleNodeDragEnd)
     }
@@ -164,8 +164,8 @@ export default function WorkflowCanvas({
                 edge.type === 'success'
                   ? '#22c55e'
                   : edge.type === 'error'
-                  ? '#ef4444'
-                  : '#94a3b8'
+                    ? '#ef4444'
+                    : '#94a3b8'
               }
               strokeWidth="2"
               fill="none"
@@ -187,12 +187,12 @@ export default function WorkflowCanvas({
             node.type === 'start'
               ? 'w-8 h-8 flex items-center justify-center rounded-full'
               : node.type === 'end'
-              ? 'w-8 h-8 flex items-center justify-center rounded-full'
-              : node.type === 'input'
-              ? 'border-primary'
-              : node.type === 'process'
-              ? 'border-secondary'
-              : 'border-accent'
+                ? 'w-8 h-8 flex items-center justify-center rounded-full'
+                : node.type === 'input'
+                  ? 'border-primary'
+                  : node.type === 'process'
+                    ? 'border-secondary'
+                    : 'border-accent'
           } ${
             selectedNode === node.id
               ? 'ring-2 ring-offset-2 ring-offset-base-100 ring-primary ring-opacity-50'
@@ -257,7 +257,7 @@ export default function WorkflowCanvas({
             <>
               <div className="flex flex-col gap-1">
                 <div className="text-sm font-medium pointer-events-none">
-                  {node.data.label}
+                  {node.data.name}
                 </div>
                 {node.connectorId && (
                   <div className="text-xs opacity-80 pointer-events-none flex items-center gap-1">

@@ -14,10 +14,10 @@
     "declarationMap": true,
     "sourceMap": true,
     "paths": {
-      "@agentfleet/types": ["../packages/types/src"]
+      "@agentfleet/types": ["../types/src"]
     }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
-  "references": [{ "path": "../packages/types" }]
+  "references": [{ "path": "../types" }]
 }

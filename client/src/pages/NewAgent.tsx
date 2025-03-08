@@ -1,22 +1,16 @@
+import Breadcrumb from '@/components/Breadcrumb'
+import TextArea from '@/components/form/TextArea'
+import TextField from '@/components/form/TextField'
+import { api, CreateAgentRequest } from '@/services/api'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Breadcrumb from '../components/Breadcrumb'
-import TextField from '../components/form/TextField'
-import TextArea from '../components/form/TextArea'
-import { Agent, api } from '../services/api'
-import { getModelOptions } from '../mocks/models'
 
 export default function NewAgent() {
   const navigate = useNavigate()
-  const modelOptions = getModelOptions()
 
-  const [formData, setFormData] = useState<
-    Omit<Agent, 'id' | 'workflow' | 'chatHistory'>
-  >({
+  const [formData, setFormData] = useState<CreateAgentRequest>({
     name: '',
     description: '',
-    model: modelOptions[0].value,
-    status: 'inactive',
   })
 
   const handleSubmit = (e: React.FormEvent) => {

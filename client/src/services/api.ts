@@ -1,4 +1,4 @@
-import { Workflow } from '../mocks/workflows'
+import { Agent, Connector, Fleet, Workflow } from '@agentfleet/types'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -6,41 +6,9 @@ if (!API_URL) {
   console.error('VITE_API_URL is not defined')
 }
 
-export interface Agent {
-  id: string
-  name: string
-  description: string
-  status: 'active' | 'inactive'
-  model: string
-  chatHistory?: Array<{
-    timestamp: string
-    message: string
-  }>
-}
-
-export interface Fleet {
-  id: string
-  name: string
-  description: string
-  status: 'active' | 'inactive'
-  agents: string[]
-  createdAt: string
-}
-
-export interface Connector {
-  id: string
-  name: string
-  description: string
-  status: 'active' | 'inactive' | 'error'
-  category: 'communication' | 'documentation' | 'api' | 'database'
-  icon: string
-  lastSync?: string
-}
-
 export interface CreateAgentRequest {
   name: string
   description: string
-  model: string
 }
 
 export interface CreateFleetRequest {
@@ -211,7 +179,7 @@ export const api = {
 
   async updateConnector(
     id: string,
-    data: UpdateConnectorRequest
+    data: UpdateConnectorRequest,
   ): Promise<Connector> {
     const response = await fetch(`${API_URL}/api/connectors/${id}`, {
       method: 'PUT',
@@ -236,7 +204,7 @@ export const api = {
   },
 
   async testConnector(
-    id: string
+    id: string,
   ): Promise<{ success: boolean; message: string }> {
     const response = await fetch(`${API_URL}/api/connectors/${id}/test`, {
       method: 'POST',

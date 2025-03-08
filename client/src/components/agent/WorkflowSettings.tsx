@@ -1,20 +1,18 @@
-import { useState } from 'react'
-import { useEffect } from 'react'
-import { Agent } from '../../mocks/agents'
-import WorkflowCanvas from '../WorkflowCanvas'
-import { Workflow } from '../../mocks/workflows'
-import { api } from '../../services/api'
+import WorkflowCanvas from '@/components/WorkflowCanvas'
+import { api } from '@/services/api'
+import { Agent, Workflow } from '@agentfleet/types'
+import { useEffect, useState } from 'react'
 
 interface WorkflowSettingsProps {
   agent: Agent
-  onUpdate: (workflow: Workflow) => void
 }
 
-export default function WorkflowSettings({
-  agent,
-  onUpdate,
-}: WorkflowSettingsProps) {
+export default function WorkflowSettings({ agent }: WorkflowSettingsProps) {
   const [workflow, setWorkflow] = useState<Workflow | null>(null)
+
+  const onUpdate = (workflow: Workflow) => {
+    setWorkflow(workflow)
+  }
 
   useEffect(() => {
     api.getWorkflow(agent.id).then((workflows) => {

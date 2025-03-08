@@ -1,7 +1,6 @@
-import { Agent } from '../../mocks/agents'
-import { getModelOptions } from '../../mocks/models'
-import TextField from '../form/TextField'
-import TextArea from '../form/TextArea'
+import TextArea from '@/components/form/TextArea'
+import TextField from '@/components/form/TextField'
+import { Agent } from '@agentfleet/types'
 import Select from '../form/Select'
 
 interface GeneralSettingsProps {
@@ -17,8 +16,6 @@ export default function GeneralSettings({
   onCancel,
   onSave,
 }: GeneralSettingsProps) {
-  const modelOptions = getModelOptions()
-
   return (
     <div className="px-4">
       <h2 className="text-xl mb-4">일반 설정</h2>
@@ -46,13 +43,6 @@ export default function GeneralSettings({
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Select
-            label="모델"
-            options={modelOptions}
-            value={agent.model}
-            onChange={(e) => onUpdate({ ...agent, model: e.target.value })}
-          />
-
           <Select
             label="상태"
             options={[

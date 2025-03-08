@@ -1,4 +1,4 @@
-import { Agent } from '../../mocks/agents'
+import { Agent } from '@agentfleet/types'
 
 interface ChatHistoryProps {
   agent: Agent
@@ -20,7 +20,7 @@ export default function ChatHistory({ agent }: ChatHistoryProps) {
           <tbody>
             {agent.chatHistory?.map((chat, index) => (
               <tr key={index}>
-                <td>{new Date(chat.timestamp).toLocaleString()}</td>
+                <td>{new Date(chat.createdAt).toLocaleString()}</td>
                 <td>{chat.role}</td>
                 <td>{chat.content}</td>
               </tr>

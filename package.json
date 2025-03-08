@@ -29,10 +29,18 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "latest",
+    "prettier-plugin-organize-imports": "^4.1.0",
     "typescript-eslint": "latest"
   },
   "prettier": {
     "singleQuote": true,
-    "semi": false
+    "semi": false,
+    "importOrderSeparation": false,
+    "importOrderSortSpecifiers": true,
+    "organizeImportsSkipDestructiveCodeActions": true,
+    "plugins": [
+      "@trivago/prettier-plugin-sort-imports",
+      "prettier-plugin-organize-imports"
+    ]
   }
 }

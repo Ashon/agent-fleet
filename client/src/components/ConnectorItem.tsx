@@ -1,4 +1,4 @@
-import { Connector } from '../mocks/connectors'
+import { Connector } from '@agentfleet/types'
 
 interface ConnectorItemProps {
   connector: Connector
@@ -31,7 +31,7 @@ export default function ConnectorItem({
       <div className="flex items-center gap-2 mb-2">
         <div
           className={`w-8 h-8 rounded-full bg-${getTypeColor(
-            'input'
+            'input',
           )}/10 flex items-center justify-center`}
         >
           <span className="text-lg">{connector.icon}</span>

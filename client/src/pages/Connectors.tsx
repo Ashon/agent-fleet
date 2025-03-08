@@ -1,14 +1,15 @@
+import { Connector } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Breadcrumb from '../components/Breadcrumb'
 import Card from '../components/Card'
-import { Connector, api } from '../services/api'
+import { api } from '../services/api'
 
 type Category = Connector['category']
 
 export default function Connectors() {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>(
-    'all'
+    'all',
   )
   const [searchQuery, setSearchQuery] = useState('')
   const [connectors, setConnectors] = useState<Connector[]>([])
@@ -143,9 +144,9 @@ export default function Connectors() {
                 className={`badge ${
                   connector.status === 'active'
                     ? 'badge-success'
-                    : connector.status === 'error'
-                    ? 'badge-error'
-                    : 'badge-ghost'
+                    : connector.status === 'inactive'
+                      ? 'badge-ghost'
+                      : 'badge-error'
                 }`}
               >
                 {connector.status}

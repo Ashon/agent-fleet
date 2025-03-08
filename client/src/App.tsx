@@ -1,8 +1,8 @@
 import {
+  Navigate,
   Route,
   BrowserRouter as Router,
   Routes,
-  Navigate,
 } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
 import Agents from './pages/Agents'

@@ -1,11 +1,11 @@
+import ChatHistory from '@/components/agent/ChatHistory'
+import GeneralSettings from '@/components/agent/GeneralSettings'
+import WorkflowSettings from '@/components/agent/WorkflowSettings'
+import Breadcrumb from '@/components/Breadcrumb'
+import { api } from '@/services/api'
+import { Agent } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams, Link, Navigate } from 'react-router-dom'
-import Breadcrumb from '../components/Breadcrumb'
-import { Agent } from '../mocks/agents'
-import WorkflowSettings from '../components/agent/WorkflowSettings'
-import GeneralSettings from '../components/agent/GeneralSettings'
-import ChatHistory from '../components/agent/ChatHistory'
-import { api } from '../services/api'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 
 type TabType = 'workflow' | 'settings' | 'history'
 
@@ -83,12 +83,7 @@ export default function EditAgent() {
         </div>
 
         <div className="mt-4">
-          {tab === 'workflow' && (
-            <WorkflowSettings
-              agent={formData}
-              onUpdate={(workflow) => setFormData({ ...formData, workflow })}
-            />
-          )}
+          {tab === 'workflow' && <WorkflowSettings agent={formData} />}
           {tab === 'settings' && (
             <GeneralSettings
               agent={formData}

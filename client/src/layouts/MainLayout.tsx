@@ -1,6 +1,6 @@
+import Logo from '@/assets/logo.svg'
 import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
-import Logo from '../assets/logo.svg'
 
 export default function MainLayout() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')

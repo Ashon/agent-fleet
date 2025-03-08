@@ -1,8 +1,9 @@
+import Breadcrumb from '@/components/Breadcrumb'
+import Card from '@/components/Card'
+import { api } from '@/services/api'
+import { Agent } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Breadcrumb from '../components/Breadcrumb'
-import Card from '../components/Card'
-import { Agent, api } from '../services/api'
 
 export default function Agents() {
   const [agents, setAgents] = useState<Agent[]>([])
@@ -145,23 +146,6 @@ export default function Agents() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth="2"
-                      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span>{agent.model}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-base-content/70"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
@@ -169,21 +153,21 @@ export default function Agents() {
                     {formatLastActive(lastActive)}
                   </span>
                 </div>
-              </div>
 
-              <div className="card-actions justify-end mt-4">
-                <Link
-                  to={`/agents/${agent.id}/chat`}
-                  className="btn btn-primary btn-sm"
-                >
-                  Chat
-                </Link>
-                <Link
-                  to={`/agents/${agent.id}/edit/workflow`}
-                  className="btn btn-ghost btn-sm"
-                >
-                  Edit
-                </Link>
+                <div className="card-actions justify-end mt-4">
+                  <Link
+                    to={`/agents/${agent.id}/chat`}
+                    className="btn btn-primary btn-sm"
+                  >
+                    Chat
+                  </Link>
+                  <Link
+                    to={`/agents/${agent.id}/edit/workflow`}
+                    className="btn btn-ghost btn-sm"
+                  >
+                    Edit
+                  </Link>
+                </div>
               </div>
             </Card>
           )

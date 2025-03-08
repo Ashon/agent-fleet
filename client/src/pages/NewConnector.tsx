@@ -1,7 +1,7 @@
+import { Connector } from '@agentfleet/types'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Breadcrumb from '../components/Breadcrumb'
-import { Connector } from '../mocks/connectors'
 
 export default function NewConnector() {
   const navigate = useNavigate()
