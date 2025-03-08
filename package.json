@@ -5,7 +5,7 @@
   "workspaces": [
     "client",
     "server",
-    "packages"
+    "types"
   ],
   "scripts": {
     "dev": "npm run build:types && concurrently \"npm run dev:types\" \"npm run dev:server\" \"npm run dev:ui\"",

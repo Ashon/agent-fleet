@@ -15,14 +15,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true
   },
   "include": ["src"],
   "references": [
-    { "path": "./tsconfig.node.json" },
-    { "path": "../packages/types" }
+    { "path": "../types" }
   ]
 }

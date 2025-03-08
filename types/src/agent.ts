@@ -1,5 +1,4 @@
 import { ChatMessage } from './chat'
-import { Workflow } from './workflow'
 
 export type AgentStatus = 'active' | 'inactive'
 

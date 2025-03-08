@@ -28,9 +28,8 @@ export interface PaginatedResponse<T> {
   hasMore: boolean
 }
 
-// Domain Types
 export * from './agent'
-export * from './workflow'
+export * from './chat'
 export * from './connector'
 export * from './fleet'
-export * from './chat'
+export * from './workflow'

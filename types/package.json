@@ -10,16 +10,19 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsc --build",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
-    "tsup": "^8.0.2"
+    "tsup": "^8.0.2",
+    "rimraf": "^5.0.5"
   }
 }
