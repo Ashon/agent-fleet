@@ -1,19 +1,21 @@
+import MainLayout from '@/layouts/MainLayout'
+import Agents from '@/pages/agents/Agents'
+import EditAgent from '@/pages/agents/EditAgent'
+import NewAgent from '@/pages/agents/NewAgent'
+import Chat from '@/pages/Chat'
+import Connectors from '@/pages/connectors/Connectors'
+import NewConnector from '@/pages/connectors/NewConnector'
+import EditFleet from '@/pages/fleets/EditFleet'
+import Fleets from '@/pages/fleets/Fleets'
+import NewFleet from '@/pages/fleets/NewFleet'
+import Home from '@/pages/Home'
+import NotFound from '@/pages/NotFound'
 import {
   Navigate,
   Route,
   BrowserRouter as Router,
   Routes,
 } from 'react-router-dom'
-import MainLayout from './layouts/MainLayout'
-import Agents from './pages/agents/Agents'
-import EditAgent from './pages/agents/EditAgent'
-import NewAgent from './pages/agents/NewAgent'
-import Chat from './pages/Chat'
-import Connectors from './pages/connectors/Connectors'
-import NewConnector from './pages/connectors/NewConnector'
-import Fleets from './pages/fleets/Fleets'
-import Home from './pages/Home'
-import NotFound from './pages/NotFound'
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
           {/* Fleet 관련 라우트 */}
           <Route path="fleets">
             <Route index element={<Fleets />} />
+            <Route path="new" element={<NewFleet />} />
+            <Route path=":id/edit" element={<EditFleet />} />
           </Route>
 
           {/* 에이전트 관련 라우트 */}
