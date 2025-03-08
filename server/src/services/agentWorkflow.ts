@@ -24,7 +24,9 @@ export class WorkflowService {
     return this.workflows.find((workflow) => workflow.id === id)
   }
 
-  async createWorkflow(workflowData: Omit<Workflow, 'id'>): Promise<Workflow> {
+  async createWorkflow(
+    workflowData: Omit<Workflow, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<Workflow> {
     // 필수 필드 검증
     if (
       !workflowData.name ||
@@ -39,6 +41,8 @@ export class WorkflowService {
     const newWorkflow: Workflow = {
       id: `workflow-${this.workflows.length + 1}`,
       ...workflowData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }
     this.workflows.push(newWorkflow)
     return newWorkflow

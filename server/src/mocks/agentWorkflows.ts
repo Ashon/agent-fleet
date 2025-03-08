@@ -6,6 +6,8 @@ export const mockWorkflows: Workflow[] = [
     agentId: '1',
     name: 'Slack 알림 워크플로우',
     description: 'GitHub 이슈가 생성되면 Slack으로 알림을 보냅니다.',
+    createdAt: new Date(),
+    updatedAt: new Date(),
     nodes: [
       {
         id: 'node-start',
@@ -82,6 +84,8 @@ export const mockWorkflows: Workflow[] = [
     agentId: '2',
     name: '문서 동기화 워크플로우',
     description: 'Notion 문서가 업데이트되면 MongoDB에 저장합니다.',
+    createdAt: new Date(),
+    updatedAt: new Date(),
     nodes: [
       {
         id: 'node-1',
@@ -135,6 +139,8 @@ export const mockWorkflows: Workflow[] = [
     name: 'API 연동 워크플로우',
     description:
       'OpenAPI를 통해 외부 API를 호출하고 결과를 Discord로 전송합니다.',
+    createdAt: new Date(),
+    updatedAt: new Date(),
     nodes: [
       {
         id: 'node-1',

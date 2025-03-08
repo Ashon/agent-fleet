@@ -24,6 +24,8 @@ export interface Workflow {
   description?: string
   nodes: WorkflowNode[]
   edges: WorkflowEdge[]
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface CreateWorkflowData {

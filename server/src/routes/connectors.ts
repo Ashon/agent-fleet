@@ -1,79 +1,67 @@
 import { Router } from 'express'
-import { mockConnectors } from '../mocks/connectors'
+import { ConnectorService } from '../services/connector'
 
 const router = Router()
+const connectorService = new ConnectorService()
 
 // GET /api/connectors
-router.get('/', (req, res) => {
-  // TODO: 실제 데이터베이스 연동
-  res.json(mockConnectors)
+router.get('/', async (req, res) => {
+  const connectors = await connectorService.getAllConnectors()
+  res.json(connectors)
 })
 
 // GET /api/connectors/:id
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   const { id } = req.params
-  const foundConnector = mockConnectors.find((connector) => connector.id === id)
-  if (!foundConnector) {
+  const connector = await connectorService.getConnectorById(id)
+  if (!connector) {
     return res.status(404).json({ error: 'Connector not found' })
   }
 
-  // TODO: 실제 데이터베이스 연동
-  res.json(mockConnectors.find((connector) => connector.id === id))
+  res.json(connector)
 })
 
 // POST /api/connectors
-router.post('/', (req, res) => {
-  const connector = req.body
-  // TODO: 실제 데이터베이스 연동
-  res.status(201).json({
-    id: '2',
-    ...connector,
-    status: 'active',
-    lastSync: null,
-  })
+router.post('/', async (req, res) => {
+  try {
+    const connector = await connectorService.createConnector(req.body)
+    res.status(201).json(connector)
+  } catch (error) {
+    res.status(400).json({ error: (error as Error).message })
+  }
 })
 
 // PUT /api/connectors/:id
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { id } = req.params
-  const foundConnector = mockConnectors.find((connector) => connector.id === id)
-  if (!foundConnector) {
+  const updatedConnector = await connectorService.updateConnector(id, req.body)
+  if (!updatedConnector) {
     return res.status(404).json({ error: 'Connector not found' })
   }
 
-  const connector = req.body
-  // TODO: 실제 데이터베이스 연동
-  res.json({
-    id,
-    ...connector,
-  })
+  res.json(updatedConnector)
 })
 
 // DELETE /api/connectors/:id
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   const { id } = req.params
-  const foundConnector = mockConnectors.find((connector) => connector.id === id)
-  if (!foundConnector) {
+  const success = await connectorService.deleteConnector(id)
+  if (!success) {
     return res.status(404).json({ error: 'Connector not found' })
   }
 
-  // TODO: 실제 데이터베이스 연동
   res.status(204).send()
 })
 
 // POST /api/connectors/:id/test
-router.post('/:id/test', (req, res) => {
+router.post('/:id/test', async (req, res) => {
   const { id } = req.params
-  const foundConnector = mockConnectors.find((connector) => connector.id === id)
-  if (!foundConnector) {
-    return res.status(404).json({ error: 'Connector not found' })
+  const result = await connectorService.testConnector(id)
+  if (!result.success) {
+    return res.status(400).json(result)
   }
 
-  // TODO: 실제 커넥터 테스트 로직 구현
-  res.json({
-    success: true,
-    message: '커넥터 테스트 성공',
-  })
+  res.json(result)
 })
 
 export default router
