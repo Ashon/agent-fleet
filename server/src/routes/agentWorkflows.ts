@@ -1,15 +1,14 @@
 import { Router } from 'express'
-import { WorkflowService } from '../services/agentWorkflow'
+import { workflowService } from '../services/agentWorkflow'
 
 const router = Router()
-const workflowService = new WorkflowService()
 
 // 워크플로우 목록 조회
 router.get('/', async (req, res) => {
   try {
     const { agentId } = req.query
     const workflows = await workflowService.getAllWorkflows(
-      agentId ? { agentId: agentId as string } : undefined
+      agentId ? { agentId: agentId as string } : undefined,
     )
     res.json(workflows)
   } catch (error) {
@@ -53,7 +52,7 @@ router.put('/:id', async (req, res) => {
   try {
     const updatedWorkflow = await workflowService.updateWorkflow(
       req.params.id,
-      req.body
+      req.body,
     )
     if (!updatedWorkflow) {
       return res.status(404).json({ message: '워크플로우를 찾을 수 없습니다.' })
@@ -108,7 +107,7 @@ router.put('/:id/nodes', async (req, res) => {
   try {
     const updatedWorkflow = await workflowService.updateWorkflowNodes(
       req.params.id,
-      req.body
+      req.body,
     )
     if (!updatedWorkflow) {
       return res.status(404).json({ message: '워크플로우를 찾을 수 없습니다.' })
@@ -126,7 +125,7 @@ router.put('/:id/edges', async (req, res) => {
   try {
     const updatedWorkflow = await workflowService.updateWorkflowEdges(
       req.params.id,
-      req.body
+      req.body,
     )
     if (!updatedWorkflow) {
       return res.status(404).json({ message: '워크플로우를 찾을 수 없습니다.' })

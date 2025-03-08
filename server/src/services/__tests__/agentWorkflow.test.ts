@@ -1,6 +1,6 @@
-import { WorkflowService } from '../agentWorkflow'
-import { mockWorkflows } from '../../mocks/agentWorkflows'
 import { Workflow, WorkflowNode } from '@agentfleet/types'
+import { mockWorkflows } from '../../mocks/agentWorkflows'
+import { WorkflowService } from '../agentWorkflow'
 
 describe('WorkflowService', () => {
   let workflowService: WorkflowService
@@ -62,7 +62,7 @@ describe('WorkflowService', () => {
       }
 
       await expect(
-        workflowService.createWorkflow(invalidWorkflow as Workflow)
+        workflowService.createWorkflow(invalidWorkflow as Workflow),
       ).rejects.toThrow()
     })
   })
@@ -76,7 +76,7 @@ describe('WorkflowService', () => {
 
       const updatedWorkflow = await workflowService.updateWorkflow(
         testWorkflow.id,
-        updateData
+        updateData,
       )
       expect(updatedWorkflow).toMatchObject({
         id: testWorkflow.id,
@@ -91,7 +91,7 @@ describe('WorkflowService', () => {
 
       const updatedWorkflow = await workflowService.updateWorkflow(
         'workflow-999',
-        updateData
+        updateData,
       )
       expect(updatedWorkflow).toBeUndefined()
     })
@@ -103,7 +103,7 @@ describe('WorkflowService', () => {
 
       const updatedWorkflow = await workflowService.updateWorkflow(
         testWorkflow.id,
-        updateData
+        updateData,
       )
       expect(updatedWorkflow?.id).toBe(testWorkflow.id)
     })
@@ -115,7 +115,7 @@ describe('WorkflowService', () => {
       expect(result).toBe(true)
 
       const deletedWorkflow = await workflowService.getWorkflowById(
-        testWorkflow.id
+        testWorkflow.id,
       )
       expect(deletedWorkflow).toBeUndefined()
     })
@@ -133,7 +133,7 @@ describe('WorkflowService', () => {
 
       const updatedWorkflow = await workflowService.updateWorkflowNodes(
         testWorkflow.id,
-        newNodes
+        newNodes,
       )
       expect(updatedWorkflow?.nodes[0].data.name).toBe('Updated Start')
     })
@@ -142,7 +142,7 @@ describe('WorkflowService', () => {
       const newNodes = [...testWorkflow.nodes]
       const updatedWorkflow = await workflowService.updateWorkflowNodes(
         'workflow-999',
-        newNodes
+        newNodes,
       )
       expect(updatedWorkflow).toBeUndefined()
     })
@@ -155,7 +155,7 @@ describe('WorkflowService', () => {
 
       const updatedWorkflow = await workflowService.updateWorkflowEdges(
         testWorkflow.id,
-        newEdges
+        newEdges,
       )
       expect(updatedWorkflow?.edges[0].type).toBe('success')
     })
@@ -164,7 +164,7 @@ describe('WorkflowService', () => {
       const newEdges = [...testWorkflow.edges]
       const updatedWorkflow = await workflowService.updateWorkflowEdges(
         'workflow-999',
-        newEdges
+        newEdges,
       )
       expect(updatedWorkflow).toBeUndefined()
     })
@@ -189,7 +189,7 @@ describe('WorkflowService', () => {
       const invalidWorkflow = {
         ...workflow,
         nodes: workflow.nodes.filter(
-          (node: WorkflowNode) => node.type !== 'start'
+          (node: WorkflowNode) => node.type !== 'start',
         ),
       }
       await workflowService.updateWorkflow(testWorkflow.id, invalidWorkflow)
@@ -197,7 +197,7 @@ describe('WorkflowService', () => {
       const result = await workflowService.validateWorkflow(testWorkflow.id)
       expect(result.isValid).toBe(false)
       expect(result.message).toBe(
-        '워크플로우는 시작 노드와 종료 노드를 포함해야 합니다.'
+        '워크플로우는 시작 노드와 종료 노드를 포함해야 합니다.',
       )
     })
 
@@ -208,7 +208,7 @@ describe('WorkflowService', () => {
       const invalidWorkflow = {
         ...workflow,
         nodes: workflow.nodes.filter(
-          (node: WorkflowNode) => node.type !== 'end'
+          (node: WorkflowNode) => node.type !== 'end',
         ),
       }
       await workflowService.updateWorkflow(testWorkflow.id, invalidWorkflow)
@@ -216,7 +216,7 @@ describe('WorkflowService', () => {
       const result = await workflowService.validateWorkflow(testWorkflow.id)
       expect(result.isValid).toBe(false)
       expect(result.message).toBe(
-        '워크플로우는 시작 노드와 종료 노드를 포함해야 합니다.'
+        '워크플로우는 시작 노드와 종료 노드를 포함해야 합니다.',
       )
     })
 

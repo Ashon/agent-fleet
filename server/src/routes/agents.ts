@@ -1,8 +1,7 @@
 import { Router } from 'express'
-import { AgentService } from '../services/agent'
+import { agentService } from '../services/agent'
 
 const router = Router()
-const agentService = new AgentService()
 
 // 에이전트 목록 조회
 router.get('/', async (req, res) => {

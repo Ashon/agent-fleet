@@ -13,7 +13,7 @@ export class WorkflowService {
 
     if (filters?.agentId) {
       filteredWorkflows = filteredWorkflows.filter(
-        (workflow) => workflow.agentId === filters.agentId
+        (workflow) => workflow.agentId === filters.agentId,
       )
     }
 
@@ -46,7 +46,7 @@ export class WorkflowService {
 
   async updateWorkflow(
     id: string,
-    workflowData: Partial<Workflow>
+    workflowData: Partial<Workflow>,
   ): Promise<Workflow | undefined> {
     const index = this.workflows.findIndex((workflow) => workflow.id === id)
     if (index === -1) return undefined
@@ -69,7 +69,7 @@ export class WorkflowService {
 
   async updateWorkflowNodes(
     id: string,
-    nodes: Workflow['nodes']
+    nodes: Workflow['nodes'],
   ): Promise<Workflow | undefined> {
     const index = this.workflows.findIndex((workflow) => workflow.id === id)
     if (index === -1) return undefined
@@ -84,7 +84,7 @@ export class WorkflowService {
 
   async updateWorkflowEdges(
     id: string,
-    edges: Workflow['edges']
+    edges: Workflow['edges'],
   ): Promise<Workflow | undefined> {
     const index = this.workflows.findIndex((workflow) => workflow.id === id)
     if (index === -1) return undefined
@@ -98,7 +98,7 @@ export class WorkflowService {
   }
 
   async validateWorkflow(
-    id: string
+    id: string,
   ): Promise<{ isValid: boolean; message?: string }> {
     const workflow = await this.getWorkflowById(id)
     if (!workflow) {
@@ -110,10 +110,10 @@ export class WorkflowService {
 
     // 시작 노드와 종료 노드가 있는지 확인
     const hasStartNode = workflow.nodes.some(
-      (node: WorkflowNode) => node.type === 'start'
+      (node: WorkflowNode) => node.type === 'start',
     )
     const hasEndNode = workflow.nodes.some(
-      (node: WorkflowNode) => node.type === 'end'
+      (node: WorkflowNode) => node.type === 'end',
     )
 
     if (!hasStartNode || !hasEndNode) {
@@ -127,7 +127,7 @@ export class WorkflowService {
     const nodeIds = new Set(workflow.nodes.map((node: WorkflowNode) => node.id))
     const hasInvalidEdge = workflow.edges.some(
       (edge: WorkflowEdge) =>
-        !nodeIds.has(edge.source) || !nodeIds.has(edge.target)
+        !nodeIds.has(edge.source) || !nodeIds.has(edge.target),
     )
 
     if (hasInvalidEdge) {
@@ -140,3 +140,5 @@ export class WorkflowService {
     return { isValid: true }
   }
 }
+
+export const workflowService = new WorkflowService()

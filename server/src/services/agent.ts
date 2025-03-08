@@ -22,7 +22,7 @@ export class AgentService {
   }
 
   async createAgent(
-    agentData: Omit<Agent, 'id' | 'status' | 'chatHistory' | 'workflow'>
+    agentData: Omit<Agent, 'id' | 'status' | 'chatHistory' | 'workflow'>,
   ): Promise<Agent> {
     // 필수 필드 검증
     if (!agentData.name) {
@@ -41,7 +41,7 @@ export class AgentService {
 
   async updateAgent(
     id: string,
-    agentData: Partial<Agent>
+    agentData: Partial<Agent>,
   ): Promise<Agent | undefined> {
     const index = this.agents.findIndex((agent) => agent.id === id)
     if (index === -1) return undefined
@@ -64,7 +64,7 @@ export class AgentService {
 
   async updateAgentStatus(
     id: string,
-    status: AgentStatus
+    status: AgentStatus,
   ): Promise<Agent | undefined> {
     // 유효한 상태인지 검증
     if (status !== 'active' && status !== 'inactive') {
@@ -84,7 +84,7 @@ export class AgentService {
 
   async addChatMessage(
     id: string,
-    message: { role: ChatMessageRole; content: string }
+    message: { role: ChatMessageRole; content: string },
   ): Promise<Agent | undefined> {
     // 유효한 메시지 형식인지 검증
     if (
@@ -112,3 +112,5 @@ export class AgentService {
     return this.agents[index]
   }
 }
+
+export const agentService = new AgentService()
