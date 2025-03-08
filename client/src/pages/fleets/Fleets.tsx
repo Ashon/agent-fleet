@@ -1,9 +1,9 @@
+import Breadcrumb from '@/components/Breadcrumb'
+import Card from '@/components/Card'
+import { api } from '@/services/api'
 import { Fleet } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Breadcrumb from '../components/Breadcrumb'
-import Card from '../components/Card'
-import { api } from '../services/api'
 
 export default function Fleets() {
   const [fleets, setFleets] = useState<Fleet[]>([])

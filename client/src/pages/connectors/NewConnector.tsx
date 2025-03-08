@@ -1,7 +1,7 @@
+import Breadcrumb from '@/components/Breadcrumb'
 import { Connector } from '@agentfleet/types'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import Breadcrumb from '../components/Breadcrumb'
 
 export default function NewConnector() {
   const navigate = useNavigate()

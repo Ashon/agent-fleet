@@ -5,14 +5,14 @@ import {
   Routes,
 } from 'react-router-dom'
 import MainLayout from './layouts/MainLayout'
-import Agents from './pages/Agents'
+import Agents from './pages/agents/Agents'
+import EditAgent from './pages/agents/EditAgent'
+import NewAgent from './pages/agents/NewAgent'
 import Chat from './pages/Chat'
-import Connectors from './pages/Connectors'
-import EditAgent from './pages/EditAgent'
-import Fleets from './pages/Fleets'
+import Connectors from './pages/connectors/Connectors'
+import NewConnector from './pages/connectors/NewConnector'
+import Fleets from './pages/fleets/Fleets'
 import Home from './pages/Home'
-import NewAgent from './pages/NewAgent'
-import NewConnector from './pages/NewConnector'
 import NotFound from './pages/NotFound'
 
 function App() {
