@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-base-200;
+  }
+
+  body {
+    @apply min-h-screen;
+  }
+}
+
+:root[data-theme='light'] {
+  @apply bg-base-200;
+}
+
+:root[data-theme='dark'] {
+  @apply bg-base-200;
+}
