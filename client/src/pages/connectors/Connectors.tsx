@@ -117,7 +117,7 @@ export default function Connectors() {
                 <h2 className="card-title">{connector.name}</h2>
               </div>
               <div
-                className={`badge ${
+                className={`badge badge-sm ${
                   connector.status === 'active'
                     ? 'badge-success'
                     : connector.status === 'inactive'

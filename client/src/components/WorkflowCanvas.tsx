@@ -178,8 +178,8 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
           key={node.id}
           className={`absolute p-2 select-none shadow-lg bg-base-100 border-2 ${
             isDragging && selectedNode === node.id
-              ? 'cursor-grabbing scale-105 shadow-xl'
-              : 'cursor-grab hover:scale-105 hover:shadow-xl'
+              ? 'cursor-grabbing shadow-xl'
+              : 'cursor-grab hover:shadow-xl'
           } ${
             node.type === 'start'
               ? 'w-8 h-8 flex items-center justify-center rounded-full'

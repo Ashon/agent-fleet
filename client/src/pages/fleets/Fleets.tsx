@@ -83,7 +83,7 @@ export default function Fleets() {
                 </p>
               </div>
               <div
-                className={`badge ${
+                className={`badge badge-sm ${
                   fleet.status === 'active' ? 'badge-success' : 'badge-ghost'
                 }`}
               >
