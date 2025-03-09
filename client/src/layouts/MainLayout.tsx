@@ -28,7 +28,7 @@ export default function MainLayout() {
 
   return (
     <div>
-      <div className="p-2 flex justify-between items-center bg-base-200/70 backdrop-blur-xl fixed top-0 left-0 right-0 z-50">
+      <div className="p-2 flex justify-between items-center  backdrop-blur-xl fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center gap-2">
           <div className="dropdown dropdown-start sm:hidden">
             <div

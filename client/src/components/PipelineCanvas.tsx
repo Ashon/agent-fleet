@@ -179,15 +179,15 @@ export default function PipelineCanvas({
   const getNodeColor = (type: PipelineNode['type']) => {
     switch (type) {
       case 'input':
-        return 'border-blue-500 bg-blue-50'
+        return 'border-blue-500'
       case 'plan':
-        return 'border-green-500 bg-green-50'
+        return 'border-green-500'
       case 'decision':
-        return 'border-yellow-500 bg-yellow-50'
+        return 'border-yellow-500'
       case 'action':
-        return 'border-red-500 bg-red-50'
+        return 'border-red-500'
       default:
-        return 'border-gray-500 bg-gray-50'
+        return 'border-gray-500'
     }
   }
 
@@ -250,7 +250,7 @@ export default function PipelineCanvas({
       {nodes.map((node) => (
         <div
           key={node.id}
-          className={`absolute p-3 select-none shadow-lg border-2 rounded-lg ${
+          className={`absolute p-3 select-none shadow-lg border-2 rounded-lg bg-base-100 ${
             isDragging && selectedNode === node.id
               ? 'cursor-grabbing shadow-xl'
               : 'cursor-grab hover:shadow-xl'

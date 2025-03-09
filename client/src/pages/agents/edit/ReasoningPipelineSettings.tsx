@@ -91,7 +91,7 @@ export default function ReasoningPipelineSettings({
                 {result.executionPath.map((step) => (
                   <div
                     key={step.nodeId}
-                    className="border-l-2 border-ghost pl-2"
+                    className="border-l-2 border-gray-400/70 pl-2"
                   >
                     <h3 className="font-medium">{step.nodeId}</h3>
                     {step.output && <p>{step.output}</p>}
@@ -202,7 +202,7 @@ export default function ReasoningPipelineSettings({
 
   return (
     <div className="px-4 flex flex-col h-full">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[600px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:h-[calc(100vh-12rem)] h-full">
         <div className="border border-gray-400/70 overflow-hidden">
           {pipeline ? (
             <PipelineCanvas
