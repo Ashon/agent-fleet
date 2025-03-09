@@ -84,7 +84,7 @@ export default function NewFleet() {
                   {availableAgents.map((agent) => (
                     <label
                       key={agent.id}
-                      className="flex items-center gap-3 p-3 border rounded-lg hover:bg-base-200 cursor-pointer transition-colors"
+                      className="flex items-center gap-3 p-3 border border-base-300 rounded-lg hover:bg-base-200 cursor-pointer transition-colors"
                     >
                       <input
                         type="checkbox"

@@ -3,12 +3,16 @@ import { Bars3Icon, MoonIcon, SunIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 
+type Theme = 'light' | 'dark'
+const LIGHT_THEME = 'light'
+const DARK_THEME = 'dark'
+
 export default function MainLayout() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [theme, setTheme] = useState<Theme>(LIGHT_THEME)
 
   useEffect(() => {
     // 초기 테마 설정
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark'
+    const savedTheme = localStorage.getItem('theme') as Theme
     if (savedTheme) {
       setTheme(savedTheme)
       document.documentElement.setAttribute('data-theme', savedTheme)
@@ -16,7 +20,7 @@ export default function MainLayout() {
   }, [])
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light'
+    const newTheme = theme === LIGHT_THEME ? DARK_THEME : LIGHT_THEME
     setTheme(newTheme)
     document.documentElement.setAttribute('data-theme', newTheme)
     localStorage.setItem('theme', newTheme)
@@ -75,7 +79,7 @@ export default function MainLayout() {
             className="btn btn-sm btn-ghost btn-circle"
             onClick={toggleTheme}
           >
-            {theme === 'light' ? (
+            {theme === LIGHT_THEME ? (
               <MoonIcon className="h-5 w-5" />
             ) : (
               <SunIcon className="h-5 w-5" />

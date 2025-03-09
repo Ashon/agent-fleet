@@ -102,7 +102,7 @@ export default function Agents() {
                   </p>
                 </div>
                 <div
-                  className={`badge ${
+                  className={`badge badge-sm ${
                     agent.status === 'active' ? 'badge-success' : 'badge-ghost'
                   }`}
                 >
@@ -110,7 +110,7 @@ export default function Agents() {
                 </div>
               </div>
 
-              <div className="mt-4 space-y-2 flex justify-between">
+              <div className="mt-4 flex justify-between">
                 <div className="flex items-center gap-2 text-sm">
                   <ClockIcon className="h-4 w-4 text-base-content/70" />
                   <span className="text-base-content/70">

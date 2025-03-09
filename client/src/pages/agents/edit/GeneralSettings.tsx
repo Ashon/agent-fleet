@@ -1,7 +1,7 @@
 import TextArea from '@/components/form/TextArea'
 import TextField from '@/components/form/TextField'
 import { Agent } from '@agentfleet/types'
-import Select from '../form/Select'
+import Select from '../../../components/form/Select'
 
 interface GeneralSettingsProps {
   agent: Agent

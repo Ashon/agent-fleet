@@ -1,6 +1,6 @@
 import MainLayout from '@/layouts/MainLayout'
 import Agents from '@/pages/agents/Agents'
-import EditAgent from '@/pages/agents/EditAgent'
+import EditAgent from '@/pages/agents/edit/EditAgent'
 import NewAgent from '@/pages/agents/NewAgent'
 import Chat from '@/pages/Chat'
 import Connectors from '@/pages/connectors/Connectors'
@@ -16,6 +16,7 @@ import {
   BrowserRouter as Router,
   Routes,
 } from 'react-router-dom'
+import './index.css'
 import InfoAgent from './pages/agents/InfoAgent'
 
 function App() {

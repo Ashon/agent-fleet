@@ -32,7 +32,7 @@ export default function InfoAgent() {
 
   return (
     <div className="container mx-auto">
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <Breadcrumb
           items={[
             { label: 'Agents', path: '/agents' },
@@ -44,42 +44,25 @@ export default function InfoAgent() {
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="card-title text-2xl">{agent.name}</h2>
+              <h2 className="card-title text-2xl">
+                {agent.name}
+                <div
+                  className={`badge ${
+                    agent.status === 'active' ? 'badge-success' : 'badge-ghost'
+                  }`}
+                >
+                  {agent.status}
+                </div>
+              </h2>
               <Link
                 to={`/agents/${id}/edit/workflow`}
-                className="btn btn-primary"
+                className="btn btn-sm btn-primary"
               >
-                에이전트 편집
+                Edit
               </Link>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold">상태</span>
-                </label>
-                <div className="flex items-center h-8">
-                  <div
-                    className={`badge ${
-                      agent.status === 'active'
-                        ? 'badge-success'
-                        : 'badge-ghost'
-                    }`}
-                  >
-                    {agent.status}
-                  </div>
-                </div>
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold">생성일</span>
-                </label>
-                <div className="flex items-center h-8">
-                  {new Date(agent.createdAt).toLocaleString()}
-                </div>
-              </div>
-
               <div className="form-control">
                 <label className="label">
                   <span className="label-text font-semibold">설명</span>
@@ -88,12 +71,13 @@ export default function InfoAgent() {
                   {agent.description || '설명이 없습니다.'}
                 </div>
               </div>
-
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text font-semibold">모델</span>
+                  <span className="label-text font-semibold">생성일</span>
                 </label>
-                <div className="flex items-center h-8">{agent.model}</div>
+                <div className="flex items-center h-8">
+                  {new Date(agent.createdAt).toLocaleString()}
+                </div>
               </div>
             </div>
 
