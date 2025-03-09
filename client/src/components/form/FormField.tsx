@@ -12,8 +12,8 @@ export default function FormField({
   children,
 }: FormFieldProps) {
   return (
-    <div className={`form-control w-full ${className}`}>
-      <label className="label mb-1">
+    <div className={`form-control w-full grid gap-1 ${className}`}>
+      <label className="label">
         <span className="label-text font-medium">{label}</span>
         {required && (
           <span className="badge badge-sm badge-primary badge-outline">

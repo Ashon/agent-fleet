@@ -1,7 +1,7 @@
 import TextArea from '@/components/form/TextArea'
 import TextField from '@/components/form/TextField'
+import ToggleField from '@/components/form/ToggleField'
 import { Agent } from '@agentfleet/types'
-import Select from '../../../components/form/Select'
 
 interface GeneralSettingsProps {
   agent: Agent
@@ -25,13 +25,26 @@ export default function GeneralSettings({
           onSave()
         }}
       >
-        <TextField
-          label="Agent Name"
-          required
-          placeholder="Enter agent name"
-          value={agent.name}
-          onChange={(e) => onUpdate({ ...agent, name: e.target.value })}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <TextField
+            label="Agent Name"
+            required
+            placeholder="Enter agent name"
+            value={agent.name}
+            onChange={(e) => onUpdate({ ...agent, name: e.target.value })}
+          />
+
+          <ToggleField
+            label="Status"
+            checked={agent.status === 'active'}
+            onChange={(e) =>
+              onUpdate({
+                ...agent,
+                status: e.target.checked ? 'active' : 'inactive',
+              })
+            }
+          />
+        </div>
 
         <TextArea
           label="Description"
@@ -40,23 +53,6 @@ export default function GeneralSettings({
           value={agent.description}
           onChange={(e) => onUpdate({ ...agent, description: e.target.value })}
         />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Select
-            label="Status"
-            options={[
-              { value: 'inactive', label: 'Inactive' },
-              { value: 'active', label: 'Active' },
-            ]}
-            value={agent.status}
-            onChange={(e) =>
-              onUpdate({
-                ...agent,
-                status: e.target.value as 'active' | 'inactive',
-              })
-            }
-          />
-        </div>
 
         <div className="flex justify-end gap-4">
           <button type="button" className="btn btn-outline" onClick={onCancel}>
