@@ -28,7 +28,7 @@ export default function MainLayout() {
 
   return (
     <div>
-      <div className="flex justify-between items-center bg-base-100/80 backdrop-blur-xl px-4 fixed top-0 left-0 right-0 z-50">
+      <div className="flex justify-between items-center bg-base-200/70 backdrop-blur-xl px-4 fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center gap-2">
           <Link
             to="/"
