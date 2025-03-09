@@ -19,7 +19,7 @@ describe('Workflow Routes', () => {
       nodes: [
         {
           id: 'node-1',
-          type: 'start',
+          type: 'input',
           position: { x: 50, y: 100 },
           data: {
             name: '시작',
@@ -38,7 +38,7 @@ describe('Workflow Routes', () => {
       nodes: [
         {
           id: 'node-1',
-          type: 'start',
+          type: 'input',
           position: { x: 50, y: 100 },
           data: {
             name: '시작',
@@ -131,7 +131,7 @@ describe('Workflow Routes', () => {
         nodes: [
           {
             id: 'node-1',
-            type: 'start',
+            type: 'input',
             position: { x: 50, y: 100 },
             data: {
               name: '시작',

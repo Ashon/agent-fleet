@@ -138,4 +138,20 @@ router.put('/:id/edges', async (req, res) => {
   }
 })
 
+// 파이프라인 테스트
+router.post('/test', async (req, res) => {
+  try {
+    const result = await pipelineService.testPipeline(req.body)
+    res.json(result)
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(400).json({ message: error.message })
+    } else {
+      res
+        .status(500)
+        .json({ message: '파이프라인 테스트 중 오류가 발생했습니다.' })
+    }
+  }
+})
+
 export default router

@@ -24,7 +24,7 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-2',
-        type: 'process',
+        type: 'plan',
         position: { x: 400, y: 100 },
         data: {
           name: '메시지 포맷팅',
@@ -35,7 +35,7 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-3',
-        type: 'output',
+        type: 'action',
         connectorId: 'slack-1',
         position: { x: 600, y: 100 },
         data: {
@@ -74,7 +74,7 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-2',
-        type: 'process',
+        type: 'plan',
         position: { x: 300, y: 100 },
         data: {
           name: '데이터 변환',
@@ -89,7 +89,7 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-3',
-        type: 'output',
+        type: 'action',
         connectorId: 'mongodb-1',
         position: { x: 500, y: 100 },
         data: {
@@ -129,7 +129,7 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-2',
-        type: 'process',
+        type: 'decision',
         position: { x: 300, y: 100 },
         data: {
           name: '응답 처리',
@@ -141,7 +141,7 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-3',
-        type: 'output',
+        type: 'action',
         connectorId: 'discord-1',
         position: { x: 500, y: 100 },
         data: {
