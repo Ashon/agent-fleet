@@ -123,22 +123,24 @@ export default function Agents() {
 
                 <div className="flex items-center gap-2">
                   <Link
-                    to={`/agents/${agent.id}/chat`}
-                    className="btn btn-ghost btn-sm"
-                  >
-                    Chat
-                  </Link>
-                  <Link
                     to={`/agents/${agent.id}/info`}
-                    className="btn btn-ghost btn-sm"
+                    className="btn btn-outline btn-sm"
                   >
                     Info
                   </Link>
                   <Link
                     to={`/agents/${agent.id}/edit`}
-                    className="btn btn-ghost btn-sm"
+                    className="btn btn-outline btn-sm"
                   >
                     Edit
+                  </Link>
+                  <Link
+                    to={`/agents/${agent.id}/chat`}
+                    className={`btn btn-outline btn-sm ${
+                      agent.status !== 'active' ? 'btn-disabled' : ''
+                    }`}
+                  >
+                    Chat
                   </Link>
                 </div>
               </div>

@@ -26,27 +26,27 @@ export default function GeneralSettings({
         }}
       >
         <TextField
-          label="에이전트 이름"
+          label="Agent Name"
           required
-          placeholder="에이전트 이름을 입력하세요"
+          placeholder="Enter agent name"
           value={agent.name}
           onChange={(e) => onUpdate({ ...agent, name: e.target.value })}
         />
 
         <TextArea
-          label="설명"
+          label="Description"
           required
-          placeholder="에이전트의 목적과 기능을 설명하세요"
+          placeholder="Enter agent description"
           value={agent.description}
           onChange={(e) => onUpdate({ ...agent, description: e.target.value })}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Select
-            label="상태"
+            label="Status"
             options={[
-              { value: 'inactive', label: '비활성' },
-              { value: 'active', label: '활성' },
+              { value: 'inactive', label: 'Inactive' },
+              { value: 'active', label: 'Active' },
             ]}
             value={agent.status}
             onChange={(e) =>
@@ -59,11 +59,11 @@ export default function GeneralSettings({
         </div>
 
         <div className="flex justify-end gap-4">
-          <button type="button" className="btn btn-ghost" onClick={onCancel}>
-            취소
+          <button type="button" className="btn btn-outline" onClick={onCancel}>
+            Cancel
           </button>
           <button type="submit" className="btn btn-primary">
-            변경사항 저장
+            Save Changes
           </button>
         </div>
       </form>

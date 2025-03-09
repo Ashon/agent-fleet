@@ -137,7 +137,7 @@ export default function Connectors() {
             <div className="card-actions justify-end mt-4">
               <Link
                 to={`/connectors/${connector.id}/edit`}
-                className="btn btn-sm btn-ghost"
+                className="btn btn-sm btn-outline"
               >
                 설정
               </Link>

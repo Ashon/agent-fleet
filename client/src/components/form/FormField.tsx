@@ -17,7 +17,7 @@ export default function FormField({
         <span className="label-text font-medium">{label}</span>
         {required && (
           <span className="badge badge-sm badge-primary badge-outline">
-            필수
+            Required
           </span>
         )}
       </label>

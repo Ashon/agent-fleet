@@ -1,4 +1,7 @@
 import Breadcrumb from '@/components/Breadcrumb'
+import Select from '@/components/form/Select'
+import TextArea from '@/components/form/TextArea'
+import TextField from '@/components/form/TextField'
 import { Connector } from '@agentfleet/types'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -44,92 +47,63 @@ export default function NewConnector() {
         <div className="card-body">
           <h2 className="card-title">새 커넥터 생성</h2>
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text font-medium">커넥터 이름</span>
-                <span className="badge badge-sm badge-primary badge-outline">
-                  필수
-                </span>
-              </label>
-              <input
-                type="text"
-                className="input input-bordered w-full mt-1"
-                placeholder="커넥터 이름을 입력하세요"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
-              />
-            </div>
+            <TextField
+              label="Connector Name"
+              required
+              placeholder="Enter connector name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+            />
 
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text font-medium">설명</span>
-                <span className="badge badge-sm badge-primary badge-outline">
-                  필수
-                </span>
-              </label>
-              <textarea
-                className="textarea textarea-bordered w-full mt-1 h-32 resize-none"
-                placeholder="커넥터의 용도와 기능을 설명하세요"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                required
-              />
-            </div>
+            <TextArea
+              label="Description"
+              required
+              placeholder="Enter connector description"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="form-control w-full">
-                <label className="label">
-                  <span className="label-text font-medium">카테고리</span>
-                </label>
-                <select
-                  className="select select-bordered w-full mt-1"
-                  value={formData.category}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      category: e.target.value as Connector['category'],
-                    })
-                  }
-                >
-                  {categories.map((category) => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Category"
+                options={categories.map((category) => ({
+                  value: category.value,
+                  label: category.label,
+                }))}
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    category: e.target.value as Connector['category'],
+                  })
+                }
+              />
 
-              <div className="form-control w-full">
-                <label className="label">
-                  <span className="label-text font-medium">아이콘</span>
-                </label>
-                <input
-                  type="text"
-                  className="input input-bordered w-full mt-1 text-2xl"
-                  placeholder="이모지 아이콘"
-                  value={formData.icon}
-                  onChange={(e) =>
-                    setFormData({ ...formData, icon: e.target.value })
-                  }
-                />
-              </div>
+              <TextField
+                label="Icon"
+                required
+                placeholder="Enter emoji icon"
+                value={formData.icon}
+                onChange={(e) =>
+                  setFormData({ ...formData, icon: e.target.value })
+                }
+              />
             </div>
 
             <div className="flex justify-end gap-4">
               <button
                 type="button"
-                className="btn btn-ghost"
+                className="btn btn-outline"
                 onClick={() => navigate('/connectors')}
               >
-                취소
+                Cancel
               </button>
               <button type="submit" className="btn btn-primary">
-                생성
+                Create
               </button>
             </div>
           </form>

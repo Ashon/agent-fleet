@@ -30,12 +30,12 @@ export default function NewAgent() {
 
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <h2 className="card-title">새 에이전트 생성</h2>
+            <h2 className="card-title">Create New Agent</h2>
             <form onSubmit={handleSubmit} className="space-y-8">
               <TextField
-                label="에이전트 이름"
+                label="Agent Name"
                 required
-                placeholder="에이전트 이름을 입력하세요"
+                placeholder="Enter agent name"
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
@@ -43,9 +43,9 @@ export default function NewAgent() {
               />
 
               <TextArea
-                label="설명"
+                label="Description"
                 required
-                placeholder="에이전트의 목적과 기능을 설명하세요"
+                placeholder="Enter agent description"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
@@ -55,13 +55,13 @@ export default function NewAgent() {
               <div className="flex justify-end gap-4">
                 <button
                   type="button"
-                  className="btn btn-ghost"
+                  className="btn btn-outline"
                   onClick={() => navigate('/agents')}
                 >
-                  취소
+                  Cancel
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  생성
+                  Create
                 </button>
               </div>
             </form>

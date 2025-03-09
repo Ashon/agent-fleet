@@ -113,7 +113,7 @@ export default function Fleets() {
               </Link>
               <Link
                 to={`/fleets/${fleet.id}/edit`}
-                className="btn btn-ghost btn-sm"
+                className="btn btn-outline btn-sm"
               >
                 수정
               </Link>

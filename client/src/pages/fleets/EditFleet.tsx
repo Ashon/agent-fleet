@@ -129,7 +129,7 @@ export default function EditFleet() {
                   {availableAgents.map((agent) => (
                     <label
                       key={agent.id}
-                      className="flex items-center gap-3 p-3 border rounded-lg hover:bg-base-200 cursor-pointer transition-colors"
+                      className="flex items-center gap-3 p-3 border border-base-300 hover:bg-base-200 cursor-pointer transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -156,7 +156,7 @@ export default function EditFleet() {
               <div className="card-actions justify-end pt-4">
                 <button
                   type="button"
-                  className="btn btn-ghost"
+                  className="btn btn-outline"
                   onClick={handleCancel}
                 >
                   Cancel
