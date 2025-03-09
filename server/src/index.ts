@@ -1,10 +1,10 @@
-import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import express from 'express'
 import morgan from 'morgan'
 import agentsRouter from './routes/agents'
-import connectorsRouter from './routes/connectors'
 import agentWorkflowsRouter from './routes/agentWorkflows'
+import connectorsRouter from './routes/connectors'
 import fleetsRouter from './routes/fleets'
 
 dotenv.config()
@@ -19,7 +19,7 @@ app.use(morgan('dev')) // 개발 환경용 로그 포맷
 
 // 기본 라우트
 app.get('/', (req, res) => {
-  res.json({ message: 'Arcana API Server' })
+  res.json({ message: 'AgentFleet API Server' })
 })
 
 // API 라우트
@@ -39,11 +39,11 @@ app.use(
     err: Error,
     req: express.Request,
     res: express.Response,
-    next: express.NextFunction
+    next: express.NextFunction,
   ) => {
     console.error(err.stack)
     res.status(500).json({ message: 'Internal Server Error' })
-  }
+  },
 )
 
 // 서버 시작

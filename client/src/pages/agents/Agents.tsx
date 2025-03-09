@@ -26,12 +26,12 @@ export default function Agents() {
     fetchAgents()
   }, [])
 
-  const getLastActiveTime = (chatHistory?: { timestamp: string }[]) => {
-    if (!chatHistory?.length) return null
+  // const getLastActiveTime = (chatHistory?: { timestamp: string }[]) => {
+  //   if (!chatHistory?.length) return null
 
-    const lastMessage = chatHistory[chatHistory.length - 1]
-    return new Date(lastMessage.timestamp)
-  }
+  //   const lastMessage = chatHistory[chatHistory.length - 1]
+  //   return new Date(lastMessage.timestamp)
+  // }
 
   const formatLastActive = (date: Date | null) => {
     if (!date) return '활동 기록 없음'
@@ -113,7 +113,8 @@ export default function Agents() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {agents.map((agent) => {
-          const lastActive = getLastActiveTime(agent.chatHistory)
+          // TODO: chatHistory 기능 구현
+          const lastActive = new Date()
 
           return (
             <Card key={agent.id} hover>

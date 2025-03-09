@@ -6,13 +6,10 @@ interface WorkflowCanvasProps {
   onUpdate: (workflow: Workflow) => void
 }
 
-export default function WorkflowCanvas({
-  workflow,
-  onUpdate,
-}: WorkflowCanvasProps) {
+export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const [nodes, setNodes] = useState<WorkflowNode[]>(workflow.nodes)
-  const [edges, setEdges] = useState<WorkflowEdge[]>(workflow.edges)
+  const [edges] = useState<WorkflowEdge[]>(workflow.edges)
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })

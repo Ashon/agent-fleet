@@ -1,0 +1,28 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - 3001:3001
+    environment:
+      NODE_ENV: 'production'
+      PORT: '3001'
+    command:
+      - npm
+      - run
+      - start
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+      args:
+        VITE_API_URL: 'http://localhost:3001'
+    ports:
+      - 3000:3000
+    command:
+      - serve
+      - -s
+      - dist
+      - -p
+      - '3000'
