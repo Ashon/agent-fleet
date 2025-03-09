@@ -1,6 +1,6 @@
 export interface PipelineNode {
   id: string
-  type: 'start' | 'input' | 'process' | 'output' | 'end'
+  type: 'input' | 'plan' | 'decision' | 'action'
   position: { x: number; y: number }
   connectorId?: string
   data: {
@@ -34,4 +34,20 @@ export interface CreatePipelinePayload {
   description?: string
   nodes: PipelineNode[]
   edges: PipelineEdge[]
+}
+
+// 파이프라인 테스트를 위한 인터페이스
+export interface PipelineTestRequest {
+  pipelineId: string
+  input: string
+}
+
+export interface PipelineTestResponse {
+  output: string
+  executionPath: {
+    nodeId: string
+    status: 'success' | 'error'
+    output: string
+    timestamp: Date
+  }[]
 }

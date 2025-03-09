@@ -1,4 +1,11 @@
-import { Agent, Connector, Fleet, Pipeline } from '@agentfleet/types'
+import {
+  Agent,
+  Connector,
+  Fleet,
+  Pipeline,
+  PipelineTestRequest,
+  PipelineTestResponse,
+} from '@agentfleet/types'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -222,6 +229,64 @@ export const api = {
     )
     if (!response.ok) {
       throw new Error('Failed to fetch reasoning pipelines')
+    }
+    return response.json()
+  },
+
+  async createReasoningPipeline(
+    pipeline: Omit<Pipeline, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<Pipeline> {
+    const response = await fetch(`${API_URL}/api/reasoning-pipelines`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(pipeline),
+    })
+    if (!response.ok) {
+      throw new Error('Failed to create reasoning pipeline')
+    }
+    return response.json()
+  },
+
+  async updateReasoningPipeline(
+    id: string,
+    pipeline: Partial<Pipeline>,
+  ): Promise<Pipeline> {
+    const response = await fetch(`${API_URL}/api/reasoning-pipelines/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(pipeline),
+    })
+    if (!response.ok) {
+      throw new Error('Failed to update reasoning pipeline')
+    }
+    return response.json()
+  },
+
+  async deleteReasoningPipeline(id: string): Promise<void> {
+    const response = await fetch(`${API_URL}/api/reasoning-pipelines/${id}`, {
+      method: 'DELETE',
+    })
+    if (!response.ok) {
+      throw new Error('Failed to delete reasoning pipeline')
+    }
+  },
+
+  async testReasoningPipeline(
+    request: PipelineTestRequest,
+  ): Promise<PipelineTestResponse> {
+    const response = await fetch(`${API_URL}/api/reasoning-pipelines/test`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    })
+    if (!response.ok) {
+      throw new Error('Failed to test reasoning pipeline')
     }
     return response.json()
   },
