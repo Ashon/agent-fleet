@@ -94,20 +94,23 @@ export default function Agents() {
 
           return (
             <Card key={agent.id} hover>
-              <div className="flex items-start justify-between">
-                <div>
+              <div>
+                <div className="flex items-start justify-between">
                   <h2 className="card-title">{agent.name}</h2>
-                  <p className="text-sm text-base-content/70 mt-1">
-                    {agent.description}
-                  </p>
+                  <div
+                    className={`badge badge-sm ${
+                      agent.status === 'active'
+                        ? 'badge-success'
+                        : 'badge-ghost'
+                    }`}
+                  >
+                    {agent.status}
+                  </div>
                 </div>
-                <div
-                  className={`badge badge-sm ${
-                    agent.status === 'active' ? 'badge-success' : 'badge-ghost'
-                  }`}
-                >
-                  {agent.status}
-                </div>
+
+                <p className="text-sm text-base-content/70 mt-1">
+                  {agent.description}
+                </p>
               </div>
 
               <div className="mt-4 flex justify-between">

@@ -11,7 +11,7 @@ type TabType = 'workflow' | 'settings' | 'history'
 
 export default function EditAgent() {
   const navigate = useNavigate()
-  const { id, tab = 'workflow' } = useParams<{ id: string; tab: string }>()
+  const { id, tab = 'settings' } = useParams<{ id: string; tab: string }>()
   const [isLoading, setIsLoading] = useState(true)
   const [formData, setFormData] = useState<Agent | null>(null)
 
@@ -53,7 +53,7 @@ export default function EditAgent() {
     <Navigate to="/404" replace />
   ) : (
     <div className="container mx-auto">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         <Breadcrumb
           items={[
             { label: 'Agents', path: '/agents' },
@@ -61,19 +61,20 @@ export default function EditAgent() {
             { label: 'Edit' },
           ]}
         />
-        <div className="tabs tabs-bordered">
-          <Link
-            to={`/agents/${id}/edit/workflow`}
-            className={`tab ${tab === 'workflow' ? 'tab-active' : ''}`}
-          >
-            Workflow Settings
-          </Link>
+        <div className="tabs tabs-border">
           <Link
             to={`/agents/${id}/edit/settings`}
             className={`tab ${tab === 'settings' ? 'tab-active' : ''}`}
           >
             General Settings
           </Link>
+          <Link
+            to={`/agents/${id}/edit/workflow`}
+            className={`tab ${tab === 'workflow' ? 'tab-active' : ''}`}
+          >
+            Workflow Settings
+          </Link>
+
           <Link
             to={`/agents/${id}/edit/history`}
             className={`tab ${tab === 'history' ? 'tab-active' : ''}`}

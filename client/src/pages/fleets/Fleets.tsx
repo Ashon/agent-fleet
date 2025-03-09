@@ -75,20 +75,20 @@ export default function Fleets() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {fleets.map((fleet) => (
           <Card key={fleet.id} hover>
-            <div className="flex items-start justify-between">
-              <div>
+            <div>
+              <div className="flex items-start justify-between">
                 <h2 className="card-title">{fleet.name}</h2>
-                <p className="text-sm text-base-content/70 mt-1">
-                  {fleet.description}
-                </p>
+                <div
+                  className={`badge badge-sm ${
+                    fleet.status === 'active' ? 'badge-success' : 'badge-ghost'
+                  }`}
+                >
+                  {fleet.status}
+                </div>
               </div>
-              <div
-                className={`badge badge-sm ${
-                  fleet.status === 'active' ? 'badge-success' : 'badge-ghost'
-                }`}
-              >
-                {fleet.status}
-              </div>
+              <p className="text-sm text-base-content/70 mt-1">
+                {fleet.description}
+              </p>
             </div>
 
             <div className="mt-4 space-y-2 flex justify-between">

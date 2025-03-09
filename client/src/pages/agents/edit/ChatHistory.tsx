@@ -7,7 +7,6 @@ interface ChatHistoryProps {
 export default function ChatHistory({ agent }: ChatHistoryProps) {
   return (
     <div className="px-4">
-      <h2 className="text-xl mb-4">채팅 기록</h2>
       <div className="overflow-x-auto">
         <table className="table">
           <thead>

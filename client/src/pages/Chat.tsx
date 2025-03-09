@@ -113,7 +113,7 @@ export default function Chat() {
                     : 'bg-base-200 border-l-[3px] border-secondary'
                 }`}
               >
-                <div className="flex items-center gap-1 text-xs text-base-content/80">
+                <div className="flex items-center gap-1 text-xs text-base-content/40">
                   <span>{message.role === 'user' ? 'You' : agent.name}</span>
                   <span>•</span>
                   <span>

@@ -18,7 +18,6 @@ export default function GeneralSettings({
 }: GeneralSettingsProps) {
   return (
     <div className="px-4">
-      <h2 className="text-xl mb-4">일반 설정</h2>
       <form
         className="space-y-8"
         onSubmit={(e) => {

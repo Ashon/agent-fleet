@@ -1,4 +1,5 @@
 import { Workflow, WorkflowEdge, WorkflowNode } from '@agentfleet/types'
+import { PlayIcon, StopIcon } from '@heroicons/react/24/outline'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface WorkflowCanvasProps {
@@ -120,7 +121,7 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
   return (
     <div
       ref={canvasRef}
-      className="relative w-full h-full overflow-auto bg-base-100 rounded-lg shadow-lg"
+      className="relative w-full h-full overflow-auto bg-base-100 shadow-lg"
       style={{ cursor: isDragging ? 'grabbing' : 'default' }}
     >
       {/* Background Grid */}
@@ -211,45 +212,9 @@ export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
           onMouseDown={(e) => handleNodeDragStart(node.id, e)}
         >
           {node.type === 'start' ? (
-            <svg className="w-full h-full" viewBox="0 0 24 24">
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="text-success"
-              />
-              <circle
-                cx="12"
-                cy="12"
-                r="4"
-                fill="currentColor"
-                className="text-success"
-              />
-            </svg>
+            <PlayIcon />
           ) : node.type === 'end' ? (
-            <svg className="w-full h-full" viewBox="0 0 24 24">
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="text-error"
-              />
-              <circle
-                cx="12"
-                cy="12"
-                r="4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="text-error"
-              />
-            </svg>
+            <StopIcon />
           ) : (
             <>
               <div className="flex flex-col gap-1">

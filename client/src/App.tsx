@@ -43,7 +43,7 @@ function App() {
               <Route path="chat" element={<Chat />} />
               <Route path="info" element={<InfoAgent />} />
               <Route path="edit">
-                <Route index element={<Navigate to="workflow" replace />} />
+                <Route index element={<Navigate to="settings" replace />} />
                 <Route path=":tab" element={<EditAgent />} />
               </Route>
             </Route>

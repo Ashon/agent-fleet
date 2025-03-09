@@ -23,7 +23,6 @@ export default function WorkflowSettings({ agent }: WorkflowSettingsProps) {
 
   return (
     <div className="px-4">
-      <h2 className="text-xl mb-4">워크플로우 설정</h2>
       <div className="h-[600px]">
         {workflow && (
           <WorkflowCanvas
