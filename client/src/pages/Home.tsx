@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import Logo from '../assets/logo.svg'
 
 // 홈 페이지 컴포넌트
