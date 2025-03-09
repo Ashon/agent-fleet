@@ -22,7 +22,7 @@ export default function NewAgent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4">
+    <div className="container mx-auto">
       <div className="flex flex-col gap-4">
         <Breadcrumb
           items={[{ label: 'Agents', path: '/agents' }, { label: 'New Agent' }]}
