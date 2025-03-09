@@ -1,6 +1,6 @@
-import { Workflow } from '@agentfleet/types'
+import { Pipeline } from '@agentfleet/types'
 
-export const mockWorkflows: Workflow[] = [
+export const mockPipelines: Pipeline[] = [
   {
     id: 'workflow-1',
     agentId: '1',
@@ -9,14 +9,6 @@ export const mockWorkflows: Workflow[] = [
     createdAt: new Date(),
     updatedAt: new Date(),
     nodes: [
-      {
-        id: 'node-start',
-        type: 'start',
-        position: { x: 50, y: 100 },
-        data: {
-          name: '시작',
-        },
-      },
       {
         id: 'node-1',
         type: 'input',
@@ -53,30 +45,10 @@ export const mockWorkflows: Workflow[] = [
           },
         },
       },
-      {
-        id: 'node-end',
-        type: 'end',
-        position: { x: 750, y: 100 },
-        data: {
-          name: '종료',
-        },
-      },
     ],
     edges: [
-      {
-        id: 'edge-start-1',
-        source: 'node-start',
-        target: 'node-1',
-        type: 'default',
-      },
       { id: 'edge-1-2', source: 'node-1', target: 'node-2', type: 'default' },
       { id: 'edge-2-3', source: 'node-2', target: 'node-3', type: 'default' },
-      {
-        id: 'edge-3-end',
-        source: 'node-3',
-        target: 'node-end',
-        type: 'default',
-      },
     ],
   },
   {

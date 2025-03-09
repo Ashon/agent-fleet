@@ -1,16 +1,16 @@
-import { CreateWorkflowData, Workflow } from '@agentfleet/types'
+import { CreatePipelinePayload, Pipeline } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
-import { WorkflowService } from '../../services/agentWorkflow'
-import workflowRoutes from '../agentWorkflows'
+import { PipelineService } from '../../services/agentReasoningPipeline'
+import reasoningPipelinesRouter from '../reasoningPipelines'
 
-jest.mock('../../services/agentWorkflow')
+jest.mock('../../services/agentReasoningPipeline')
 
 describe('Workflow Routes', () => {
   let app: express.Application
   const mockDate = new Date('2024-01-01T00:00:00.000Z')
 
-  const mockWorkflows: Workflow[] = [
+  const mockPipelines: Pipeline[] = [
     {
       id: '1',
       agentId: '1',
@@ -54,42 +54,41 @@ describe('Workflow Routes', () => {
   beforeEach(() => {
     app = express()
     app.use(express.json())
-    app.use('/api/workflows', workflowRoutes)
+    app.use('/api/reasoning-pipelines', reasoningPipelinesRouter)
 
-    const mockWorkflowService = WorkflowService as jest.MockedClass<
-      typeof WorkflowService
+    const mockPipelineService = PipelineService as jest.MockedClass<
+      typeof PipelineService
     >
 
-    mockWorkflowService.prototype.getAllWorkflows.mockResolvedValue(
-      mockWorkflows,
+    mockPipelineService.prototype.getAllPipelines.mockResolvedValue(
+      mockPipelines,
     )
 
-    mockWorkflowService.prototype.getWorkflowById.mockImplementation(
-      (id: string) => Promise.resolve(mockWorkflows.find((w) => w.id === id)),
+    mockPipelineService.prototype.getPipelineById.mockImplementation(
+      (id: string) => Promise.resolve(mockPipelines.find((p) => p.id === id)),
     )
-    mockWorkflowService.prototype.createWorkflow.mockImplementation(
-      (data: CreateWorkflowData) =>
+    mockPipelineService.prototype.createPipeline.mockImplementation(
+      (data: CreatePipelinePayload) =>
         Promise.resolve({
           id: '3',
-          agentId: '1',
           ...data,
           createdAt: mockDate,
           updatedAt: mockDate,
         }),
     )
-    mockWorkflowService.prototype.updateWorkflow.mockImplementation(
-      (id: string, data: Partial<CreateWorkflowData>) => {
-        const workflow = mockWorkflows.find((w) => w.id === id)
-        if (!workflow) return Promise.resolve(undefined)
+    mockPipelineService.prototype.updatePipeline.mockImplementation(
+      (id: string, data: Partial<CreatePipelinePayload>) => {
+        const pipeline = mockPipelines.find((p) => p.id === id)
+        if (!pipeline) return Promise.resolve(undefined)
         return Promise.resolve({
-          ...workflow,
+          ...pipeline,
           ...data,
           updatedAt: mockDate,
         })
       },
     )
-    mockWorkflowService.prototype.deleteWorkflow.mockImplementation(
-      (id: string) => Promise.resolve(mockWorkflows.some((w) => w.id === id)),
+    mockPipelineService.prototype.deletePipeline.mockImplementation(
+      (id: string) => Promise.resolve(mockPipelines.some((p) => p.id === id)),
     )
   })
 
@@ -97,9 +96,9 @@ describe('Workflow Routes', () => {
     jest.clearAllMocks()
   })
 
-  describe('GET /api/workflows', () => {
-    it('모든 워크플로우 목록을 반환해야 함', async () => {
-      const response = await request(app).get('/api/workflows')
+  describe('GET /api/reasoning-pipelines', () => {
+    it('모든 파이프라인 목록을 반환해야 함', async () => {
+      const response = await request(app).get('/api/reasoning-pipelines')
 
       expect(response.status).toBe(200)
       expect(response.body).toHaveLength(2)
@@ -107,27 +106,28 @@ describe('Workflow Routes', () => {
     })
   })
 
-  describe('GET /api/workflows/:id', () => {
-    it('존재하는 ID로 워크플로우를 찾아야 함', async () => {
-      const response = await request(app).get('/api/workflows/1')
+  describe('GET /api/reasoning-pipelines/:id', () => {
+    it('존재하는 ID로 파이프라인을 찾아야 함', async () => {
+      const response = await request(app).get('/api/reasoning-pipelines/1')
 
       expect(response.status).toBe(200)
       expect(response.body.name).toBe('테스트 워크플로우 1')
     })
 
     it('존재하지 않는 ID로 404를 반환해야 함', async () => {
-      const response = await request(app).get('/api/workflows/999')
+      const response = await request(app).get('/api/reasoning-pipelines/999')
 
       expect(response.status).toBe(404)
-      expect(response.body.message).toBe('워크플로우를 찾을 수 없습니다.')
+      expect(response.body.message).toBe('파이프라인을 찾을 수 없습니다.')
     })
   })
 
-  describe('POST /api/workflows', () => {
-    it('새로운 워크플로우를 생성해야 함', async () => {
-      const newWorkflowData: CreateWorkflowData = {
-        name: '새 워크플로우',
+  describe('POST /api/reasoning-pipelines', () => {
+    it('새로운 파이프라인을 생성해야 함', async () => {
+      const newPipelineData: CreatePipelinePayload = {
+        name: '새 파이프라인',
         description: '새 설명',
+        agentId: '1',
         nodes: [
           {
             id: 'node-1',
@@ -142,51 +142,51 @@ describe('Workflow Routes', () => {
       }
 
       const response = await request(app)
-        .post('/api/workflows')
-        .send(newWorkflowData)
+        .post('/api/reasoning-pipelines')
+        .send(newPipelineData)
 
       expect(response.status).toBe(201)
-      expect(response.body.name).toBe('새 워크플로우')
+      expect(response.body.name).toBe('새 파이프라인')
     })
   })
 
-  describe('PUT /api/workflows/:id', () => {
-    it('존재하는 워크플로우를 업데이트해야 함', async () => {
+  describe('PUT /api/reasoning-pipelines/:id', () => {
+    it('존재하는 파이프라인을 업데이트해야 함', async () => {
       const updateData = {
-        name: '수정된 워크플로우',
+        name: '수정된 파이프라인',
         description: '수정된 설명',
       }
 
       const response = await request(app)
-        .put('/api/workflows/1')
+        .put('/api/reasoning-pipelines/1')
         .send(updateData)
 
       expect(response.status).toBe(200)
-      expect(response.body.name).toBe('수정된 워크플로우')
+      expect(response.body.name).toBe('수정된 파이프라인')
     })
 
-    it('존재하지 않는 워크플로우 업데이트 시 404를 반환해야 함', async () => {
+    it('존재하지 않는 파이프라인 업데이트 시 404를 반환해야 함', async () => {
       const response = await request(app)
-        .put('/api/workflows/999')
-        .send({ name: '수정된 워크플로우' })
+        .put('/api/reasoning-pipelines/999')
+        .send({ name: '수정된 파이프라인' })
 
       expect(response.status).toBe(404)
-      expect(response.body.message).toBe('워크플로우를 찾을 수 없습니다.')
+      expect(response.body.message).toBe('파이프라인을 찾을 수 없습니다.')
     })
   })
 
-  describe('DELETE /api/workflows/:id', () => {
-    it('존재하는 워크플로우를 삭제해야 함', async () => {
-      const response = await request(app).delete('/api/workflows/1')
+  describe('DELETE /api/reasoning-pipelines/:id', () => {
+    it('존재하는 파이프라인을 삭제해야 함', async () => {
+      const response = await request(app).delete('/api/reasoning-pipelines/1')
 
       expect(response.status).toBe(204)
     })
 
-    it('존재하지 않는 워크플로우 삭제 시 404를 반환해야 함', async () => {
-      const response = await request(app).delete('/api/workflows/999')
+    it('존재하지 않는 파이프라인 삭제 시 404를 반환해야 함', async () => {
+      const response = await request(app).delete('/api/reasoning-pipelines/999')
 
       expect(response.status).toBe(404)
-      expect(response.body.message).toBe('워크플로우를 찾을 수 없습니다.')
+      expect(response.body.message).toBe('파이프라인을 찾을 수 없습니다.')
     })
   })
 })
