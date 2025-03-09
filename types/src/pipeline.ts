@@ -1,4 +1,4 @@
-export interface WorkflowNode {
+export interface PipelineNode {
   id: string
   type: 'start' | 'input' | 'process' | 'output' | 'end'
   position: { x: number; y: number }
@@ -10,27 +10,28 @@ export interface WorkflowNode {
   }
 }
 
-export interface WorkflowEdge {
+export interface PipelineEdge {
   id: string
   source: string
   target: string
   type: 'default' | 'success' | 'error'
 }
 
-export interface Workflow {
+export interface Pipeline {
   id: string
   agentId: string
   name: string
   description?: string
-  nodes: WorkflowNode[]
-  edges: WorkflowEdge[]
+  nodes: PipelineNode[]
+  edges: PipelineEdge[]
   createdAt: Date
   updatedAt: Date
 }
 
-export interface CreateWorkflowData {
+export interface CreatePipelinePayload {
   name: string
+  agentId: string
   description?: string
-  nodes: WorkflowNode[]
-  edges: WorkflowEdge[]
+  nodes: PipelineNode[]
+  edges: PipelineEdge[]
 }

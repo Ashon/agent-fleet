@@ -1,4 +1,4 @@
-import { Agent, Connector, Fleet, Workflow } from '@agentfleet/types'
+import { Agent, Connector, Fleet, Pipeline } from '@agentfleet/types'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -215,11 +215,13 @@ export const api = {
     return response.json()
   },
 
-  // Workflow API
-  async getWorkflow(agentId: string): Promise<Workflow[]> {
-    const response = await fetch(`${API_URL}/api/workflows?agentId=${agentId}`)
+  // Reasoning Pipeline API
+  async getReasoningPipelines(agentId: string): Promise<Pipeline[]> {
+    const response = await fetch(
+      `${API_URL}/api/reasoning-pipelines?agentId=${agentId}`,
+    )
     if (!response.ok) {
-      throw new Error('Failed to fetch workflow')
+      throw new Error('Failed to fetch reasoning pipelines')
     }
     return response.json()
   },

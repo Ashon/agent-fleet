@@ -55,7 +55,7 @@ export default function InfoAgent() {
                 </div>
               </h2>
               <Link
-                to={`/agents/${id}/edit/workflow`}
+                to={`/agents/${id}/edit`}
                 className="btn btn-sm btn-primary"
               >
                 Edit

@@ -1,13 +1,13 @@
 import Breadcrumb from '@/components/Breadcrumb'
 import ChatHistory from '@/pages/agents/edit/ChatHistory'
 import GeneralSettings from '@/pages/agents/edit/GeneralSettings'
-import WorkflowSettings from '@/pages/agents/edit/WorkflowSettings'
+import ReasoningPipelineSettings from '@/pages/agents/edit/ReasoningPipelineSettings'
 import { api } from '@/services/api'
 import { Agent } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 
-type TabType = 'workflow' | 'settings' | 'history'
+type TabType = 'settings' | 'reasoning-pipeline' | 'history'
 
 export default function EditAgent() {
   const navigate = useNavigate()
@@ -17,7 +17,7 @@ export default function EditAgent() {
 
   // 유효한 탭인지 확인
   const isValidTab = (tab: string): tab is TabType => {
-    return ['workflow', 'settings', 'history'].includes(tab)
+    return ['settings', 'reasoning-pipeline', 'history'].includes(tab)
   }
 
   useEffect(() => {
@@ -66,13 +66,13 @@ export default function EditAgent() {
             to={`/agents/${id}/edit/settings`}
             className={`tab ${tab === 'settings' ? 'tab-active' : ''}`}
           >
-            General Settings
+            General
           </Link>
           <Link
-            to={`/agents/${id}/edit/workflow`}
-            className={`tab ${tab === 'workflow' ? 'tab-active' : ''}`}
+            to={`/agents/${id}/edit/reasoning-pipeline`}
+            className={`tab ${tab === 'reasoning-pipeline' ? 'tab-active' : ''}`}
           >
-            Workflow Settings
+            Reasoning Pipeline
           </Link>
 
           <Link
@@ -84,7 +84,9 @@ export default function EditAgent() {
         </div>
 
         <div className="mt-4">
-          {tab === 'workflow' && <WorkflowSettings agent={formData} />}
+          {tab === 'reasoning-pipeline' && (
+            <ReasoningPipelineSettings agent={formData} />
+          )}
           {tab === 'settings' && (
             <GeneralSettings
               agent={formData}

@@ -1,16 +1,16 @@
-import { Workflow, WorkflowEdge, WorkflowNode } from '@agentfleet/types'
+import { Pipeline, PipelineEdge, PipelineNode } from '@agentfleet/types'
 import { PlayIcon, StopIcon } from '@heroicons/react/24/outline'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-interface WorkflowCanvasProps {
-  workflow: Workflow
-  onUpdate: (workflow: Workflow) => void
+interface PipelineCanvasProps {
+  pipeline: Pipeline
+  onUpdate: (pipeline: Pipeline) => void
 }
 
-export default function WorkflowCanvas({ workflow }: WorkflowCanvasProps) {
+export default function PipelineCanvas({ pipeline }: PipelineCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
-  const [nodes, setNodes] = useState<WorkflowNode[]>(workflow.nodes)
-  const [edges] = useState<WorkflowEdge[]>(workflow.edges)
+  const [nodes, setNodes] = useState<PipelineNode[]>(pipeline.nodes)
+  const [edges] = useState<PipelineEdge[]>(pipeline.edges)
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
