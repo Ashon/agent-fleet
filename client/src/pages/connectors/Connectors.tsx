@@ -2,6 +2,7 @@ import Breadcrumb from '@/components/Breadcrumb'
 import Card from '@/components/Card'
 import { api } from '@/services/api'
 import { Connector } from '@agentfleet/types'
+import { PlusIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -63,19 +64,7 @@ export default function Connectors() {
     return (
       <div className="container mx-auto">
         <div className="alert alert-error">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="stroke-current shrink-0 h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+          <XCircleIcon className="stroke-current shrink-0 h-6 w-6" />
           <span>{error}</span>
         </div>
       </div>
@@ -89,20 +78,7 @@ export default function Connectors() {
           <Breadcrumb items={[{ label: 'Connectors' }]} />
         </div>
         <Link to="/connectors/new" className="btn btn-primary btn-sm">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 mr-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
+          <PlusIcon className="h-4 w-4 mr-1" />
           New Connector
         </Link>
       </div>

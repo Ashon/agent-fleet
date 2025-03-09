@@ -16,6 +16,7 @@ import {
   BrowserRouter as Router,
   Routes,
 } from 'react-router-dom'
+import InfoAgent from './pages/agents/InfoAgent'
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
             <Route path="new" element={<NewAgent />} />
             <Route path=":id">
               <Route path="chat" element={<Chat />} />
+              <Route path="info" element={<InfoAgent />} />
               <Route path="edit">
                 <Route index element={<Navigate to="workflow" replace />} />
                 <Route path=":tab" element={<EditAgent />} />

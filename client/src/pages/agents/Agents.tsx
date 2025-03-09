@@ -2,6 +2,7 @@ import Breadcrumb from '@/components/Breadcrumb'
 import Card from '@/components/Card'
 import { api } from '@/services/api'
 import { Agent } from '@agentfleet/types'
+import { ClockIcon, PlusIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -67,19 +68,7 @@ export default function Agents() {
     return (
       <div className="container mx-auto">
         <div className="alert alert-error">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="stroke-current shrink-0 h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
+          <XCircleIcon className="stroke-current shrink-0 h-6 w-6" />
           <span>{error}</span>
         </div>
       </div>
@@ -93,20 +82,7 @@ export default function Agents() {
           <Breadcrumb items={[{ label: 'Agents' }]} />
         </div>
         <Link to="/agents/new" className="btn btn-primary btn-sm">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 mr-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
+          <PlusIcon className="h-4 w-4 mr-1" />
           New Agent
         </Link>
       </div>
@@ -136,34 +112,27 @@ export default function Agents() {
 
               <div className="mt-4 space-y-2 flex justify-between">
                 <div className="flex items-center gap-2 text-sm">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4 text-base-content/70"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                  <ClockIcon className="h-4 w-4 text-base-content/70" />
                   <span className="text-base-content/70">
                     {formatLastActive(lastActive)}
                   </span>
                 </div>
 
-                <div className="card-actions justify-end mt-4">
+                <div className="flex items-center gap-2">
                   <Link
                     to={`/agents/${agent.id}/chat`}
-                    className="btn btn-primary btn-sm"
+                    className="btn btn-ghost btn-sm"
                   >
                     Chat
                   </Link>
                   <Link
-                    to={`/agents/${agent.id}/edit/workflow`}
+                    to={`/agents/${agent.id}/info`}
+                    className="btn btn-ghost btn-sm"
+                  >
+                    Info
+                  </Link>
+                  <Link
+                    to={`/agents/${agent.id}/edit`}
                     className="btn btn-ghost btn-sm"
                   >
                     Edit

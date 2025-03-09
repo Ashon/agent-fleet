@@ -2,6 +2,7 @@ import Breadcrumb from '@/components/Breadcrumb'
 import Card from '@/components/Card'
 import { api } from '@/services/api'
 import { Fleet } from '@agentfleet/types'
+import { CalendarIcon, PlusIcon, UsersIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -66,20 +67,7 @@ export default function Fleets() {
           <Breadcrumb items={[{ label: 'Fleets' }]} />
         </div>
         <Link to="/fleets/new" className="btn btn-primary btn-sm">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 mr-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
+          <PlusIcon className="h-4 w-4 mr-1" />
           New Fleet
         </Link>
       </div>
@@ -105,37 +93,11 @@ export default function Fleets() {
 
             <div className="mt-4 space-y-2 flex justify-between">
               <div className="flex items-center gap-2 text-sm">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-base-content/70"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
+                <UsersIcon className="h-4 w-4 text-base-content/70" />
                 <span>{fleet.agents.length} 에이전트</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-base-content/70"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+                <CalendarIcon className="h-4 w-4 text-base-content/70" />
                 <span className="text-base-content/70">
                   {new Date(fleet.createdAt).toLocaleDateString()}
                 </span>
