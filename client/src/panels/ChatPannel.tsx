@@ -1,4 +1,8 @@
 import { Agent, ChatMessage } from '@agentfleet/types'
+import {
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+} from '@heroicons/react/24/outline'
 import { useEffect, useRef, useState } from 'react'
 
 export type ChatMessageWithExtra = ChatMessage & {
@@ -7,6 +11,7 @@ export type ChatMessageWithExtra = ChatMessage & {
 
 type ChatPannelProps = {
   messages: ChatMessageWithExtra[]
+  progressingMessage?: ChatMessageWithExtra
   isWaitingForResponse: boolean
   handleSubmit: (e: React.FormEvent) => void
   input: string
@@ -14,8 +19,64 @@ type ChatPannelProps = {
   agent: Agent
 }
 
+function ChatMessagePanel({
+  agent,
+  message,
+}: {
+  agent: Agent
+  message: ChatMessageWithExtra
+}) {
+  return (
+    <div key={message.id} className="flex flex-col gap-1 mb-4">
+      <div
+        className={`max-w-[80%] p-4 ${
+          message.role === 'user'
+            ? 'bg-base-200 border-l-[3px] border-primary'
+            : 'bg-base-200 border-l-[3px] border-secondary'
+        }`}
+      >
+        <div className="flex items-center gap-1 text-xs text-base-content/40">
+          <span>{message.role === 'user' ? 'You' : agent.name}</span>
+          <span>•</span>
+          <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
+        </div>
+        {message.extra && (
+          <div className="my-2 flex flex-col gap-1">
+            {Array.isArray(message.extra) ? (
+              message.extra.map((item) => (
+                <div
+                  key={item.nodeId}
+                  className="text-xs flex gap-1 items-center line-clamp-2"
+                >
+                  {item.status === 'success' ? (
+                    <span className="font-bold text-success">
+                      <CheckCircleIcon className="w-4 h-4" />
+                    </span>
+                  ) : item.status === 'error' ? (
+                    <span className="font-bold text-error">
+                      <ExclamationCircleIcon className="w-4 h-4" />
+                    </span>
+                  ) : (
+                    <span className="loading loading-spinner loading-xs w-4 h-4"></span>
+                  )}
+                  <span className="font-bold">{item.nodeId}</span>
+                  <span>{item.output}</span>
+                </div>
+              ))
+            ) : (
+              <div className="mb-1">{message.extra}</div>
+            )}
+          </div>
+        )}
+        <p className="whitespace-pre-wrap">{message.content}</p>
+      </div>
+    </div>
+  )
+}
+
 export default function ChatPannel({
   messages,
+  progressingMessage,
   isWaitingForResponse,
   handleSubmit,
   input,
@@ -66,39 +127,28 @@ export default function ChatPannel({
       >
         <div className="absolute w-full">
           {messages.map((message) => (
-            <div key={message.id} className="flex flex-col gap-1 mb-4">
-              <div
-                className={`max-w-[80%] p-4 ${
-                  message.role === 'user'
-                    ? 'bg-base-200 border-l-[3px] border-primary'
-                    : 'bg-base-200 border-l-[3px] border-secondary'
-                }`}
-              >
-                <div className="flex items-center gap-1 text-xs text-base-content/40">
-                  <span>{message.role === 'user' ? 'You' : agent.name}</span>
-                  <span>•</span>
-                  <span>
-                    {new Date(message.createdAt).toLocaleTimeString()}
-                  </span>
-                </div>
-                <p className="whitespace-pre-wrap">{message.content}</p>
-                {message.extra && <div className="mt-2">{message.extra}</div>}
-              </div>
-            </div>
+            <ChatMessagePanel
+              key={message.id}
+              agent={agent}
+              message={message}
+            />
           ))}
 
-          {isWaitingForResponse && (
-            <div className="flex flex-col gap-1 mb-4">
-              <div className="flex items-center gap-2 text-xs text-base-content/60">
-                <span>{agent.name}</span>
-                <span>•</span>
-                <span>typing...</span>
+          {isWaitingForResponse &&
+            (progressingMessage ? (
+              <ChatMessagePanel agent={agent} message={progressingMessage} />
+            ) : (
+              <div className="flex flex-col gap-1 mb-4">
+                <div className="flex items-center gap-2 text-xs text-base-content/60">
+                  <span>{agent.name}</span>
+                  <span>•</span>
+                  <span>typing...</span>
+                </div>
+                <div className="bg-base-200 p-4 border-l-[3px] border-secondary">
+                  <span className="loading loading-dots loading-sm"></span>
+                </div>
               </div>
-              <div className="bg-base-200 p-4 border-l-[3px] border-secondary">
-                <span className="loading loading-dots loading-sm"></span>
-              </div>
-            </div>
-          )}
+            ))}
 
           <div ref={messagesEndRef} />
         </div>

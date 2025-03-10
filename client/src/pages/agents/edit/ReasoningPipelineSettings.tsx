@@ -1,9 +1,14 @@
 import { default as PipelineCanvas } from '@/components/PipelineCanvas'
 import ChatPannel, { ChatMessageWithExtra } from '@/panels/ChatPannel'
 import { api } from '@/services/api'
-import { Agent, ChatMessage, Pipeline } from '@agentfleet/types'
+import { Agent, Pipeline } from '@agentfleet/types'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { useEffect, useRef, useState } from 'react'
+
+// ChatMessageWithExtra 타입 확장
+interface ProgressMessage extends ChatMessageWithExtra {
+  isLoading?: boolean
+}
 
 interface ReasoningPipelineSettingsProps {
   agent: Agent
@@ -13,13 +18,13 @@ export default function ReasoningPipelineSettings({
   agent,
 }: ReasoningPipelineSettingsProps) {
   const [pipeline, setPipeline] = useState<Pipeline | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<ProgressMessage[]>([])
   const [input, setInput] = useState('')
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null)
-  const [nodeResults, setNodeResults] = useState<
-    Record<string, { status: string; output: string }>
-  >({})
+  const [_, setNodeResults] = useState<
+    { nodeId: string; status: string; output: string }[]
+  >([])
 
   // 디바운스를 위한 타이머 ref
   const updateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -63,12 +68,16 @@ export default function ReasoningPipelineSettings({
     })
   }, [agent])
 
+  const [progressingMessage, setProgressingMessage] = useState<
+    ProgressMessage | undefined
+  >(undefined)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || !pipeline?.id || isWaitingForResponse) return
 
-    const userMessage: ChatMessageWithExtra = {
-      id: Date.now().toString(),
+    const userMessage: ProgressMessage = {
+      id: `user-${Date.now().toString()}`,
       content: input,
       role: 'user',
       createdAt: new Date(),
@@ -78,7 +87,7 @@ export default function ReasoningPipelineSettings({
     setInput('')
     setIsWaitingForResponse(true)
     setActiveNodeId(null)
-    setNodeResults({})
+    setNodeResults([])
 
     // SSE 연결 설정
     const eventSource = new EventSource(
@@ -86,8 +95,8 @@ export default function ReasoningPipelineSettings({
     )
 
     eventSource.onmessage = (event) => {
+      const messageId = `completion-${Date.now()}`
       const data = JSON.parse(event.data)
-
       switch (data.type) {
         case 'start':
           console.log('파이프라인 실행 시작:', data.message)
@@ -95,58 +104,92 @@ export default function ReasoningPipelineSettings({
 
         case 'node-start':
           setActiveNodeId(data.nodeId)
+          setNodeResults((prev) => {
+            const newResults = [
+              ...prev,
+              {
+                nodeId: data.nodeId,
+                status: data.status,
+                output: data.output,
+              },
+            ]
+
+            setProgressingMessage({
+              id: `progress-${Date.now()}`,
+              role: 'assistant',
+              content: '응답 생성 중...',
+              createdAt: new Date(),
+              extra: newResults,
+            })
+
+            return newResults
+          })
+
           break
 
         case 'node-complete':
-          setNodeResults((prev) => ({
-            ...prev,
-            [data.nodeId]: {
-              status: data.status,
-              output: data.output,
-            },
-          }))
+          setNodeResults((prev) => {
+            const updatedResults = prev.map((result) => {
+              if (result.nodeId === data.nodeId) {
+                return {
+                  ...result,
+                  status: data.status,
+                  output: data.output,
+                }
+              }
+              return result
+            })
+
+            setProgressingMessage({
+              id: `progress-${Date.now()}`,
+              role: 'assistant',
+              content: '응답 생성 중...',
+              createdAt: new Date(),
+              extra: updatedResults,
+            })
+
+            return updatedResults
+          })
+
           break
 
         case 'complete':
-          const assistantMessage: ChatMessageWithExtra = {
-            id: (Date.now() + 1).toString(),
-            role: 'assistant',
-            content: data.finalOutput,
-            extra: (
-              <div className="text-xs">
-                <h3 className="font-medium">실행 결과</h3>
-                <div className="flex flex-col gap-2 mt-2">
-                  {Object.entries(nodeResults).map(([nodeId, result]) => (
-                    <div
-                      key={nodeId}
-                      className="border-l-2 border-gray-400/70 pl-2"
-                    >
-                      <h3 className="font-medium">{nodeId}</h3>
-                      <p>{result.output}</p>
-                      {result.status === 'error' && (
-                        <p className="text-error">{result.status}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ),
-            createdAt: new Date(),
-          }
-          setMessages((prev) => [...prev, assistantMessage])
+          setProgressingMessage(undefined)
+          console.log('complete', data)
+          setNodeResults((prevResults) => {
+            setMessages((prev) => {
+              const excluded = prev.filter((m) => m.id !== messageId)
+              excluded.push({
+                id: messageId,
+                role: 'assistant',
+                content: data.message,
+                createdAt: new Date(),
+                extra: prevResults,
+              })
+              return excluded
+            })
+
+            return prevResults
+          })
+
           setIsWaitingForResponse(false)
           setActiveNodeId(null)
           eventSource.close()
           break
 
         case 'error':
-          const errorMessage: ChatMessage = {
-            id: (Date.now() + 1).toString(),
-            role: 'assistant',
-            content: data.message,
-            createdAt: new Date(),
-          }
-          setMessages((prev) => [...prev, errorMessage])
+          setMessages((prev) => {
+            // 진행 중인 메시지 제거
+            const filtered = prev.filter((m) => !m.isLoading)
+            // 에러 메시지 추가
+            filtered.push({
+              id: `error-${Date.now()}`,
+              role: 'assistant',
+              content: data.message,
+              createdAt: new Date(),
+            })
+            return filtered
+          })
           setIsWaitingForResponse(false)
           setActiveNodeId(null)
           eventSource.close()
@@ -155,13 +198,19 @@ export default function ReasoningPipelineSettings({
     }
 
     eventSource.onerror = () => {
-      const errorMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: '파이프라인 실행 중 오류가 발생했습니다.',
-        createdAt: new Date(),
-      }
-      setMessages((prev) => [...prev, errorMessage])
+      setMessages((prev) => {
+        // 진행 중인 메시지 제거
+        const filtered = prev.filter((m) => !m.isLoading)
+        // 에러 메시지 추가
+        filtered.push({
+          id: `error-${Date.now()}`,
+          role: 'assistant',
+          content: '파이프라인 실행 중 오류가 발생했습니다.',
+          createdAt: new Date(),
+        })
+        return filtered
+      })
+
       setIsWaitingForResponse(false)
       setActiveNodeId(null)
       eventSource.close()
@@ -246,7 +295,6 @@ export default function ReasoningPipelineSettings({
   const canvasProps = {
     onUpdate,
     activeNodeId,
-    nodeResults,
   }
 
   return (
@@ -272,6 +320,7 @@ export default function ReasoningPipelineSettings({
             <ChatPannel
               agent={agent}
               messages={messages}
+              progressingMessage={progressingMessage}
               isWaitingForResponse={isWaitingForResponse}
               handleSubmit={handleSubmit}
               input={input}

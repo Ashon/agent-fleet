@@ -203,7 +203,7 @@ export default function PipelineCanvas({
 
       // 활성 노드 하이라이트
       if (node.id === activeNodeId) {
-        style += 'ring-2 ring-primary '
+        style += 'ring-2 ring-primary ring-offset-2 ring-offset-base-100'
       }
 
       return style
@@ -239,7 +239,7 @@ export default function PipelineCanvas({
   return (
     <div
       ref={canvasRef}
-      className="relative w-full h-full overflow-auto bg-base-100 shadow-lg"
+      className="relative w-full h-full overflow-hidden bg-base-100 shadow-lg"
       style={{ cursor: isDragging ? 'grabbing' : 'default' }}
     >
       {/* Background Grid */}
@@ -290,7 +290,7 @@ export default function PipelineCanvas({
           key={node.id}
           className={`absolute p-3 select-none shadow-lg border-2 rounded-lg bg-base-100 ${
             isDragging && selectedNode === node.id
-              ? 'cursor-grabbing shadow-xl'
+              ? 'cursor-grabbing shadow-xl ring-2 ring-primary ring-offset-2 ring-offset-base-100'
               : 'cursor-grab hover:shadow-xl'
           } ${getNodeStyle(node)}`}
           style={{
