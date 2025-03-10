@@ -135,6 +135,7 @@ export default function ReasoningPipelineSettings({
           }
           setMessages((prev) => [...prev, assistantMessage])
           setIsWaitingForResponse(false)
+          setActiveNodeId(null)
           eventSource.close()
           break
 
@@ -147,6 +148,7 @@ export default function ReasoningPipelineSettings({
           }
           setMessages((prev) => [...prev, errorMessage])
           setIsWaitingForResponse(false)
+          setActiveNodeId(null)
           eventSource.close()
           break
       }
@@ -161,6 +163,7 @@ export default function ReasoningPipelineSettings({
       }
       setMessages((prev) => [...prev, errorMessage])
       setIsWaitingForResponse(false)
+      setActiveNodeId(null)
       eventSource.close()
     }
   }

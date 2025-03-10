@@ -203,17 +203,7 @@ export default function PipelineCanvas({
 
       // 활성 노드 하이라이트
       if (node.id === activeNodeId) {
-        style += 'ring-2 ring-primary animate-pulse '
-      }
-
-      // 실행 완료된 노드 스타일
-      if (nodeResults[node.id]) {
-        const result = nodeResults[node.id]
-        if (result.status === 'success') {
-          style += 'bg-green-50 '
-        } else if (result.status === 'error') {
-          style += 'bg-red-50 '
-        }
+        style += 'ring-2 ring-primary '
       }
 
       return style
@@ -318,10 +308,17 @@ export default function PipelineCanvas({
           onMouseDown={(e) => handleNodeDragStart(node.id, e)}
         >
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              {getNodeIcon(node.type)}
-              <div className="text-sm font-medium pointer-events-none">
-                {node.data.name}
+            <div className="flex items-center gap-2 justify-between">
+              <div className="flex items-center gap-2">
+                {getNodeIcon(node.type)}
+                <div className="text-sm font-medium pointer-events-none">
+                  {node.data.name}
+                </div>
+              </div>
+              <div>
+                {activeNodeId === node.id && (
+                  <span className="loading loading-spinner loading-sm"></span>
+                )}
               </div>
             </div>
             {node.data.description && (
