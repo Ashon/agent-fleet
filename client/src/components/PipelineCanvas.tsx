@@ -239,8 +239,12 @@ export default function PipelineCanvas({
   return (
     <div
       ref={canvasRef}
-      className="relative w-full h-full overflow-hidden bg-base-100 shadow-lg"
-      style={{ cursor: isDragging ? 'grabbing' : 'default' }}
+      className="relative w-full h-full overflow-auto bg-base-100 shadow-lg"
+      style={{
+        cursor: isDragging ? 'grabbing' : 'default',
+        position: 'relative',
+        contain: 'paint',
+      }}
     >
       {/* Background Grid */}
       <svg
@@ -294,6 +298,7 @@ export default function PipelineCanvas({
               : 'cursor-grab hover:shadow-xl'
           } ${getNodeStyle(node)}`}
           style={{
+            position: 'absolute',
             left: node.position.x,
             top: node.position.y,
             transform: 'translate(-50%, -50%)',
@@ -302,7 +307,10 @@ export default function PipelineCanvas({
             MozUserSelect: 'none',
             msUserSelect: 'none',
             transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            zIndex: isDragging && selectedNode === node.id ? 10 : 1,
+            overflow: 'visible',
             minWidth: '120px',
+            whiteSpace: 'nowrap',
           }}
           onClick={() => handleNodeClick(node.id)}
           onMouseDown={(e) => handleNodeDragStart(node.id, e)}
