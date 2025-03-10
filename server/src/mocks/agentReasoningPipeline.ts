@@ -2,46 +2,66 @@ import { Pipeline } from '@agentfleet/types'
 
 export const mockPipelines: Pipeline[] = [
   {
-    id: 'workflow-1',
+    id: 'pipeline-1',
     agentId: '1',
-    name: 'Slack 알림 워크플로우',
-    description: 'GitHub 이슈가 생성되면 Slack으로 알림을 보냅니다.',
+    name: '기본 추론 파이프라인',
+    description:
+      '사용자 입력을 분석하고 적절한 응답을 생성하는 기본 추론 파이프라인',
     createdAt: new Date(),
     updatedAt: new Date(),
     nodes: [
       {
         id: 'node-1',
         type: 'input',
-        connectorId: 'github-1',
         position: { x: 200, y: 100 },
         data: {
-          name: 'GitHub 이슈 생성',
+          name: '사용자 입력',
+          description: '사용자로부터 받은 질문이나 요청을 처리합니다',
           config: {
-            event: 'issue.created',
-            repository: 'agentfleet/agentfleet',
+            inputType: 'text',
+            maxLength: 1000,
           },
         },
       },
       {
         id: 'node-2',
         type: 'plan',
-        position: { x: 400, y: 100 },
+        position: { x: 200, y: 250 },
+        connectorId: 'llm-gpt4',
         data: {
-          name: '메시지 포맷팅',
+          name: '의도 파악 및 계획',
+          description: '사용자 입력의 의도를 파악하고 응답 계획을 수립합니다',
           config: {
-            template: '새로운 이슈가 생성되었습니다: {title}',
+            prompt: '사용자의 의도를 파악하고 어떻게 응답할지 계획을 세우세요',
+            temperature: 0.7,
           },
         },
       },
       {
         id: 'node-3',
-        type: 'action',
-        connectorId: 'slack-1',
-        position: { x: 600, y: 100 },
+        type: 'decision',
+        position: { x: 200, y: 400 },
+        connectorId: 'llm-gpt4',
         data: {
-          name: 'Slack 알림',
+          name: '도구 선택',
+          description: '필요한 도구를 선택하고 실행 여부를 결정합니다',
           config: {
-            channel: 'announcements',
+            tools: ['search', 'calculator', 'database'],
+            decisionThreshold: 0.8,
+          },
+        },
+      },
+      {
+        id: 'node-4',
+        type: 'action',
+        position: { x: 200, y: 550 },
+        connectorId: 'llm-gpt4',
+        data: {
+          name: '응답 생성',
+          description: '최종 응답을 생성하고 사용자에게 전달합니다',
+          config: {
+            format: 'markdown',
+            maxTokens: 500,
           },
         },
       },
@@ -49,112 +69,184 @@ export const mockPipelines: Pipeline[] = [
     edges: [
       { id: 'edge-1-2', source: 'node-1', target: 'node-2', type: 'default' },
       { id: 'edge-2-3', source: 'node-2', target: 'node-3', type: 'default' },
+      { id: 'edge-3-4', source: 'node-3', target: 'node-4', type: 'default' },
     ],
   },
   {
-    id: 'workflow-2',
+    id: 'pipeline-2',
     agentId: '2',
-    name: '문서 동기화 워크플로우',
-    description: 'Notion 문서가 업데이트되면 MongoDB에 저장합니다.',
+    name: '검색 강화 추론 파이프라인',
+    description:
+      '웹 검색을 활용하여 최신 정보로 응답을 생성하는 추론 파이프라인',
     createdAt: new Date(),
     updatedAt: new Date(),
     nodes: [
       {
         id: 'node-1',
         type: 'input',
-        connectorId: 'notion-1',
         position: { x: 100, y: 100 },
         data: {
-          name: 'Notion 문서 변경',
+          name: '사용자 질문',
+          description: '사용자의 질문을 입력받습니다',
           config: {
-            databaseId: '123456789',
-            filter: 'status = "published"',
+            inputType: 'text',
+            requiresContext: false,
           },
         },
       },
       {
         id: 'node-2',
         type: 'plan',
-        position: { x: 300, y: 100 },
+        position: { x: 100, y: 250 },
+        connectorId: 'llm-claude',
         data: {
-          name: '데이터 변환',
+          name: '검색 키워드 추출',
+          description: '질문에서 핵심 검색 키워드를 추출합니다',
           config: {
-            mapping: {
-              title: 'title',
-              content: 'content',
-              status: 'status',
-            },
+            prompt: '다음 질문에서 검색에 필요한 핵심 키워드를 추출하세요',
+            outputFormat: 'json',
           },
         },
       },
       {
         id: 'node-3',
         type: 'action',
-        connectorId: 'mongodb-1',
-        position: { x: 500, y: 100 },
+        position: { x: 300, y: 250 },
+        connectorId: 'search-api',
         data: {
-          name: 'MongoDB 저장',
+          name: '웹 검색 실행',
+          description: '추출된 키워드로 웹 검색을 실행합니다',
           config: {
-            collection: 'documents',
+            searchEngine: 'google',
+            resultCount: 5,
+          },
+        },
+      },
+      {
+        id: 'node-4',
+        type: 'decision',
+        position: { x: 100, y: 400 },
+        connectorId: 'llm-claude',
+        data: {
+          name: '정보 관련성 평가',
+          description: '검색 결과의 관련성을 평가하고 필요한 정보를 선택합니다',
+          config: {
+            relevanceThreshold: 0.7,
+            maxSourceCount: 3,
+          },
+        },
+      },
+      {
+        id: 'node-5',
+        type: 'action',
+        position: { x: 100, y: 550 },
+        connectorId: 'llm-claude',
+        data: {
+          name: '최종 응답 생성',
+          description: '검색 결과를 바탕으로 최종 응답을 생성합니다',
+          config: {
+            citeSources: true,
+            format: 'markdown',
           },
         },
       },
     ],
     edges: [
-      { id: 'edge-1', source: 'node-1', target: 'node-2', type: 'default' },
-      { id: 'edge-2', source: 'node-2', target: 'node-3', type: 'default' },
+      { id: 'edge-1-2', source: 'node-1', target: 'node-2', type: 'default' },
+      { id: 'edge-2-3', source: 'node-2', target: 'node-3', type: 'default' },
+      { id: 'edge-3-4', source: 'node-3', target: 'node-4', type: 'default' },
+      { id: 'edge-4-5', source: 'node-4', target: 'node-5', type: 'default' },
     ],
   },
   {
-    id: 'workflow-3',
+    id: 'pipeline-3',
     agentId: '3',
-    name: 'API 연동 워크플로우',
+    name: '멀티모달 추론 파이프라인',
     description:
-      'OpenAPI를 통해 외부 API를 호출하고 결과를 Discord로 전송합니다.',
+      '이미지와 텍스트를 함께 처리할 수 있는 멀티모달 추론 파이프라인',
     createdAt: new Date(),
     updatedAt: new Date(),
     nodes: [
       {
         id: 'node-1',
         type: 'input',
-        connectorId: 'openapi-1',
-        position: { x: 100, y: 100 },
+        position: { x: 200, y: 100 },
         data: {
-          name: 'API 호출',
+          name: '멀티모달 입력',
+          description: '텍스트와 이미지를 함께 입력받습니다',
           config: {
-            endpoint: '/users',
-            method: 'GET',
+            acceptedTypes: ['text', 'image'],
+            maxImages: 5,
           },
         },
       },
       {
         id: 'node-2',
-        type: 'decision',
-        position: { x: 300, y: 100 },
+        type: 'plan',
+        position: { x: 100, y: 250 },
+        connectorId: 'vision-model',
         data: {
-          name: '응답 처리',
+          name: '이미지 분석',
+          description: '입력된 이미지를 분석하고 주요 특징을 추출합니다',
           config: {
-            transform:
-              'data.map(user => ({ name: user.name, email: user.email }))',
+            detectionLevel: 'high',
+            extractText: true,
           },
         },
       },
       {
         id: 'node-3',
-        type: 'action',
-        connectorId: 'discord-1',
-        position: { x: 500, y: 100 },
+        type: 'plan',
+        position: { x: 300, y: 250 },
+        connectorId: 'llm-gpt4',
         data: {
-          name: 'Discord 메시지',
+          name: '텍스트 분석',
+          description: '입력된 텍스트를 분석하고 주요 의도를 파악합니다',
           config: {
-            channel: 'api-results',
+            contextAware: true,
+            intentDetection: true,
+          },
+        },
+      },
+      {
+        id: 'node-4',
+        type: 'decision',
+        position: { x: 200, y: 400 },
+        connectorId: 'llm-gpt4',
+        data: {
+          name: '통합 분석 및 결정',
+          description:
+            '이미지와 텍스트 분석 결과를 통합하고 응답 방향을 결정합니다',
+          config: {
+            integrationStrategy: 'weighted',
+            imageWeight: 0.6,
+            textWeight: 0.4,
+          },
+        },
+      },
+      {
+        id: 'node-5',
+        type: 'action',
+        position: { x: 200, y: 550 },
+        connectorId: 'llm-gpt4',
+        data: {
+          name: '멀티모달 응답 생성',
+          description:
+            '텍스트 응답과 필요시 이미지 생성을 포함한 응답을 생성합니다',
+          config: {
+            generateImages: true,
+            imageModel: 'dalle3',
+            responseFormat: 'rich-text',
           },
         },
       },
     ],
     edges: [
-      { id: 'edge-1', source: 'node-1', target: 'node-2', type: 'default' },
-      { id: 'edge-2', source: 'node-2', target: 'node-3', type: 'default' },
+      { id: 'edge-1-2', source: 'node-1', target: 'node-2', type: 'default' },
+      { id: 'edge-1-3', source: 'node-1', target: 'node-3', type: 'default' },
+      { id: 'edge-2-4', source: 'node-2', target: 'node-4', type: 'default' },
+      { id: 'edge-3-4', source: 'node-3', target: 'node-4', type: 'default' },
+      { id: 'edge-4-5', source: 'node-4', target: 'node-5', type: 'default' },
     ],
   },
 ]
