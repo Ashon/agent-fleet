@@ -249,4 +249,170 @@ export const mockPipelines: Pipeline[] = [
       { id: 'edge-4-5', source: 'node-4', target: 'node-5', type: 'default' },
     ],
   },
+  {
+    id: 'pipeline-4',
+    agentId: '4',
+    name: '병렬 처리 추론 파이프라인',
+    description: '여러 작업을 동시에 처리할 수 있는 병렬 처리 파이프라인',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    nodes: [
+      {
+        id: 'node-1',
+        type: 'input',
+        position: { x: 200, y: 100 },
+        data: {
+          name: '복합 입력',
+          description: '여러 종류의 입력을 동시에 처리합니다',
+          config: {
+            inputTypes: ['text', 'image', 'audio'],
+            parallel: true,
+          },
+        },
+      },
+      {
+        id: 'node-2a',
+        type: 'process',
+        position: { x: 100, y: 250 },
+        connectorId: 'text-processor',
+        data: {
+          name: '텍스트 처리',
+          description: '텍스트 입력을 병렬로 처리',
+          config: {
+            processingType: 'async',
+            batchSize: 10,
+            executionGroup: 'input-processing',
+          },
+        },
+      },
+      {
+        id: 'node-2b',
+        type: 'process',
+        position: { x: 300, y: 250 },
+        connectorId: 'image-processor',
+        data: {
+          name: '이미지 처리',
+          description: '이미지 입력을 병렬로 처리',
+          config: {
+            processingType: 'async',
+            batchSize: 5,
+            executionGroup: 'input-processing',
+          },
+        },
+      },
+      {
+        id: 'node-2c',
+        type: 'process',
+        position: { x: 500, y: 250 },
+        connectorId: 'audio-processor',
+        data: {
+          name: '오디오 처리',
+          description: '오디오 입력을 병렬로 처리',
+          config: {
+            processingType: 'async',
+            batchSize: 3,
+            executionGroup: 'input-processing',
+          },
+        },
+      },
+      {
+        id: 'node-3',
+        type: 'aggregator',
+        position: { x: 200, y: 400 },
+        connectorId: 'result-aggregator',
+        data: {
+          name: '결과 통합',
+          description: '병렬 처리된 결과를 통합',
+          config: {
+            waitForAll: true,
+            timeout: 30000,
+            retryStrategy: {
+              maxAttempts: 3,
+              backoff: 'exponential',
+            },
+          },
+        },
+      },
+      {
+        id: 'node-4a',
+        type: 'analysis',
+        position: { x: 100, y: 550 },
+        connectorId: 'llm-gpt4',
+        data: {
+          name: '심층 분석 A',
+          description: '첫 번째 분석 경로',
+          config: {
+            executionGroup: 'analysis',
+            processingType: 'async',
+          },
+        },
+      },
+      {
+        id: 'node-4b',
+        type: 'analysis',
+        position: { x: 300, y: 550 },
+        connectorId: 'llm-claude',
+        data: {
+          name: '심층 분석 B',
+          description: '두 번째 분석 경로',
+          config: {
+            executionGroup: 'analysis',
+            processingType: 'async',
+          },
+        },
+      },
+      {
+        id: 'node-5',
+        type: 'decision',
+        position: { x: 200, y: 700 },
+        connectorId: 'consensus-engine',
+        data: {
+          name: '분석 결과 통합',
+          description: '병렬 분석 결과를 비교하고 최적의 결과 선택',
+          config: {
+            consensusStrategy: 'weighted-vote',
+            minConfidence: 0.8,
+            timeout: 5000,
+          },
+        },
+      },
+    ],
+    edges: [
+      {
+        id: 'edge-1-2a',
+        source: 'node-1',
+        target: 'node-2a',
+        type: 'parallel',
+      },
+      {
+        id: 'edge-1-2b',
+        source: 'node-1',
+        target: 'node-2b',
+        type: 'parallel',
+      },
+      {
+        id: 'edge-1-2c',
+        source: 'node-1',
+        target: 'node-2c',
+        type: 'parallel',
+      },
+      { id: 'edge-2a-3', source: 'node-2a', target: 'node-3', type: 'async' },
+      { id: 'edge-2b-3', source: 'node-2b', target: 'node-3', type: 'async' },
+      { id: 'edge-2c-3', source: 'node-2c', target: 'node-3', type: 'async' },
+      {
+        id: 'edge-3-4a',
+        source: 'node-3',
+        target: 'node-4a',
+        type: 'parallel',
+      },
+      {
+        id: 'edge-3-4b',
+        source: 'node-3',
+        target: 'node-4b',
+        type: 'parallel',
+      },
+      { id: 'edge-4a-5', source: 'node-4a', target: 'node-5', type: 'async' },
+      { id: 'edge-4b-5', source: 'node-4b', target: 'node-5', type: 'async' },
+    ],
+  },
 ]

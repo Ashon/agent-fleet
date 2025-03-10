@@ -2,7 +2,6 @@ import {
   PipelineEdge as PipelineEdgeType,
   PipelineNode,
 } from '@agentfleet/types'
-import React from 'react'
 import { getConnectionPoints, getEdgeStyle } from '../utils/edgeUtils'
 
 interface PipelineEdgeProps {

@@ -1,6 +1,13 @@
 export interface PipelineNode {
   id: string
-  type: 'input' | 'plan' | 'decision' | 'action'
+  type:
+    | 'input'
+    | 'plan'
+    | 'decision'
+    | 'action'
+    | 'process'
+    | 'aggregator'
+    | 'analysis'
   position: { x: number; y: number }
   connectorId?: string
   data: {
@@ -14,7 +21,7 @@ export interface PipelineEdge {
   id: string
   source: string
   target: string
-  type: 'default' | 'success' | 'error'
+  type: 'default' | 'success' | 'error' | 'parallel' | 'async'
 }
 
 export interface Pipeline {
