@@ -21,6 +21,7 @@ export default function PipelineCanvas({
   nodeResults = {},
 }: PipelineCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
+  const nodeRefs = useRef<Map<string, HTMLDivElement>>(new Map())
   const [nodes, setNodes] = useState<PipelineNode[]>(pipeline.nodes)
   const [edges] = useState<PipelineEdge[]>(pipeline.edges)
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
@@ -221,19 +222,154 @@ export default function PipelineCanvas({
       const targetActive = edge.target === activeNodeId
 
       if (sourceCompleted && targetActive) {
-        style += 'stroke-primary stroke-[3px] '
+        style += [
+          'stroke-primary',
+          'paint-order-stroke',
+          'stroke-[3px]',
+          '[&>path]:fill-primary',
+          '[&>marker]:fill-primary',
+          '[&>path]:stroke-primary',
+          '[&>marker]:stroke-primary',
+        ].join(' ')
       } else {
-        style +=
+        const color =
           edge.type === 'success'
-            ? 'stroke-green-500 '
+            ? 'stroke-green-500 [&>path]:fill-green-500 [&>marker]:fill-green-500'
             : edge.type === 'error'
-              ? 'stroke-red-500 '
-              : 'stroke-slate-400 '
+              ? 'stroke-red-500 [&>path]:fill-red-500 [&>marker]:fill-red-500'
+              : 'stroke-gray-500 [&>path]:fill-gray-500 [&>marker]:fill-gray-500 [&>polygon]:fill-gray-500'
+        style += color + ' '
       }
 
       return style
     },
     [activeNodeId, nodeResults],
+  )
+
+  const getAnchorPoints = useCallback(
+    (element: HTMLElement, center: { x: number; y: number }) => {
+      const rect = element.getBoundingClientRect()
+      return {
+        top: {
+          x: center.x,
+          y: center.y - rect.height / 2,
+        },
+        right: {
+          x: center.x + rect.width / 2,
+          y: center.y,
+        },
+        bottom: {
+          x: center.x,
+          y: center.y + rect.height / 2,
+        },
+        left: {
+          x: center.x - rect.width / 2,
+          y: center.y,
+        },
+      }
+    },
+    [],
+  )
+
+  const getDistance = useCallback((p1: any, p2: any) => {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2))
+  }, [])
+
+  const getAnchorDirection = useCallback(
+    (anchorPoint: any, nodeCenter: any) => {
+      const dx = anchorPoint.x - nodeCenter.x
+      const dy = anchorPoint.y - nodeCenter.y
+
+      if (Math.abs(dx) > Math.abs(dy)) {
+        return dx > 0 ? 'right' : 'left'
+      } else {
+        return dy > 0 ? 'bottom' : 'top'
+      }
+    },
+    [],
+  )
+
+  const getConnectionPoints = useCallback(
+    (
+      sourceElement: HTMLElement,
+      targetElement: HTMLElement,
+      sourceCenter: { x: number; y: number },
+      targetCenter: { x: number; y: number },
+    ) => {
+      const sourceAnchors = getAnchorPoints(sourceElement, sourceCenter)
+      const targetAnchors = getAnchorPoints(targetElement, targetCenter)
+
+      // 가장 가까운 앵커 포인트 쌍 찾기
+      let minDistance = Infinity
+      let bestSourceAnchor = sourceAnchors.right
+      let bestTargetAnchor = targetAnchors.left
+
+      Object.values(sourceAnchors).forEach((sourceAnchor) => {
+        Object.values(targetAnchors).forEach((targetAnchor) => {
+          const distance = getDistance(sourceAnchor, targetAnchor)
+          if (distance < minDistance) {
+            minDistance = distance
+            bestSourceAnchor = sourceAnchor
+            bestTargetAnchor = targetAnchor
+          }
+        })
+      })
+
+      const sourceDirection = getAnchorDirection(bestSourceAnchor, sourceCenter)
+      const targetDirection = getAnchorDirection(bestTargetAnchor, targetCenter)
+
+      const controlPointOffset = Math.min(100, minDistance * 0.5)
+
+      // 제어점 계산
+      let sourceControlX = bestSourceAnchor.x
+      let sourceControlY = bestSourceAnchor.y
+      let targetControlX = bestTargetAnchor.x
+      let targetControlY = bestTargetAnchor.y
+
+      switch (sourceDirection) {
+        case 'right':
+          sourceControlX += controlPointOffset
+          break
+        case 'left':
+          sourceControlX -= controlPointOffset
+          break
+        case 'bottom':
+          sourceControlY += controlPointOffset
+          break
+        case 'top':
+          sourceControlY -= controlPointOffset
+          break
+      }
+
+      switch (targetDirection) {
+        case 'right':
+          targetControlX += controlPointOffset
+          break
+        case 'left':
+          targetControlX -= controlPointOffset
+          break
+        case 'bottom':
+          targetControlY += controlPointOffset
+          break
+        case 'top':
+          targetControlY -= controlPointOffset
+          break
+      }
+
+      // 끝점에서의 접선 방향 계산
+      const dx = targetControlX - bestTargetAnchor.x
+      const dy = targetControlY - bestTargetAnchor.y
+      const angle = Math.atan2(dy, dx)
+
+      return {
+        start: bestSourceAnchor,
+        end: bestTargetAnchor,
+        sourceControl: { x: sourceControlX, y: sourceControlY },
+        targetControl: { x: targetControlX, y: targetControlY },
+        angle: angle * (180 / Math.PI), // 각도를 도(degree) 단위로 변환
+      }
+    },
+    [getAnchorPoints, getDistance, getAnchorDirection],
   )
 
   return (
@@ -271,18 +407,63 @@ export default function PipelineCanvas({
         className="absolute inset-0 pointer-events-none"
         style={{ width: '100%', height: '100%' }}
       >
+        <defs>
+          {edges.map((edge) => (
+            <marker
+              key={`marker-${edge.id}`}
+              id={`arrowhead-${edge.id}`}
+              markerWidth="6"
+              markerHeight="6"
+              refX="6"
+              refY="3"
+              orient="auto-start-reverse"
+              className={getEdgeStyle(edge)}
+            >
+              <polygon points="0 0, 6 3, 0 6" />
+            </marker>
+          ))}
+        </defs>
         {edges.map((edge) => {
           const sourceNode = nodes.find((n) => n.id === edge.source)!
           const targetNode = nodes.find((n) => n.id === edge.target)!
 
+          const sourceElement = nodeRefs.current.get(edge.source)
+          const targetElement = nodeRefs.current.get(edge.target)
+
+          if (!sourceElement || !targetElement) return null
+
+          const sourceCenter = {
+            x: sourceNode.position.x,
+            y: sourceNode.position.y,
+          }
+          const targetCenter = {
+            x: targetNode.position.x,
+            y: targetNode.position.y,
+          }
+
+          const { start, end, sourceControl, targetControl, angle } =
+            getConnectionPoints(
+              sourceElement,
+              targetElement,
+              sourceCenter,
+              targetCenter,
+            )
+
+          const path = `M ${start.x} ${start.y} C ${sourceControl.x} ${sourceControl.y}, ${targetControl.x} ${targetControl.y}, ${end.x} ${end.y}`
+
           return (
             <path
               key={edge.id}
-              d={`M ${sourceNode.position.x} ${sourceNode.position.y}
-                  L ${targetNode.position.x} ${targetNode.position.y}`}
+              d={path}
               className={getEdgeStyle(edge)}
               strokeWidth="2"
               fill="none"
+              markerEnd={`url(#arrowhead-${edge.id})`}
+              style={
+                {
+                  '--angle': `${angle}deg`,
+                } as React.CSSProperties
+              }
             />
           )
         })}
@@ -292,6 +473,13 @@ export default function PipelineCanvas({
       {nodes.map((node) => (
         <div
           key={node.id}
+          ref={(el) => {
+            if (el) {
+              nodeRefs.current.set(node.id, el)
+            } else {
+              nodeRefs.current.delete(node.id)
+            }
+          }}
           className={`absolute p-3 select-none shadow-lg border-2 rounded-lg bg-base-100 ${
             isDragging && selectedNode === node.id
               ? 'cursor-grabbing shadow-xl ring-2 ring-primary ring-offset-2 ring-offset-base-100'
