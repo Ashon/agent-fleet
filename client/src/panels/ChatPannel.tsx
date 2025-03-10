@@ -22,14 +22,16 @@ type ChatPannelProps = {
 function ChatMessagePanel({
   agent,
   message,
+  isLoading,
 }: {
   agent: Agent
   message: ChatMessageWithExtra
+  isLoading?: boolean
 }) {
   return (
     <div key={message.id} className="flex flex-col gap-1 mb-4">
       <div
-        className={`max-w-[80%] p-4 ${
+        className={`max-w-[80%] py-2 px-4 ${
           message.role === 'user'
             ? 'bg-base-200 border-l-[3px] border-primary'
             : 'bg-base-200 border-l-[3px] border-secondary'
@@ -38,7 +40,11 @@ function ChatMessagePanel({
         <div className="flex items-center gap-1 text-xs text-base-content/40">
           <span>{message.role === 'user' ? 'You' : agent.name}</span>
           <span>•</span>
-          <span>{new Date(message.createdAt).toLocaleTimeString()}</span>
+          <span>
+            {isLoading
+              ? 'typing...'
+              : new Date(message.createdAt).toLocaleTimeString()}
+          </span>
         </div>
         {message.extra && (
           <div className="my-2 flex flex-col gap-1">
@@ -46,7 +52,7 @@ function ChatMessagePanel({
               message.extra.map((item) => (
                 <div
                   key={item.nodeId}
-                  className="text-xs flex gap-1 items-center line-clamp-2"
+                  className="text-xs flex gap-1 items-center line-clamp-2 no-wrap"
                 >
                   {item.status === 'success' ? (
                     <span className="font-bold text-success">
@@ -136,18 +142,24 @@ export default function ChatPannel({
 
           {isWaitingForResponse &&
             (progressingMessage ? (
-              <ChatMessagePanel agent={agent} message={progressingMessage} />
+              <ChatMessagePanel
+                agent={agent}
+                message={progressingMessage}
+                isLoading
+              />
             ) : (
-              <div className="flex flex-col gap-1 mb-4">
-                <div className="flex items-center gap-2 text-xs text-base-content/60">
-                  <span>{agent.name}</span>
-                  <span>•</span>
-                  <span>typing...</span>
-                </div>
-                <div className="bg-base-200 p-4 border-l-[3px] border-secondary">
-                  <span className="loading loading-dots loading-sm"></span>
-                </div>
-              </div>
+              <ChatMessagePanel
+                agent={agent}
+                message={{
+                  id: 'progressing',
+                  role: 'assistant',
+                  content: (
+                    <span className="loading loading-dots loading-sm"></span>
+                  ),
+                  createdAt: new Date(),
+                }}
+                isLoading
+              />
             ))}
 
           <div ref={messagesEndRef} />

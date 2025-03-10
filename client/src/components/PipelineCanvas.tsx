@@ -5,7 +5,7 @@ import {
   BoltIcon,
   DocumentTextIcon,
 } from '@heroicons/react/24/outline'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 interface PipelineCanvasProps {
   pipeline: Pipeline
@@ -30,22 +30,38 @@ export default function PipelineCanvas({
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 })
 
   // 노드 변경 시에만 상태 업데이트
+  const [nodesChanged, setNodesChanged] = useState(false)
   const updateNodePosition = useCallback(
     (nodeId: string, position: { x: number; y: number }) => {
-      setNodes((prev) =>
-        prev.map((n) => (n.id === nodeId ? { ...n, position } : n)),
-      )
+      let isChanged = false
+      setNodes((prev) => {
+        const changed = prev.map((n) =>
+          n.id === nodeId ? { ...n, position } : n,
+        )
 
-      // 노드 위치가 변경되었음을 표시하는 플래그
-      setNodesChanged(true)
+        isChanged = changed.some(
+          (n) =>
+            n.position.x !== prev.find((p) => p.id === nodeId)?.position.x ||
+            n.position.y !== prev.find((p) => p.id === nodeId)?.position.y,
+        )
+
+        setNodesChanged(isChanged)
+        return changed
+      })
     },
     [],
   )
 
-  // 노드 변경 여부를 추적하는 상태
-  const [nodesChanged, setNodesChanged] = useState(false)
+  useEffect(() => {
+    if (onUpdate && nodesChanged) {
+      onUpdate({
+        ...pipeline,
+        nodes,
+      })
+      setNodesChanged(false)
+    }
+  }, [nodes, onUpdate, nodesChanged])
 
-  // 드래그 종료 시 변경 사항 저장
   const handleNodeDragEnd = useCallback(() => {
     setIsDragging(false)
 
@@ -75,17 +91,6 @@ export default function PipelineCanvas({
       window.removeEventListener('resize', updateCanvasSize)
     }
   }, [])
-
-  // 파이프라인 업데이트
-  useEffect(() => {
-    if (onUpdate && !isDragging) {
-      console.log('nodes', nodes)
-      onUpdate({
-        ...pipeline,
-        nodes,
-      })
-    }
-  }, [nodes, isDragging, onUpdate])
 
   const handleNodeClick = useCallback(
     (nodeId: string) => {
@@ -224,8 +229,8 @@ export default function PipelineCanvas({
       if (sourceCompleted && targetActive) {
         style += [
           'stroke-primary',
+          'line-cap-round',
           'paint-order-stroke',
-          'stroke-[3px]',
           '[&>path]:fill-primary',
           '[&>marker]:fill-primary',
           '[&>path]:stroke-primary',
@@ -234,10 +239,10 @@ export default function PipelineCanvas({
       } else {
         const color =
           edge.type === 'success'
-            ? 'stroke-green-500 [&>path]:fill-green-500 [&>marker]:fill-green-500'
+            ? 'stroke-green-500 [&>path]:fill-green-500 [&>marker]:fill-green-500 [&>polygon]:stroke-green-500 [&>circle]:fill-green-500'
             : edge.type === 'error'
-              ? 'stroke-red-500 [&>path]:fill-red-500 [&>marker]:fill-red-500'
-              : 'stroke-gray-500 [&>path]:fill-gray-500 [&>marker]:fill-gray-500 [&>polygon]:fill-gray-500'
+              ? 'stroke-red-500 [&>path]:fill-red-500 [&>marker]:fill-red-500 [&>polygon]:stroke-red-500 [&>circle]:fill-red-500'
+              : 'stroke-gray-500 [&>path]:fill-gray-500 [&>marker]:fill-gray-500 [&>polygon]:fill-gray-500 [&>circle]:fill-gray-500'
         style += color + ' '
       }
 
@@ -384,7 +389,7 @@ export default function PipelineCanvas({
     >
       {/* Background Grid */}
       <svg
-        className="absolute inset-0 w-full h-full pointer-events-none"
+        className="absolute top-0 left-0 inset-0 w-full h-full pointer-events-none"
         style={{ opacity: 0.1 }}
       >
         <defs>
@@ -409,18 +414,30 @@ export default function PipelineCanvas({
       >
         <defs>
           {edges.map((edge) => (
-            <marker
-              key={`marker-${edge.id}`}
-              id={`arrowhead-${edge.id}`}
-              markerWidth="6"
-              markerHeight="6"
-              refX="6"
-              refY="3"
-              orient="auto-start-reverse"
-              className={getEdgeStyle(edge)}
-            >
-              <polygon points="0 0, 6 3, 0 6" />
-            </marker>
+            <React.Fragment key={`edge-${edge.id}`}>
+              <marker
+                id={`edgecircle-${edge.id}`}
+                markerWidth="3"
+                markerHeight="3"
+                refX="1.5"
+                refY="1.5"
+                orient="auto-start-reverse"
+                className={getEdgeStyle(edge)}
+              >
+                <circle cx="1.5" cy="1.5" r="1.5" />
+              </marker>
+              <marker
+                id={`arrowhead-${edge.id}`}
+                markerWidth="6"
+                markerHeight="6"
+                refX="6"
+                refY="3"
+                orient="auto-start-reverse"
+                className={getEdgeStyle(edge)}
+              >
+                <polygon points="0 0, 6 3, 0 6" />
+              </marker>
+            </React.Fragment>
           ))}
         </defs>
         {edges.map((edge) => {
@@ -458,12 +475,8 @@ export default function PipelineCanvas({
               className={getEdgeStyle(edge)}
               strokeWidth="2"
               fill="none"
+              markerStart={`url(#edgecircle-${edge.id})`}
               markerEnd={`url(#arrowhead-${edge.id})`}
-              style={
-                {
-                  '--angle': `${angle}deg`,
-                } as React.CSSProperties
-              }
             />
           )
         })}
@@ -482,9 +495,13 @@ export default function PipelineCanvas({
           }}
           className={`absolute p-3 select-none shadow-lg border-2 rounded-lg bg-base-100 ${
             isDragging && selectedNode === node.id
-              ? 'cursor-grabbing shadow-xl ring-2 ring-primary ring-offset-2 ring-offset-base-100'
-              : 'cursor-grab hover:shadow-xl'
-          } ${getNodeStyle(node)}`}
+              ? 'cursor-grabbing shadow-xl'
+              : 'cursor-grab hover:shadow-lg'
+          } ${getNodeStyle(node)} ${
+            selectedNode === node.id
+              ? 'ring-2 ring-primary ring-offset-2 ring-offset-base-100'
+              : ''
+          }`}
           style={{
             position: 'absolute',
             left: node.position.x,

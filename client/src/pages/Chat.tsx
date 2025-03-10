@@ -10,14 +10,7 @@ export default function Chat() {
   const { id } = useParams<{ id: string }>()
   const [isLoading, setIsLoading] = useState(true)
   const [agent, setAgent] = useState<Agent | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      content: '안녕하세요! 무엇을 도와드릴까요?',
-      role: 'assistant',
-      createdAt: new Date(),
-    },
-  ])
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
 

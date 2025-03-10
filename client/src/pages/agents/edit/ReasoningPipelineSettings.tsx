@@ -22,7 +22,7 @@ export default function ReasoningPipelineSettings({
   const [input, setInput] = useState('')
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null)
-  const [_, setNodeResults] = useState<
+  const [, setNodeResults] = useState<
     { nodeId: string; status: string; output: string }[]
   >([])
 
@@ -201,6 +201,7 @@ export default function ReasoningPipelineSettings({
       setMessages((prev) => {
         // 진행 중인 메시지 제거
         const filtered = prev.filter((m) => !m.isLoading)
+
         // 에러 메시지 추가
         filtered.push({
           id: `error-${Date.now()}`,
@@ -291,18 +292,16 @@ export default function ReasoningPipelineSettings({
     }
   }
 
-  // PipelineCanvas에 전달할 추가 props
-  const canvasProps = {
-    onUpdate,
-    activeNodeId,
-  }
-
   return (
     <div className="px-4 flex flex-col h-full">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:h-[calc(100vh-12rem)] h-full">
         <div className="border border-gray-400/70 overflow-hidden">
           {pipeline ? (
-            <PipelineCanvas pipeline={pipeline} {...canvasProps} />
+            <PipelineCanvas
+              pipeline={pipeline}
+              onUpdate={onUpdate}
+              activeNodeId={activeNodeId}
+            />
           ) : (
             <div className="flex items-center justify-center h-full">
               <button
