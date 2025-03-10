@@ -7,14 +7,14 @@ import PipelineNodeComponent from './PipelineNode'
 interface PipelineCanvasProps {
   pipeline: Pipeline
   onUpdate: (pipeline: Pipeline) => void
-  activeNodeId?: string | null
+  activeNodeIds?: Set<string>
   nodeResults?: Record<string, { status: string; output: string }>
 }
 
 export default function PipelineCanvas({
   pipeline,
   onUpdate,
-  activeNodeId,
+  activeNodeIds = new Set(),
   nodeResults = {},
 }: PipelineCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
@@ -196,7 +196,7 @@ export default function PipelineCanvas({
             edge={edge}
             nodes={nodes}
             nodeRefs={nodeRefs.current}
-            activeNodeId={activeNodeId || null}
+            activeNodeIds={activeNodeIds}
             nodeResults={nodeResults}
           />
         ))}
@@ -209,7 +209,7 @@ export default function PipelineCanvas({
           node={node}
           isDragging={isDragging && selectedNode === node.id}
           isSelected={selectedNode === node.id}
-          activeNodeId={activeNodeId}
+          activeNodeIds={activeNodeIds}
           nodeResults={nodeResults}
           onNodeClick={handleNodeClick}
           onNodeDragStart={handleNodeDragStart}

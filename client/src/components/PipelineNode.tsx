@@ -1,8 +1,11 @@
 import { PipelineNode as PipelineNodeType } from '@agentfleet/types'
 import {
+  ArchiveBoxIcon,
   ArrowDownTrayIcon,
   ArrowPathRoundedSquareIcon,
+  BeakerIcon,
   BoltIcon,
+  ChartBarIcon,
   DocumentTextIcon,
 } from '@heroicons/react/24/outline'
 import React from 'react'
@@ -12,7 +15,7 @@ interface PipelineNodeProps {
   node: PipelineNodeType
   isDragging: boolean
   isSelected: boolean
-  activeNodeId?: string | null
+  activeNodeIds: Set<string>
   nodeResults?: Record<string, { status: string; output: string }>
   onNodeClick: (nodeId: string) => void
   onNodeDragStart: (nodeId: string, e: React.MouseEvent) => void
@@ -23,7 +26,7 @@ export default function PipelineNode({
   node,
   isDragging,
   isSelected,
-  activeNodeId,
+  activeNodeIds,
   nodeResults = {},
   onNodeClick,
   onNodeDragStart,
@@ -41,20 +44,35 @@ export default function PipelineNode({
         )
       case 'action':
         return <BoltIcon className="h-5 w-5 text-red-500" />
+      case 'process':
+        return <BeakerIcon className="h-5 w-5 text-purple-500" />
+      case 'aggregator':
+        return <ArchiveBoxIcon className="h-5 w-5 text-orange-500" />
+      case 'analysis':
+        return <ChartBarIcon className="h-5 w-5 text-indigo-500" />
       default:
         return null
     }
   }
+
+  const isActive = activeNodeIds.has(node.id)
+  const nodeResult = nodeResults[node.id]
 
   return (
     <div
       ref={nodeRef}
       className={`absolute p-3 select-none shadow-lg border-2 rounded-lg bg-base-100 ${
         isDragging ? 'cursor-grabbing shadow-xl' : 'cursor-grab hover:shadow-lg'
-      } ${getNodeStyle(node, activeNodeId)} ${
+      } ${getNodeStyle(node)} ${
         isSelected
           ? 'ring-2 ring-primary ring-offset-2 ring-offset-base-100'
           : ''
+      } ${
+        nodeResult?.status === 'success'
+          ? 'border-success'
+          : nodeResult?.status === 'error'
+            ? 'border-error'
+            : 'border-base-300'
       }`}
       style={{
         position: 'absolute',
@@ -65,10 +83,10 @@ export default function PipelineNode({
         WebkitUserSelect: 'none',
         MozUserSelect: 'none',
         msUserSelect: 'none',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        zIndex: isDragging ? 10 : 1,
+        transition: isDragging ? 'none' : 'all 0.2s ease',
+        zIndex: isDragging ? 10 : isActive ? 5 : 1,
         overflow: 'visible',
-        minWidth: '120px',
+        minWidth: '200px',
         whiteSpace: 'nowrap',
       }}
       onClick={() => onNodeClick(node.id)}
@@ -82,9 +100,11 @@ export default function PipelineNode({
               {node.data.name}
             </div>
           </div>
-          <div>
-            {activeNodeId === node.id && (
-              <span className="loading loading-spinner loading-sm"></span>
+          <div className="flex items-center gap-2">
+            {isActive && (
+              <div className="flex items-center gap-1">
+                <span className="loading loading-spinner loading-sm"></span>
+              </div>
             )}
           </div>
         </div>
@@ -93,9 +113,17 @@ export default function PipelineNode({
             {node.data.description}
           </div>
         )}
-        {nodeResults[node.id] && (
-          <div className="text-xs mt-2 p-2 bg-base-200">
-            {nodeResults[node.id].output}
+        {nodeResult && (
+          <div
+            className={`text-xs mt-2 p-2 rounded ${
+              nodeResult.status === 'success'
+                ? 'bg-success'
+                : nodeResult.status === 'error'
+                  ? 'bg-error'
+                  : 'bg-base-200'
+            }`}
+          >
+            {nodeResult.output}
           </div>
         )}
       </div>

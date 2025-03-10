@@ -21,7 +21,7 @@ export default function ReasoningPipelineSettings({
   const [messages, setMessages] = useState<ProgressMessage[]>([])
   const [input, setInput] = useState('')
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
-  const [activeNodeId, setActiveNodeId] = useState<string | null>(null)
+  const [activeNodeIds, setActiveNodeIds] = useState<Set<string>>(new Set())
   const [, setNodeResults] = useState<
     { nodeId: string; status: string; output: string }[]
   >([])
@@ -86,7 +86,7 @@ export default function ReasoningPipelineSettings({
     setMessages((prev) => [...prev, userMessage])
     setInput('')
     setIsWaitingForResponse(true)
-    setActiveNodeId(null)
+    setActiveNodeIds(new Set())
     setNodeResults([])
 
     // SSE 연결 설정
@@ -103,7 +103,12 @@ export default function ReasoningPipelineSettings({
           break
 
         case 'node-start':
-          setActiveNodeId(data.nodeId)
+          setActiveNodeIds((prev) => {
+            const next = new Set(prev)
+            next.add(data.nodeId)
+            return next
+          })
+
           setNodeResults((prev) => {
             const newResults = [
               ...prev,
@@ -151,6 +156,12 @@ export default function ReasoningPipelineSettings({
             return updatedResults
           })
 
+          setActiveNodeIds((prev) => {
+            const next = new Set(prev)
+            next.delete(data.nodeId)
+            return next
+          })
+
           break
 
         case 'complete':
@@ -173,7 +184,7 @@ export default function ReasoningPipelineSettings({
           })
 
           setIsWaitingForResponse(false)
-          setActiveNodeId(null)
+          setActiveNodeIds(new Set())
           eventSource.close()
           break
 
@@ -191,7 +202,7 @@ export default function ReasoningPipelineSettings({
             return filtered
           })
           setIsWaitingForResponse(false)
-          setActiveNodeId(null)
+          setActiveNodeIds(new Set())
           eventSource.close()
           break
       }
@@ -213,7 +224,7 @@ export default function ReasoningPipelineSettings({
       })
 
       setIsWaitingForResponse(false)
-      setActiveNodeId(null)
+      setActiveNodeIds(new Set())
       eventSource.close()
     }
   }
@@ -300,7 +311,7 @@ export default function ReasoningPipelineSettings({
             <PipelineCanvas
               pipeline={pipeline}
               onUpdate={onUpdate}
-              activeNodeId={activeNodeId}
+              activeNodeIds={activeNodeIds}
             />
           ) : (
             <div className="flex items-center justify-center h-full">

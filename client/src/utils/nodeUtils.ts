@@ -16,32 +16,25 @@ export const getNodeIcon = (type: PipelineNode['type']) => {
   }
 }
 
-export const getNodeStyle = (
-  node: PipelineNode,
-  activeNodeId?: string | null,
-) => {
-  let style = 'border-2 '
-
+export function getNodeStyle(node: PipelineNode): string {
   switch (node.type) {
     case 'input':
-      style += 'border-blue-500 '
-      break
+      return `border-blue-300`
     case 'plan':
-      style += 'border-green-500 '
-      break
+      return `border-green-300`
     case 'decision':
-      style += 'border-yellow-500 '
-      break
+      return `border-yellow-300`
     case 'action':
-      style += 'border-red-500 '
-      break
+      return `border-red-300`
+    case 'process':
+      return `border-purple-300`
+    case 'aggregator':
+      return `border-orange-300`
+    case 'analysis':
+      return `border-indigo-300`
+    default:
+      return ''
   }
-
-  if (node.id === activeNodeId) {
-    style += 'ring-2 ring-primary ring-offset-2 ring-offset-base-100'
-  }
-
-  return style
 }
 
 export const getAnchorPoints = (
