@@ -154,4 +154,95 @@ router.post('/test', async (req, res) => {
   }
 })
 
+// 파이프라인 실시간 테스트
+router.get('/test/stream', async (req, res) => {
+  const { pipelineId, input } = req.query
+
+  if (!pipelineId || !input) {
+    return res.status(400).json({ message: '필수 파라미터가 누락되었습니다.' })
+  }
+
+  // SSE 헤더 설정
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+
+  try {
+    const pipeline = await pipelineService.getPipelineById(pipelineId as string)
+    if (!pipeline) {
+      res.write(
+        `data: ${JSON.stringify({ error: '파이프라인을 찾을 수 없습니다.' })}\n\n`,
+      )
+      return res.end()
+    }
+
+    // 파이프라인 실행 시작
+    res.write(
+      `data: ${JSON.stringify({ type: 'start', message: '파이프라인 실행을 시작합니다.' })}\n\n`,
+    )
+
+    // 각 노드 순회 및 실행
+    for (const node of pipeline.nodes) {
+      // 노드 실행 시작
+      res.write(
+        `data: ${JSON.stringify({
+          type: 'node-start',
+          nodeId: node.id,
+          nodeName: node.data.name,
+          nodeType: node.type,
+        })}\n\n`,
+      )
+
+      // 노드 타입별 처리 시뮬레이션
+      await new Promise((resolve) => setTimeout(resolve, 1000)) // 실제 구현에서는 실제 처리 로직으로 대체
+
+      // 노드 실행 결과
+      let output = ''
+      switch (node.type) {
+        case 'input':
+          output = `입력 처리: "${input}"`
+          break
+        case 'plan':
+          output = `계획 수립: ${node.data.description}`
+          break
+        case 'decision':
+          output = `결정: ${node.data.description}`
+          break
+        case 'action':
+          output = `행동 실행: ${node.data.description}`
+          break
+      }
+
+      // 노드 실행 완료
+      res.write(
+        `data: ${JSON.stringify({
+          type: 'node-complete',
+          nodeId: node.id,
+          output,
+          status: 'success',
+        })}\n\n`,
+      )
+
+      // 잠시 대기
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    }
+
+    // 파이프라인 실행 완료
+    res.write(
+      `data: ${JSON.stringify({
+        type: 'complete',
+        message: '파이프라인 실행이 완료되었습니다.',
+        finalOutput: '최종 응답이 생성되었습니다.',
+      })}\n\n`,
+    )
+
+    res.end()
+  } catch (error) {
+    res.write(
+      `data: ${JSON.stringify({ type: 'error', message: '파이프라인 실행 중 오류가 발생했습니다.' })}\n\n`,
+    )
+    res.end()
+  }
+})
+
 export default router

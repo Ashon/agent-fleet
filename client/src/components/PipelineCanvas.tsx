@@ -10,11 +10,15 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 interface PipelineCanvasProps {
   pipeline: Pipeline
   onUpdate: (pipeline: Pipeline) => void
+  activeNodeId?: string | null
+  nodeResults?: Record<string, { status: string; output: string }>
 }
 
 export default function PipelineCanvas({
   pipeline,
   onUpdate,
+  activeNodeId,
+  nodeResults = {},
 }: PipelineCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const [nodes, setNodes] = useState<PipelineNode[]>(pipeline.nodes)
@@ -176,20 +180,71 @@ export default function PipelineCanvas({
     }
   }
 
-  const getNodeColor = (type: PipelineNode['type']) => {
-    switch (type) {
-      case 'input':
-        return 'border-blue-500'
-      case 'plan':
-        return 'border-green-500'
-      case 'decision':
-        return 'border-yellow-500'
-      case 'action':
-        return 'border-red-500'
-      default:
-        return 'border-gray-500'
-    }
-  }
+  const getNodeStyle = useCallback(
+    (node: PipelineNode) => {
+      // 기본 스타일
+      let style = 'border-2 '
+
+      // 노드 타입별 기본 색상
+      switch (node.type) {
+        case 'input':
+          style += 'border-blue-500 '
+          break
+        case 'plan':
+          style += 'border-green-500 '
+          break
+        case 'decision':
+          style += 'border-yellow-500 '
+          break
+        case 'action':
+          style += 'border-red-500 '
+          break
+      }
+
+      // 활성 노드 하이라이트
+      if (node.id === activeNodeId) {
+        style += 'ring-2 ring-primary animate-pulse '
+      }
+
+      // 실행 완료된 노드 스타일
+      if (nodeResults[node.id]) {
+        const result = nodeResults[node.id]
+        if (result.status === 'success') {
+          style += 'bg-green-50 '
+        } else if (result.status === 'error') {
+          style += 'bg-red-50 '
+        }
+      }
+
+      return style
+    },
+    [activeNodeId, nodeResults],
+  )
+
+  const getEdgeStyle = useCallback(
+    (edge: PipelineEdge) => {
+      // 기본 스타일
+      let style = 'transition-colors '
+
+      // 활성 엣지 하이라이트
+      const sourceCompleted = nodeResults[edge.source]
+      const targetActive = edge.target === activeNodeId
+
+      if (sourceCompleted && targetActive) {
+        style += 'stroke-primary stroke-[3px] '
+      } else {
+        style +=
+          edge.type === 'success'
+            ? 'stroke-green-500 '
+            : edge.type === 'error'
+              ? 'stroke-red-500 '
+              : 'stroke-slate-400 '
+      }
+
+      return style
+    },
+    [activeNodeId, nodeResults],
+  )
 
   return (
     <div
@@ -231,16 +286,9 @@ export default function PipelineCanvas({
               key={edge.id}
               d={`M ${sourceNode.position.x} ${sourceNode.position.y}
                   L ${targetNode.position.x} ${targetNode.position.y}`}
-              stroke={
-                edge.type === 'success'
-                  ? '#22c55e'
-                  : edge.type === 'error'
-                    ? '#ef4444'
-                    : '#94a3b8'
-              }
+              className={getEdgeStyle(edge)}
               strokeWidth="2"
               fill="none"
-              className="transition-colors"
             />
           )
         })}
@@ -254,11 +302,7 @@ export default function PipelineCanvas({
             isDragging && selectedNode === node.id
               ? 'cursor-grabbing shadow-xl'
               : 'cursor-grab hover:shadow-xl'
-          } ${getNodeColor(node.type)} ${
-            selectedNode === node.id
-              ? 'ring-2 ring-offset-2 ring-offset-base-100 ring-primary ring-opacity-50'
-              : ''
-          }`}
+          } ${getNodeStyle(node)}`}
           style={{
             left: node.position.x,
             top: node.position.y,
@@ -285,23 +329,9 @@ export default function PipelineCanvas({
                 {node.data.description}
               </div>
             )}
-            {node.connectorId && (
-              <div className="text-xs opacity-80 pointer-events-none flex items-center gap-1 mt-1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-3 w-3"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-                {node.connectorId}
+            {nodeResults[node.id] && (
+              <div className="text-xs mt-2 p-2 bg-base-200">
+                {nodeResults[node.id].output}
               </div>
             )}
           </div>

@@ -16,6 +16,10 @@ export default function ReasoningPipelineSettings({
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null)
+  const [nodeResults, setNodeResults] = useState<
+    Record<string, { status: string; output: string }>
+  >({})
 
   // 디바운스를 위한 타이머 ref
   const updateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -63,7 +67,7 @@ export default function ReasoningPipelineSettings({
     e.preventDefault()
     if (!input.trim() || !pipeline?.id || isWaitingForResponse) return
 
-    const userMessage: ChatMessage = {
+    const userMessage: ChatMessageWithExtra = {
       id: Date.now().toString(),
       content: input,
       role: 'user',
@@ -73,57 +77,92 @@ export default function ReasoningPipelineSettings({
     setMessages((prev) => [...prev, userMessage])
     setInput('')
     setIsWaitingForResponse(true)
+    setActiveNodeId(null)
+    setNodeResults({})
 
-    api
-      .testReasoningPipeline({
-        pipelineId: pipeline.id,
-        input: input,
-      })
-      .then((result) => {
-        const assistantMessage: ChatMessageWithExtra = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: result.output,
-          extra: (
-            <div className="text-xs">
-              <h3 className="font-medium">Execution Path</h3>
-              <div className="flex flex-col gap-2 mt-2">
-                {result.executionPath.map((step) => (
-                  <div
-                    key={step.nodeId}
-                    className="border-l-2 border-gray-400/70 pl-2"
-                  >
-                    <h3 className="font-medium">{step.nodeId}</h3>
-                    {step.output && <p>{step.output}</p>}
-                    {step.status === 'error' && (
-                      <p className="text-error">{step.status}</p>
-                    )}
-                  </div>
-                ))}
+    // SSE 연결 설정
+    const eventSource = new EventSource(
+      `${import.meta.env.VITE_API_URL}/api/reasoning-pipelines/test/stream?pipelineId=${pipeline.id}&input=${encodeURIComponent(input)}`,
+    )
+
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+
+      switch (data.type) {
+        case 'start':
+          console.log('파이프라인 실행 시작:', data.message)
+          break
+
+        case 'node-start':
+          setActiveNodeId(data.nodeId)
+          break
+
+        case 'node-complete':
+          setNodeResults((prev) => ({
+            ...prev,
+            [data.nodeId]: {
+              status: data.status,
+              output: data.output,
+            },
+          }))
+          break
+
+        case 'complete':
+          const assistantMessage: ChatMessageWithExtra = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: data.finalOutput,
+            extra: (
+              <div className="text-xs">
+                <h3 className="font-medium">실행 결과</h3>
+                <div className="flex flex-col gap-2 mt-2">
+                  {Object.entries(nodeResults).map(([nodeId, result]) => (
+                    <div
+                      key={nodeId}
+                      className="border-l-2 border-gray-400/70 pl-2"
+                    >
+                      <h3 className="font-medium">{nodeId}</h3>
+                      <p>{result.output}</p>
+                      {result.status === 'error' && (
+                        <p className="text-error">{result.status}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ),
-          createdAt: new Date(),
-        }
+            ),
+            createdAt: new Date(),
+          }
+          setMessages((prev) => [...prev, assistantMessage])
+          setIsWaitingForResponse(false)
+          eventSource.close()
+          break
 
-        setMessages((prev) => [...prev, assistantMessage])
-      })
-      .catch((error) => {
-        console.error('파이프라인 테스트 오류:', error)
+        case 'error':
+          const errorMessage: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: data.message,
+            createdAt: new Date(),
+          }
+          setMessages((prev) => [...prev, errorMessage])
+          setIsWaitingForResponse(false)
+          eventSource.close()
+          break
+      }
+    }
 
-        // 오류 메시지 추가
-        const errorMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: '파이프라인 테스트 중 오류가 발생했습니다.',
-          createdAt: new Date(),
-        }
-
-        setMessages((prev) => [...prev, errorMessage])
-      })
-      .finally(() => {
-        setIsWaitingForResponse(false)
-      })
+    eventSource.onerror = () => {
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: '파이프라인 실행 중 오류가 발생했습니다.',
+        createdAt: new Date(),
+      }
+      setMessages((prev) => [...prev, errorMessage])
+      setIsWaitingForResponse(false)
+      eventSource.close()
+    }
   }
 
   const handleCreateNewPipeline = async () => {
@@ -200,15 +239,19 @@ export default function ReasoningPipelineSettings({
     }
   }
 
+  // PipelineCanvas에 전달할 추가 props
+  const canvasProps = {
+    onUpdate,
+    activeNodeId,
+    nodeResults,
+  }
+
   return (
     <div className="px-4 flex flex-col h-full">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:h-[calc(100vh-12rem)] h-full">
         <div className="border border-gray-400/70 overflow-hidden">
           {pipeline ? (
-            <PipelineCanvas
-              pipeline={pipeline}
-              onUpdate={(pipeline) => onUpdate(pipeline)}
-            />
+            <PipelineCanvas pipeline={pipeline} {...canvasProps} />
           ) : (
             <div className="flex items-center justify-center h-full">
               <button
@@ -222,14 +265,16 @@ export default function ReasoningPipelineSettings({
         </div>
         <div className="flex flex-col">
           <h3 className="font-medium">Test Thread</h3>
-          <ChatPannel
-            agent={agent}
-            messages={messages}
-            isWaitingForResponse={isWaitingForResponse}
-            handleSubmit={handleSubmit}
-            input={input}
-            setInput={setInput}
-          />
+          <div className="flex-1">
+            <ChatPannel
+              agent={agent}
+              messages={messages}
+              isWaitingForResponse={isWaitingForResponse}
+              handleSubmit={handleSubmit}
+              input={input}
+              setInput={setInput}
+            />
+          </div>
         </div>
       </div>
     </div>
