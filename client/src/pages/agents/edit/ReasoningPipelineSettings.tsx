@@ -247,54 +247,8 @@ export default function ReasoningPipelineSettings({
               description: '사용자 입력',
             },
           },
-          {
-            id: 'plan-1',
-            type: 'plan',
-            position: { x: 200, y: 250 },
-            data: {
-              name: '계획',
-              description: '작업 계획 수립',
-            },
-          },
-          {
-            id: 'decision-1',
-            type: 'decision',
-            position: { x: 200, y: 400 },
-            data: {
-              name: '결정',
-              description: '다음 단계 결정',
-            },
-          },
-          {
-            id: 'action-1',
-            type: 'action',
-            position: { x: 200, y: 550 },
-            data: {
-              name: '행동',
-              description: '최종 행동 실행',
-            },
-          },
         ],
-        edges: [
-          {
-            id: 'edge-1',
-            source: 'input-1',
-            target: 'plan-1',
-            type: 'default',
-          },
-          {
-            id: 'edge-2',
-            source: 'plan-1',
-            target: 'decision-1',
-            type: 'default',
-          },
-          {
-            id: 'edge-3',
-            source: 'decision-1',
-            target: 'action-1',
-            type: 'default',
-          },
-        ],
+        edges: [],
       })
 
       setPipeline(newPipeline)
