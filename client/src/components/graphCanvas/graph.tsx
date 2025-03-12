@@ -57,6 +57,7 @@ function NodeGraph({
   },
 }: NodeGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const [isLayoutReady, setIsLayoutReady] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
   const [hoverRef, setHoverRef] = useState<DisplayNode | null>(null)
   const [viewOffset, setViewOffset] = useState<Point>({ x: 0, y: 0 })
@@ -83,21 +84,50 @@ function NodeGraph({
     }))
   }, [nodes])
 
-  // Initialize nodes positions and set initialized flag
+  // Initialize layout first
   useEffect(() => {
-    if (displayNodes.length > 0 && !isInitialized) {
-      // Center the graph on first load
-      if (containerRef.current) {
-        const { width, height } = containerRef.current.getBoundingClientRect()
-        const center = getGraphCenter(displayNodes)
-        setViewOffset({
-          x: width / 2 - center.x,
-          y: height / 2 - center.y,
-        })
-      }
+    if (displayNodes.length > 0 && !isLayoutReady && containerRef.current) {
+      const { width: containerWidth, height: containerHeight } =
+        containerRef.current.getBoundingClientRect()
+      const center = getGraphCenter(displayNodes)
+      const bounds = getNodesBound(displayNodes)
+
+      // 패딩을 포함한 그래프의 실제 크기 계산
+      const graphWidth = bounds.width + 200 // 100px padding on each side
+      const graphHeight = bounds.height + 200 // 100px padding on each side
+
+      // 컨테이너에 맞는 줌 레벨 계산
+      const widthRatio = containerWidth / graphWidth
+      const heightRatio = containerHeight / graphHeight
+      const newZoomScale = Math.min(widthRatio, heightRatio, maxZoomScale)
+      const finalZoomScale = Math.max(newZoomScale, minZoomScale)
+
+      // 상태 업데이트를 Promise로 처리
+      Promise.all([
+        new Promise<void>((resolve) => {
+          setZoomScale(finalZoomScale)
+          resolve()
+        }),
+        new Promise<void>((resolve) => {
+          setViewOffset({
+            x: containerWidth / 2 - center.x * finalZoomScale,
+            y: containerHeight / 2 - center.y * finalZoomScale,
+          })
+          resolve()
+        }),
+      ]).then(() => {
+        setIsLayoutReady(true)
+      })
+    }
+  }, [displayNodes, isLayoutReady, minZoomScale, maxZoomScale])
+
+  // Wait for layout and zoom to be ready
+  useEffect(() => {
+    if (isLayoutReady && zoomScale !== 1) {
+      // 모든 초기 레이아웃이 준비된 후 초기화 완료
       setIsInitialized(true)
     }
-  }, [displayNodes, isInitialized])
+  }, [isLayoutReady, zoomScale])
 
   // Memoize display edges with initialization check
   const displayEdges = useMemo<DisplayEdge[]>(() => {
@@ -110,7 +140,7 @@ function NodeGraph({
 
         if (!source || !target) return null
 
-        const displayEdge: DisplayEdge = {
+        return {
           source_id: source.id,
           target_id: target.id,
           source,
@@ -126,11 +156,19 @@ function NodeGraph({
             isActive: hoverRef?.id === source.id || hoverRef?.id === target.id,
           },
         }
-
-        return displayEdge
       })
       .filter((edge): edge is DisplayEdge => edge !== null)
   }, [edges, displayNodes, hoverRef, isInitialized])
+
+  // Edge view props with initialization check
+  const edgeViewProps = useMemo(
+    () => ({
+      scale: zoomScale,
+      viewOffset,
+      isGraphInitialized: isInitialized,
+    }),
+    [zoomScale, viewOffset, isInitialized],
+  )
 
   // Memoize display groups
   const displayGroups = useMemo<DisplayGroup[]>(() => {
@@ -260,8 +298,7 @@ function NodeGraph({
                 edge={edge}
                 pathAnchorSolver={getPathData}
                 container={containerRef.current}
-                scale={zoomScale}
-                viewOffset={viewOffset}
+                {...edgeViewProps}
               />
             ))}
           </g>

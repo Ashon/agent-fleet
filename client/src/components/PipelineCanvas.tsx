@@ -69,7 +69,7 @@ export default function PipelineCanvas({
           ${getNodeStyle(node)}
           ${
             selectedNode === node.id
-              ? 'ring-2 ring-primary ring-offset-2 ring-offset-none'
+              ? 'ring-2 ring-primary ring-offset-2 ring-offset-base-100'
               : ''
           }
         `}

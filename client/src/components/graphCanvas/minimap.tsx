@@ -164,7 +164,7 @@ export default function Minimap({
             return (
               <rect
                 data-node-id={node.id}
-                className="minimap-node"
+                className="minimap-node stroke-gray-600 fill-base-300"
                 key={node.id}
                 x={
                   ((node.x || 0) - bound.width / 2) * minimapScale +
@@ -176,16 +176,6 @@ export default function Minimap({
                 }
                 width={bound.width * minimapScale}
                 height={bound.height * minimapScale}
-                fill={
-                  groups.find((g) => g.id === node.group)?.name.toString()
-                    ? groupColors(
-                        groups
-                          .find((g) => g.id === node.group)
-                          ?.name.toString() || '',
-                      )
-                    : '#eee'
-                }
-                stroke="#333"
                 strokeWidth={1}
               />
             )
