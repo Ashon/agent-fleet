@@ -310,9 +310,10 @@ function GraphCanvas({
                 scale={zoomScale}
                 viewOffset={viewOffset}
                 color={group.style?.color || ''}
-                padding={
-                  Math.max(...group.nodes.map((n) => n.style?.width || 10)) + 10
-                }
+                padding={{
+                  x: Math.max(...group.nodes.map((n) => n.style?.width || 10)),
+                  y: Math.max(...group.nodes.map((n) => n.style?.height || 10)),
+                }}
               />
             ))}
           </g>

@@ -4,7 +4,7 @@ type GroupProps = {
   group: DisplayGroup
   scale: number
   viewOffset: Point
-  padding: number
+  padding: Point
   color: string
   drawText?: boolean
 }
@@ -30,12 +30,12 @@ export const Group = ({
   group,
   scale,
   viewOffset,
-  padding = 30,
+  padding = { x: 30, y: 30 },
   color,
   drawText = true,
 }: GroupProps) => {
-  const width = (group?.width + padding * 2) * scale
-  const height = (group?.height + padding * 2) * scale
+  const width = (group?.width + padding.x * 2) * scale
+  const height = (group?.height + padding.y * 2) * scale
   const { dashArray, dashOffset } = calculateDashArrayAndOffset(
     width,
     height,
@@ -45,8 +45,8 @@ export const Group = ({
   return (
     <g>
       <rect
-        x={(group?.x - padding) * scale + viewOffset.x}
-        y={(group?.y - padding) * scale + viewOffset.y}
+        x={(group?.x - padding.x) * scale + viewOffset.x}
+        y={(group?.y - padding.y) * scale + viewOffset.y}
         width={width}
         height={height}
         style={{
@@ -61,8 +61,8 @@ export const Group = ({
       {drawText && (
         <text
           className="fill-current stroke-base-100 select-none"
-          x={(group?.x - padding) * scale + viewOffset.x}
-          y={(group?.y - padding) * scale + viewOffset.y - 7 * scale}
+          x={(group?.x - padding.x) * scale + viewOffset.x}
+          y={(group?.y - padding.y) * scale + viewOffset.y - 7 * scale}
           style={{
             fill: color,
             fontSize: 14 * scale,
