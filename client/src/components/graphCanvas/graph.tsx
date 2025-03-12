@@ -14,7 +14,7 @@ import {
   GraphNode,
   Point,
 } from './types'
-import { getNodesBound, getPathData } from './utils'
+import { getGraphCenter, getNodesBound, getPathData } from './utils'
 import { groupColors } from './utils/color'
 
 type NodeGraphProps = {
@@ -57,6 +57,7 @@ function NodeGraph({
   },
 }: NodeGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
   const [hoverRef, setHoverRef] = useState<DisplayNode | null>(null)
   const [viewOffset, setViewOffset] = useState<Point>({ x: 0, y: 0 })
   const [minZoomScale, maxZoomScale] = zoomRange
@@ -82,9 +83,25 @@ function NodeGraph({
     }))
   }, [nodes])
 
-  // Memoize display edges
+  // Initialize nodes positions and set initialized flag
+  useEffect(() => {
+    if (displayNodes.length > 0 && !isInitialized) {
+      // Center the graph on first load
+      if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect()
+        const center = getGraphCenter(displayNodes)
+        setViewOffset({
+          x: width / 2 - center.x,
+          y: height / 2 - center.y,
+        })
+      }
+      setIsInitialized(true)
+    }
+  }, [displayNodes, isInitialized])
+
+  // Memoize display edges with initialization check
   const displayEdges = useMemo<DisplayEdge[]>(() => {
-    if (!edges || !displayNodes.length) return []
+    if (!edges || !displayNodes.length || !isInitialized) return []
 
     return edges
       .map((edge): DisplayEdge | null => {
@@ -113,7 +130,7 @@ function NodeGraph({
         return displayEdge
       })
       .filter((edge): edge is DisplayEdge => edge !== null)
-  }, [edges, displayNodes, hoverRef])
+  }, [edges, displayNodes, hoverRef, isInitialized])
 
   // Memoize display groups
   const displayGroups = useMemo<DisplayGroup[]>(() => {
@@ -258,45 +275,6 @@ function NodeGraph({
                 color={group.style?.color || ''}
                 padding={
                   Math.max(...group.nodes.map((n) => n.style?.width || 10)) + 10
-                }
-              />
-            ))}
-          </g>
-          <g className="node-layer">
-            {displayNodes.map((node) => (
-              <rect
-                key={node.id}
-                data-node-id={node.id}
-                className={
-                  'absolute cursor-move select-none fill-base-100 stroke-current'
-                }
-                style={{
-                  transformOrigin: 'center',
-                  touchAction: 'none',
-                  pointerEvents: 'auto',
-                  paintOrder: 'stroke',
-                  strokeWidth: 2 * zoomScale,
-                  fill:
-                    displayGroups.find((g) => g.id === node.group)?.style
-                      ?.color || 'white',
-                }}
-                onMouseDown={(e) => onNodeMouseDown(e, node.id, zoomScale)}
-                onTouchStart={(e) => onNodeTouchStart(e, node.id, zoomScale)}
-                onMouseEnter={() => {
-                  setHoverRef(node)
-                }}
-                onMouseLeave={() => {
-                  setHoverRef(null)
-                }}
-                width={node.style?.width || 10 * zoomScale}
-                height={node.style?.height || 10 * zoomScale}
-                x={
-                  (node.x - (node.style?.width || 10) / 2) * zoomScale +
-                  viewOffset.x
-                }
-                y={
-                  (node.y - (node.style?.height || 10) / 2) * zoomScale +
-                  viewOffset.y
                 }
               />
             ))}

@@ -71,11 +71,14 @@ export default function Minimap({
     const nodeElement =
       container?.querySelector(`div[data-node-id="${node.id}"]`) ||
       container?.querySelector(`[data-node-id="${node.id}"]`)
+
     if (!nodeElement) return { width: 0, height: 0 }
+
     const rect = nodeElement.getBoundingClientRect()
+
     return {
-      width: rect.width * minimapScale,
-      height: rect.height * minimapScale,
+      width: rect.width,
+      height: rect.height,
     }
   }
 
@@ -127,19 +130,6 @@ export default function Minimap({
       ].join(' ')}
       style={{ width, height }}
     >
-      <div
-        className="absolute rounded-md border border-blue-300/20 bg-blue-500/10"
-        style={{
-          width: minimapViewport.width,
-          height: minimapViewport.height,
-          transform: [
-            'translate(-50%, -50%)',
-            `translateX(${minimapViewport.x}px)`,
-            `translateY(${minimapViewport.y}px)`,
-          ].join(' '),
-        }}
-      />
-
       <svg ref={minimapRef} className="absolute w-full h-full">
         <g className="group-layer">
           {groups.map((group) => (
@@ -177,17 +167,15 @@ export default function Minimap({
                 className="minimap-node"
                 key={node.id}
                 x={
-                  (node.x || 0) * minimapScale -
-                  bound.width / 2 +
+                  ((node.x || 0) - bound.width / 2) * minimapScale +
                   minimapCenter.x
                 }
                 y={
-                  (node.y || 0) * minimapScale -
-                  bound.height / 2 +
+                  ((node.y || 0) - bound.height / 2) * minimapScale +
                   minimapCenter.y
                 }
-                width={bound.width}
-                height={bound.height}
+                width={bound.width * minimapScale}
+                height={bound.height * minimapScale}
                 fill={
                   groups.find((g) => g.id === node.group)?.name.toString()
                     ? groupColors(
@@ -204,6 +192,19 @@ export default function Minimap({
           })}
         </g>
       </svg>
+
+      <div
+        className="absolute rounded-md border border-blue-300/20 bg-blue-500/10"
+        style={{
+          width: minimapViewport.width,
+          height: minimapViewport.height,
+          transform: [
+            'translate(-50%, -50%)',
+            `translateX(${minimapViewport.x}px)`,
+            `translateY(${minimapViewport.y}px)`,
+          ].join(' '),
+        }}
+      />
     </div>
   )
 }
