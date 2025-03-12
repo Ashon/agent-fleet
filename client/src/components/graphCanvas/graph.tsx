@@ -92,13 +92,22 @@ function GraphCanvas({
       const center = getGraphCenter(displayNodes)
       const bounds = getNodesBound(displayNodes)
 
-      // 패딩을 포함한 그래프의 실제 크기 계산
-      const graphWidth = bounds.width + 200 // 100px padding on each side
-      const graphHeight = bounds.height + 200 // 100px padding on each side
+      // 패딩을 포함한 그래프의 실제 크기 계산 (노드 크기도 고려)
+      const maxNodeWidth = Math.max(
+        ...displayNodes.map((n) => n.style?.width || 50),
+      )
+      const maxNodeHeight = Math.max(
+        ...displayNodes.map((n) => n.style?.height || 50),
+      )
+      const horizontalPadding = Math.max(maxNodeWidth * 2, 100) // 노드 크기에 따른 최소 패딩
+      const verticalPadding = Math.max(maxNodeHeight * 2, 100)
 
-      // 컨테이너에 맞는 줌 레벨 계산
-      const widthRatio = containerWidth / graphWidth
-      const heightRatio = containerHeight / graphHeight
+      const graphWidth = bounds.width + horizontalPadding
+      const graphHeight = bounds.height + verticalPadding
+
+      // 컨테이너에 맞는 줌 레벨 계산 (여유 공간 확보)
+      const widthRatio = (containerWidth * 0.99) / graphWidth // 1% 여유 공간
+      const heightRatio = (containerHeight * 0.99) / graphHeight
       const newZoomScale = Math.min(widthRatio, heightRatio, maxZoomScale)
       const finalZoomScale = Math.max(newZoomScale, minZoomScale)
 
