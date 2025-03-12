@@ -117,17 +117,11 @@ export const useMouseEvent = ({
         containerRef.current as any
       ).getBoundingClientRect()
       const newX =
-        (e.clientX -
-          containerRect.left -
-          dragRef.current.offsetX -
-          viewOffset.x) /
-        zoomScale
+        (e.clientX - containerRect.left - viewOffset.x) / zoomScale -
+        dragRef.current.offsetX
       const newY =
-        (e.clientY -
-          containerRect.top -
-          dragRef.current.offsetY -
-          viewOffset.y) /
-        zoomScale
+        (e.clientY - containerRect.top - viewOffset.y) / zoomScale -
+        dragRef.current.offsetY
 
       onDrag({ subject: dragRef.current.nodeId, x: newX, y: newY })
     } else if (isPanning) {

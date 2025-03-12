@@ -260,7 +260,7 @@ export default function ReasoningPipelineSettings({
   return (
     <div className="px-4 flex flex-col h-full">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:h-[calc(100vh-12rem)] h-full">
-        <div className="border border-gray-400/70 overflow-hidden col-span-2">
+        <div className="rounded-lg overflow-hidden col-span-2 shadow-lg">
           {pipeline ? (
             <PipelineCanvas
               pipeline={pipeline}

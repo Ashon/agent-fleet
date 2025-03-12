@@ -58,17 +58,11 @@ export const useTouchEvent = ({
           containerRef.current as any
         ).getBoundingClientRect()
         const newX =
-          (touch.clientX -
-            containerRect.left -
-            dragRef.current.offsetX -
-            viewOffset.x) /
-          zoomScale
+          (touch.clientX - containerRect.left - viewOffset.x) / zoomScale -
+          dragRef.current.offsetX
         const newY =
-          (touch.clientY -
-            containerRect.top -
-            dragRef.current.offsetY -
-            viewOffset.y) /
-          zoomScale
+          (touch.clientY - containerRect.top - viewOffset.y) / zoomScale -
+          dragRef.current.offsetY
         onDrag({ subject: dragRef.current.nodeId, x: newX, y: newY })
       } else if (isPanning) {
         // 기존 패닝 로직

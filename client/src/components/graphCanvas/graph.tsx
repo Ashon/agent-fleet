@@ -265,7 +265,7 @@ function GraphCanvas({
   })
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-base-200">
+    <div className="relative w-full h-full overflow-hidden bg-base-100">
       <div
         ref={containerRef}
         className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing"
@@ -281,12 +281,12 @@ function GraphCanvas({
         onTouchCancel={handleTouchEnd}
       >
         <svg
-          className="inset-0 w-full flex-1 pointer-events-none main-svg bg-base-200"
+          className="inset-0 w-full flex-1 pointer-events-none main-svg bg-base-100"
           style={{
             height: '100%',
             backgroundImage:
               'radial-gradient(color-mix(in srgb, var(--color-gray-600) 30%, transparent) 1px, transparent 1px)',
-            backgroundPosition: `${(viewOffset.x % 16) * zoomScale}px ${(viewOffset.y % 16) * zoomScale}px`,
+            backgroundPosition: `${viewOffset.x % (16 * zoomScale)}px ${viewOffset.y % (16 * zoomScale)}px`,
             backgroundSize: `${16 * zoomScale}px ${16 * zoomScale}px`,
           }}
         >
