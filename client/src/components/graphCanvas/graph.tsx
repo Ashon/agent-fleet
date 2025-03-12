@@ -43,7 +43,7 @@ type ZoomEvent = {
   y: number
 }
 
-function NodeGraph({
+function GraphCanvas({
   nodes,
   edges,
   onNodesChange,
@@ -402,4 +402,4 @@ function NodeGraph({
   )
 }
 
-export default NodeGraph
+export default GraphCanvas

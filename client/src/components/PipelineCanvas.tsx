@@ -14,7 +14,7 @@ import {
   DocumentTextIcon,
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
-import NodeGraph from './graphCanvas/graph'
+import GraphCanvas from './graphCanvas/graph'
 import { GraphEdge, GraphNode } from './graphCanvas/types'
 
 const getNodeIcon = (type: PipelineNodeType['type']) => {
@@ -145,7 +145,7 @@ export default function PipelineCanvas({
 
   return (
     <div className="w-full h-full bg-base-100">
-      <NodeGraph
+      <GraphCanvas
         nodes={nodes}
         edges={edges}
         onNodesChange={handleNodesChange}
