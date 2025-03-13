@@ -1,6 +1,7 @@
 import { Pipeline, PipelineEdge, PipelineNode } from '@agentfleet/types'
 import { Response } from 'express'
-import { pipelineExecutionService } from '../pipelineExecutionService'
+import { v4 as uuidv4 } from 'uuid'
+import { PipelineExecutionService } from '../pipelineExecutionService'
 
 // 테스트 환경 설정
 process.env.NODE_ENV = 'test'
@@ -8,6 +9,7 @@ process.env.NODE_ENV = 'test'
 describe('PipelineExecutionService', () => {
   let mockResponse: Partial<Response>
   let writtenData: string[]
+  let pipelineExecutionService: PipelineExecutionService
 
   beforeEach(() => {
     writtenData = []
@@ -17,6 +19,7 @@ describe('PipelineExecutionService', () => {
         return true
       }),
     }
+    pipelineExecutionService = new PipelineExecutionService()
   })
 
   const createMockPipeline = (): Pipeline => ({
@@ -60,7 +63,7 @@ describe('PipelineExecutionService', () => {
       const mockPipeline = createMockPipeline()
       const testInput = '테스트 입력'
 
-      await pipelineExecutionService.streamPipelineExecution(
+      const jobId = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         testInput,
         mockResponse as Response,
@@ -72,6 +75,7 @@ describe('PipelineExecutionService', () => {
       expect(startMessage.message).toBe('파이프라인 실행을 시작합니다.')
       expect(startMessage.pipelineId).toBe(mockPipeline.id)
       expect(startMessage.pipelineName).toBe(mockPipeline.name)
+      expect(startMessage.jobId).toBe(jobId)
 
       // 노드 실행 메시지들 확인
       const nodeStartMessages = writtenData.filter((data) =>
@@ -91,13 +95,14 @@ describe('PipelineExecutionService', () => {
       expect(completeMessage.type).toBe('complete')
       expect(completeMessage.message).toBe('파이프라인 실행이 완료되었습니다.')
       expect(completeMessage.pipelineId).toBe(mockPipeline.id)
+      expect(completeMessage.jobId).toBe(jobId)
     })
 
     it('순차적인 노드 실행 순서를 지켜야 함', async () => {
       const mockPipeline = createMockPipeline()
       const testInput = '테스트 입력'
 
-      await pipelineExecutionService.streamPipelineExecution(
+      const jobId = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         testInput,
         mockResponse as Response,
@@ -112,6 +117,17 @@ describe('PipelineExecutionService', () => {
 
       // node-1 -> node-2 -> node-3 순서로 실행되어야 함
       expect(nodeExecutionOrder).toEqual(['node-1', 'node-2', 'node-3'])
+
+      // 실행 기록 확인
+      const record = await pipelineExecutionService.getExecutionRecord(jobId)
+      expect(record).toBeDefined()
+      expect(record?.status).toBe('completed')
+      expect(record?.nodeResults.length).toBe(3)
+      expect(record?.nodeResults.map((r) => r.nodeId)).toEqual([
+        'node-1',
+        'node-2',
+        'node-3',
+      ])
     })
 
     it('에러가 발생했을 때 적절한 에러 메시지를 전송해야 함', async () => {
@@ -120,7 +136,7 @@ describe('PipelineExecutionService', () => {
         nodes: [], // 의도적으로 노드가 없는 파이프라인 생성
       }
 
-      await pipelineExecutionService.streamPipelineExecution(
+      const jobId = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         '테스트 입력',
         mockResponse as Response,
@@ -132,6 +148,13 @@ describe('PipelineExecutionService', () => {
 
       expect(errorMessage).toBeDefined()
       expect(errorMessage?.message).toBe('파이프라인에 실행할 노드가 없습니다.')
+      expect(errorMessage?.jobId).toBe(jobId)
+
+      // 실행 기록 확인
+      const record = await pipelineExecutionService.getExecutionRecord(jobId)
+      expect(record).toBeDefined()
+      expect(record?.status).toBe('failed')
+      expect(record?.error).toBe('파이프라인에 실행할 노드가 없습니다.')
     })
 
     it('노드 타입별로 올바른 출력을 생성해야 함', async () => {
@@ -174,7 +197,7 @@ describe('PipelineExecutionService', () => {
         ],
       }
 
-      await pipelineExecutionService.streamPipelineExecution(
+      const jobId = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         testInput,
         mockResponse as Response,
@@ -187,6 +210,176 @@ describe('PipelineExecutionService', () => {
       expect(nodeOutputs[0].output).toBe(`입력 처리: "${testInput}"`)
       expect(nodeOutputs[1].output).toBe('계획 수립: 계획 수립')
       expect(nodeOutputs[2].output).toBe('행동 실행: 작업 실행')
+
+      // 실행 기록 확인
+      const record = await pipelineExecutionService.getExecutionRecord(jobId)
+      expect(record).toBeDefined()
+      expect(record?.status).toBe('completed')
+      expect(record?.nodeResults).toHaveLength(3)
+      expect(record?.nodeResults[0].output).toBe(`입력 처리: "${testInput}"`)
+      expect(record?.nodeResults[1].output).toBe('계획 수립: 계획 수립')
+      expect(record?.nodeResults[2].output).toBe('행동 실행: 작업 실행')
+      expect(record?.finalOutput).toBe('행동 실행: 작업 실행')
+    })
+  })
+
+  describe('실행 기록 관리', () => {
+    beforeEach(() => {
+      pipelineExecutionService = new PipelineExecutionService()
+    })
+
+    it('파이프라인 ID로 실행 기록을 조회할 수 있어야 함', async () => {
+      const testInput = '테스트 입력'
+      const jobId = uuidv4()
+      const mockPipeline: Pipeline = {
+        id: 'test-pipeline-1',
+        agentId: 'test-agent-1',
+        name: '테스트 파이프라인',
+        description: '테스트용 파이프라인입니다.',
+        nodes: [
+          {
+            id: 'node-1',
+            type: 'input',
+            position: { x: 0, y: 0 },
+            data: {
+              name: '입력 노드',
+              description: '입력을 처리하는 노드',
+              config: {},
+            },
+          },
+          {
+            id: 'node-2',
+            type: 'process',
+            position: { x: 100, y: 0 },
+            data: {
+              name: '처리 노드',
+              description: '데이터를 처리하는 노드',
+              config: {},
+            },
+          },
+          {
+            id: 'node-3',
+            type: 'process',
+            position: { x: 200, y: 0 },
+            data: {
+              name: '출력 노드',
+              description: '결과를 출력하는 노드',
+              config: {},
+            },
+          },
+        ],
+        edges: [
+          {
+            id: 'edge-1',
+            source: 'node-1',
+            target: 'node-2',
+            type: 'default',
+          },
+          {
+            id: 'edge-2',
+            source: 'node-2',
+            target: 'node-3',
+            type: 'default',
+          },
+        ],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      await pipelineExecutionService.executePipeline(
+        mockPipeline,
+        testInput,
+        jobId,
+        mockResponse as Response,
+      )
+
+      const records =
+        await pipelineExecutionService.getExecutionRecordsByPipelineId(
+          mockPipeline.id,
+        )
+      expect(records).toHaveLength(1)
+      expect(records[0].jobId).toBe(jobId)
+      expect(records[0].pipelineId).toBe(mockPipeline.id)
+      expect(records[0].input).toBe(testInput)
+    })
+
+    it('모든 실행 기록을 조회할 수 있어야 함', async () => {
+      const testInput1 = '테스트 입력 1'
+      const testInput2 = '테스트 입력 2'
+      const jobId1 = uuidv4()
+      const jobId2 = uuidv4()
+      const mockPipeline: Pipeline = {
+        id: 'test-pipeline-1',
+        agentId: 'test-agent-1',
+        name: '테스트 파이프라인',
+        description: '테스트용 파이프라인입니다.',
+        nodes: [
+          {
+            id: 'node-1',
+            type: 'input',
+            position: { x: 0, y: 0 },
+            data: {
+              name: '입력 노드',
+              description: '입력을 처리하는 노드',
+              config: {},
+            },
+          },
+          {
+            id: 'node-2',
+            type: 'process',
+            position: { x: 100, y: 0 },
+            data: {
+              name: '처리 노드',
+              description: '데이터를 처리하는 노드',
+              config: {},
+            },
+          },
+          {
+            id: 'node-3',
+            type: 'process',
+            position: { x: 200, y: 0 },
+            data: {
+              name: '출력 노드',
+              description: '결과를 출력하는 노드',
+              config: {},
+            },
+          },
+        ],
+        edges: [
+          {
+            id: 'edge-1',
+            source: 'node-1',
+            target: 'node-2',
+            type: 'default',
+          },
+          {
+            id: 'edge-2',
+            source: 'node-2',
+            target: 'node-3',
+            type: 'default',
+          },
+        ],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      await pipelineExecutionService.executePipeline(
+        mockPipeline,
+        testInput1,
+        jobId1,
+        mockResponse as Response,
+      )
+      await pipelineExecutionService.executePipeline(
+        mockPipeline,
+        testInput2,
+        jobId2,
+        mockResponse as Response,
+      )
+
+      const records = await pipelineExecutionService.getAllExecutionRecords()
+      expect(records).toHaveLength(2)
+      expect(records[0].input).toBe(testInput1)
+      expect(records[1].input).toBe(testInput2)
     })
   })
 })
