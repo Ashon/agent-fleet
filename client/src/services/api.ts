@@ -1,9 +1,9 @@
-import { PipelineJob } from '@/types/pipeline-job'
 import {
   Agent,
   Connector,
   Fleet,
   Pipeline,
+  PipelineExecutionRecord,
   PipelineTestRequest,
   PipelineTestResponse,
 } from '@agentfleet/types'
@@ -293,7 +293,7 @@ export const api = {
   },
 
   // Pipeline Jobs API
-  async getPipelineJobs(): Promise<PipelineJob[]> {
+  async getPipelineJobs(): Promise<PipelineExecutionRecord[]> {
     const response = await fetch(`${API_URL}/api/pipeline-execution/jobs`)
     if (!response.ok) {
       throw new Error('Failed to fetch pipeline jobs')
@@ -301,11 +301,24 @@ export const api = {
     return response.json()
   },
 
-  async getPipelineJob(id: string): Promise<PipelineJob> {
+  async getPipelineJobDetail(id: string): Promise<PipelineExecutionRecord> {
     const response = await fetch(`${API_URL}/api/pipeline-execution/jobs/${id}`)
     if (!response.ok) {
       throw new Error('Failed to fetch pipeline job')
     }
+    return response.json()
+  },
+
+  async getPipelineJobsByPipelineId(
+    pipelineId: string,
+  ): Promise<PipelineExecutionRecord[]> {
+    const response = await fetch(
+      `${API_URL}/api/pipeline-execution/pipelines/${pipelineId}/jobs`,
+    )
+    if (!response.ok) {
+      throw new Error('Failed to fetch pipeline jobs')
+    }
+
     return response.json()
   },
 }

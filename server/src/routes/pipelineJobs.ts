@@ -54,10 +54,7 @@ router.get('/pipelines/:pipelineId/jobs', async (req, res) => {
     const records =
       await pipelineExecutionService.getExecutionRecordsByPipelineId(pipelineId)
 
-    res.json({
-      success: true,
-      data: records,
-    })
+    res.json(records)
   } catch (error) {
     res.status(500).json({
       success: false,

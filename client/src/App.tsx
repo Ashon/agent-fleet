@@ -9,7 +9,6 @@ import Fleets from '@/pages/fleets/Fleets'
 import NewFleet from '@/pages/fleets/NewFleet'
 import Home from '@/pages/Home'
 import NotFound from '@/pages/NotFound'
-import PipelineJobs from '@/pages/pipeline-jobs/PipelineJobs'
 import {
   Navigate,
   Route,
@@ -50,11 +49,6 @@ function App() {
           <Route path="connectors">
             <Route index element={<Connectors />} />
             <Route path="new" element={<NewConnector />} />
-          </Route>
-
-          {/* 파이프라인 작업 관련 라우트 */}
-          <Route path="pipeline-jobs">
-            <Route index element={<PipelineJobs />} />
           </Route>
 
           {/* 404 처리 */}

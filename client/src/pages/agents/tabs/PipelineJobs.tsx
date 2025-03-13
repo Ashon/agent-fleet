@@ -1,30 +1,43 @@
-import Breadcrumb from '@/components/Breadcrumb'
 import Card from '@/components/Card'
 import { api } from '@/services/api'
-import { PipelineJob } from '@/types/pipeline-job'
+import { Agent, PipelineExecutionRecord } from '@agentfleet/types'
 import { ClockIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-export default function PipelineJobs() {
-  const [jobs, setJobs] = useState<PipelineJob[]>([])
+export default function PipelineJobs({ agent }: { agent: Agent }) {
+  const [jobs, setJobs] = useState<PipelineExecutionRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const data = await api.getPipelineJobs()
-        setJobs(data)
-      } catch (err) {
-        setError('파이프라인 작업 목록을 불러오는데 실패했습니다.')
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
+    api
+      .getReasoningPipelines(agent.id)
+      .then((pipelines) => {
+        const foundPipeline = pipelines.find((p) => p.agentId === agent.id)
+        return foundPipeline?.id
+      })
+      .then((id) => {
+        if (!id) {
+          setError('파이프라인을 찾을 수 없습니다.')
+          setLoading(false)
+          return
+        }
 
-    fetchJobs()
+        const fetchJobs = async () => {
+          try {
+            const data = await api.getPipelineJobsByPipelineId(id)
+            setJobs(data)
+          } catch (err) {
+            setError('파이프라인 작업 목록을 불러오는데 실패했습니다.')
+            console.error(err)
+          } finally {
+            setLoading(false)
+          }
+        }
+
+        fetchJobs()
+      })
   }, [])
 
   const formatDate = (dateString: string) => {
@@ -75,16 +88,10 @@ export default function PipelineJobs() {
   }
 
   return (
-    <div className="container mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <Breadcrumb items={[{ label: 'Pipeline Jobs' }]} />
-        </div>
-      </div>
-
+    <div className="container mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {jobs.map((job) => (
-          <Card key={job.id} hover>
+          <Card key={job.jobId} hover>
             <div>
               <div className="flex items-start justify-between">
                 <h2 className="card-title">{job.pipelineName}</h2>
@@ -96,7 +103,7 @@ export default function PipelineJobs() {
               </div>
 
               <p className="text-sm text-base-content/70 mt-1">
-                Job ID: {job.id}
+                Job ID: {job.jobId}
               </p>
             </div>
 
@@ -104,14 +111,14 @@ export default function PipelineJobs() {
               <div className="flex items-center gap-2 text-sm">
                 <ClockIcon className="h-4 w-4 text-base-content/70" />
                 <span className="text-base-content/70">
-                  시작: {formatDate(job.startTime)}
+                  시작: {formatDate(job.startTime as unknown as string)}
                 </span>
               </div>
               {job.endTime && (
                 <div className="flex items-center gap-2 text-sm mt-1">
                   <ClockIcon className="h-4 w-4 text-base-content/70" />
                   <span className="text-base-content/70">
-                    종료: {formatDate(job.endTime)}
+                    종료: {formatDate(job.endTime as unknown as string)}
                   </span>
                 </div>
               )}
@@ -119,7 +126,7 @@ export default function PipelineJobs() {
 
             <div className="mt-4 flex justify-end">
               <Link
-                to={`/pipeline-jobs/${job.id}`}
+                to={`/pipeline-jobs/${job.jobId}`}
                 className="btn btn-outline btn-sm"
               >
                 상세보기
