@@ -1,35 +1,11 @@
-import { Pipeline, PipelineNode } from '@agentfleet/types'
+import {
+  NodeExecutionState,
+  Pipeline,
+  PipelineExecutionRecord,
+  PipelineNode,
+} from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
-
-interface NodeExecutionState {
-  node: PipelineNode
-  inDegree: number
-  dependencies: Set<string>
-  executed: boolean
-  output?: string
-}
-
-interface PipelineExecutionRecord {
-  jobId: string
-  pipelineId: string
-  pipelineName: string
-  input: string
-  status: 'running' | 'completed' | 'failed'
-  startTime: Date
-  endTime?: Date
-  error?: string
-  nodeResults: {
-    nodeId: string
-    nodeName: string
-    nodeType: string
-    output: string
-    startTime: Date
-    endTime: Date
-    status: 'success' | 'failed'
-  }[]
-  finalOutput?: string
-}
 
 export class PipelineExecutionService {
   // 테스트 환경에서 사용할 지연 시간 (ms)
@@ -139,7 +115,9 @@ export class PipelineExecutionService {
       })}\n\n`,
     )
 
-    await new Promise((resolve) => setTimeout(resolve, this.nodeExecutionDelay))
+    await new Promise((resolve) =>
+      setTimeout(resolve, Math.random() * this.nodeExecutionDelay),
+    )
 
     let output = ''
     try {
@@ -191,7 +169,7 @@ export class PipelineExecutionService {
       )
 
       await new Promise((resolve) =>
-        setTimeout(resolve, this.nodeCompletionDelay),
+        setTimeout(resolve, Math.random() * this.nodeCompletionDelay),
       )
       return output
     } catch (error) {
