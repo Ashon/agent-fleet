@@ -1,7 +1,7 @@
 import Breadcrumb from '@/components/Breadcrumb'
 import ChatHistory from '@/pages/agents/edit/ChatHistory'
 import GeneralSettings from '@/pages/agents/edit/GeneralSettings'
-import ReasoningPipelineSettings from '@/pages/agents/edit/ReasoningPipelineSettings'
+import ReasoningPipeline from '@/pages/agents/edit/ReasoningPipeline'
 import { api } from '@/services/api'
 import { Agent } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
@@ -85,7 +85,7 @@ export default function EditAgent() {
 
         <div className="mt-4">
           {tab === 'reasoning-pipeline' && (
-            <ReasoningPipelineSettings agent={formData} />
+            <ReasoningPipeline agent={formData} />
           )}
           {tab === 'settings' && (
             <GeneralSettings

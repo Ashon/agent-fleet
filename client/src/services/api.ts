@@ -1,3 +1,4 @@
+import { PipelineJob } from '@/types/pipeline-job'
 import {
   Agent,
   Connector,
@@ -287,6 +288,23 @@ export const api = {
     })
     if (!response.ok) {
       throw new Error('Failed to test reasoning pipeline')
+    }
+    return response.json()
+  },
+
+  // Pipeline Jobs API
+  async getPipelineJobs(): Promise<PipelineJob[]> {
+    const response = await fetch(`${API_URL}/api/pipeline-execution/jobs`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch pipeline jobs')
+    }
+    return response.json()
+  },
+
+  async getPipelineJob(id: string): Promise<PipelineJob> {
+    const response = await fetch(`${API_URL}/api/pipeline-execution/jobs/${id}`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch pipeline job')
     }
     return response.json()
   },

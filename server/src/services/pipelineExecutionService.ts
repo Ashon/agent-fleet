@@ -14,33 +14,31 @@ export class PipelineExecutionService {
   private nodeCompletionDelay = process.env.NODE_ENV === 'test' ? 50 : 500
 
   // 실행 기록 저장소
-  private executionRecords: Map<string, PipelineExecutionRecord> = new Map()
+  private executionRecords: PipelineExecutionRecord[] = []
 
   constructor(initialExecutionRecords: PipelineExecutionRecord[] = []) {
-    this.executionRecords = new Map(
-      initialExecutionRecords.map((record) => [record.jobId, record]),
-    )
+    this.executionRecords = initialExecutionRecords
   }
 
   // 실행 기록 조회
   async getExecutionRecord(
     jobId: string,
   ): Promise<PipelineExecutionRecord | undefined> {
-    return this.executionRecords.get(jobId)
+    return this.executionRecords.find((record) => record.jobId === jobId)
   }
 
   // 파이프라인 ID로 실행 기록 조회
   async getExecutionRecordsByPipelineId(
     pipelineId: string,
   ): Promise<PipelineExecutionRecord[]> {
-    return Array.from(this.executionRecords.values()).filter(
+    return this.executionRecords.filter(
       (record) => record.pipelineId === pipelineId,
     )
   }
 
   // 모든 실행 기록 조회
   async getAllExecutionRecords(): Promise<PipelineExecutionRecord[]> {
-    return Array.from(this.executionRecords.values())
+    return this.executionRecords
   }
 
   private buildExecutionGraph(
@@ -109,7 +107,9 @@ export class PipelineExecutionService {
     jobId: string,
   ): Promise<string> {
     const startTime = new Date()
-    const record = this.executionRecords.get(jobId)
+    const record = this.executionRecords.find(
+      (record) => record.jobId === jobId,
+    )
     if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
 
     res.write(
@@ -206,7 +206,7 @@ export class PipelineExecutionService {
     }
 
     // 실행 기록 초기화
-    this.executionRecords.set(jobId, {
+    this.executionRecords.push({
       jobId,
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,
@@ -245,7 +245,9 @@ export class PipelineExecutionService {
       }
 
       // 마지막 노드의 출력을 최종 결과로 저장
-      const record = this.executionRecords.get(jobId)!
+      const record = this.executionRecords.find(
+        (record) => record.jobId === jobId,
+      )!
       const lastNodeResult = record.nodeResults.slice(-1)[0]
       if (lastNodeResult) {
         record.finalOutput = lastNodeResult.output
@@ -254,7 +256,9 @@ export class PipelineExecutionService {
       record.endTime = new Date()
     } catch (error) {
       // 실행 실패 기록
-      const record = this.executionRecords.get(jobId)!
+      const record = this.executionRecords.find(
+        (record) => record.jobId === jobId,
+      )!
       record.status = 'failed'
       record.endTime = new Date()
       record.error = error instanceof Error ? error.message : '알 수 없는 오류'
@@ -271,7 +275,7 @@ export class PipelineExecutionService {
     const startTime = new Date()
 
     // 실행 기록 생성
-    this.executionRecords.set(jobId, {
+    this.executionRecords.push({
       jobId,
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,
@@ -295,7 +299,9 @@ export class PipelineExecutionService {
       await this.executePipeline(pipeline, input, jobId, res)
 
       // 실행 완료 기록
-      const record = this.executionRecords.get(jobId)!
+      const record = this.executionRecords.find(
+        (record) => record.jobId === jobId,
+      )!
       record.status = 'completed'
       record.endTime = new Date()
 
@@ -310,7 +316,9 @@ export class PipelineExecutionService {
       )
     } catch (error) {
       // 실행 실패 기록
-      const record = this.executionRecords.get(jobId)!
+      const record = this.executionRecords.find(
+        (record) => record.jobId === jobId,
+      )!
       record.status = 'failed'
       record.endTime = new Date()
       record.error = error instanceof Error ? error.message : '알 수 없는 오류'

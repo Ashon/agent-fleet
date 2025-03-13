@@ -10,13 +10,11 @@ interface ProgressMessage extends ChatMessageWithExtra {
   isLoading?: boolean
 }
 
-interface ReasoningPipelineSettingsProps {
+interface ReasoningPipelineProps {
   agent: Agent
 }
 
-export default function ReasoningPipelineSettings({
-  agent,
-}: ReasoningPipelineSettingsProps) {
+export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
   const [pipeline, setPipeline] = useState<Pipeline | null>(null)
   const [messages, setMessages] = useState<ProgressMessage[]>([])
   const [input, setInput] = useState('')

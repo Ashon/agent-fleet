@@ -7,10 +7,7 @@ const router = Router()
 router.get('/jobs', async (req, res) => {
   try {
     const records = await pipelineExecutionService.getAllExecutionRecords()
-    res.json({
-      success: true,
-      data: records,
-    })
+    res.json(records)
   } catch (error) {
     res.status(500).json({
       success: false,
