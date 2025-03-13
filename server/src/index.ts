@@ -5,6 +5,7 @@ import morgan from 'morgan'
 import agentsRouter from './routes/agents'
 import connectorsRouter from './routes/connectors'
 import fleetsRouter from './routes/fleets'
+import pipelineJobRoutes from './routes/pipelineJobs'
 import reasoningPipelinesRouter from './routes/reasoningPipelines'
 
 dotenv.config()
@@ -27,6 +28,7 @@ app.use('/api/agents', agentsRouter)
 app.use('/api/connectors', connectorsRouter)
 app.use('/api/reasoning-pipelines', reasoningPipelinesRouter)
 app.use('/api/fleets', fleetsRouter)
+app.use('/api/pipeline-execution', pipelineJobRoutes)
 
 // 404 에러 처리
 app.use((req, res) => {

@@ -6,6 +6,7 @@ import {
 } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
+import { mockPipelineJobs } from '../mocks/pipelineJobs'
 
 export class PipelineExecutionService {
   // 테스트 환경에서 사용할 지연 시간 (ms)
@@ -14,6 +15,12 @@ export class PipelineExecutionService {
 
   // 실행 기록 저장소
   private executionRecords: Map<string, PipelineExecutionRecord> = new Map()
+
+  constructor(initialExecutionRecords: PipelineExecutionRecord[] = []) {
+    this.executionRecords = new Map(
+      initialExecutionRecords.map((record) => [record.jobId, record]),
+    )
+  }
 
   // 실행 기록 조회
   async getExecutionRecord(
@@ -325,4 +332,6 @@ export class PipelineExecutionService {
   }
 }
 
-export const pipelineExecutionService = new PipelineExecutionService()
+export const pipelineExecutionService = new PipelineExecutionService(
+  mockPipelineJobs,
+)
