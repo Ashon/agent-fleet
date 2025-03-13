@@ -149,10 +149,7 @@ describe('Pipeline Job Routes', () => {
 
       // 검증
       expect(response.status).toBe(200)
-      expect(response.body).toEqual({
-        success: true,
-        data: convertDatesToStrings(pipelineJobs),
-      })
+      expect(response.body).toEqual(convertDatesToStrings(pipelineJobs))
       expect(
         pipelineExecutionService.getExecutionRecordsByPipelineId,
       ).toHaveBeenCalledWith(testPipelineId)
