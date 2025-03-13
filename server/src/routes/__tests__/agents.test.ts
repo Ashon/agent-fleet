@@ -19,6 +19,8 @@ describe('Agent Routes', () => {
       createdAt: mockDate,
       updatedAt: mockDate,
       chatHistory: [],
+      capabilities: {},
+      connectors: [],
     },
     {
       id: '2',
@@ -28,6 +30,8 @@ describe('Agent Routes', () => {
       createdAt: mockDate,
       updatedAt: mockDate,
       chatHistory: [],
+      capabilities: {},
+      connectors: [],
     },
   ]
 
@@ -53,6 +57,8 @@ describe('Agent Routes', () => {
           createdAt: mockDate,
           updatedAt: mockDate,
           chatHistory: [],
+          capabilities: {},
+          connectors: [],
         }),
     )
     mockAgentService.prototype.updateAgent.mockImplementation(

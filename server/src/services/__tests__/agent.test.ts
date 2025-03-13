@@ -1,11 +1,11 @@
-import { AgentService } from '../agent'
-import { mockAgents } from '../../mocks/agents'
 import {
   Agent,
   AgentStatus,
-  CreateAgentData,
   ChatMessageRole,
+  CreateAgentData,
 } from '@agentfleet/types'
+import { mockAgents } from '../../mocks/agents'
+import { AgentService } from '../agent'
 
 describe('AgentService', () => {
   let agentService: AgentService
@@ -36,6 +36,9 @@ describe('AgentService', () => {
       // 모든 에이전트를 삭제
       await emptyService.deleteAgent('1')
       await emptyService.deleteAgent('2')
+      await emptyService.deleteAgent('3')
+      await emptyService.deleteAgent('4')
+      await emptyService.deleteAgent('5')
       const agents = await emptyService.getAllAgents()
       expect(Array.isArray(agents)).toBe(true)
       expect(agents.length).toBe(0)
@@ -73,7 +76,7 @@ describe('AgentService', () => {
       }
 
       const createdAgent = await agentService.createAgent(
-        newAgent as Omit<Agent, 'id' | 'status' | 'chatHistory' | 'workflow'>
+        newAgent as Omit<Agent, 'id' | 'status' | 'chatHistory' | 'workflow'>,
       )
       expect(createdAgent).toMatchObject(newAgent)
       expect(createdAgent.id).toBeDefined()
@@ -92,8 +95,8 @@ describe('AgentService', () => {
           invalidAgent as Omit<
             Agent,
             'id' | 'status' | 'chatHistory' | 'workflow'
-          >
-        )
+          >,
+        ),
       ).rejects.toThrow()
     })
 
@@ -105,7 +108,7 @@ describe('AgentService', () => {
       }
 
       const createdAgent = await agentService.createAgent(
-        newAgent as Omit<Agent, 'id' | 'status' | 'chatHistory' | 'workflow'>
+        newAgent as Omit<Agent, 'id' | 'status' | 'chatHistory' | 'workflow'>,
       )
       expect(createdAgent.name).toBe(longString)
       expect(createdAgent.description).toBe(longString)
@@ -121,7 +124,7 @@ describe('AgentService', () => {
 
       const updatedAgent = await agentService.updateAgent(
         testAgent.id,
-        updateData
+        updateData,
       )
       expect(updatedAgent).toMatchObject({
         id: testAgent.id,
@@ -145,7 +148,7 @@ describe('AgentService', () => {
 
       const updatedAgent = await agentService.updateAgent(
         testAgent.id,
-        updateData
+        updateData,
       )
       expect(updatedAgent?.id).toBe(testAgent.id)
     })
@@ -157,7 +160,7 @@ describe('AgentService', () => {
 
       const updatedAgent = await agentService.updateAgent(
         testAgent.id,
-        updateData
+        updateData,
       )
       expect(updatedAgent?.name).toBe(updateData.name)
       expect(updatedAgent?.description).toBe(testAgent.description)
@@ -189,14 +192,14 @@ describe('AgentService', () => {
     it('에이전트 상태를 업데이트해야 합니다', async () => {
       const updatedAgent = await agentService.updateAgentStatus(
         testAgent.id,
-        'inactive'
+        'inactive',
       )
       expect(updatedAgent?.status).toBe('inactive')
     })
 
     it('유효하지 않은 상태는 에러를 발생시켜야 합니다', async () => {
       await expect(
-        agentService.updateAgentStatus(testAgent.id, 'invalid' as AgentStatus)
+        agentService.updateAgentStatus(testAgent.id, 'invalid' as AgentStatus),
       ).rejects.toThrow()
     })
 
@@ -215,13 +218,13 @@ describe('AgentService', () => {
 
       const updatedAgent = await agentService.addChatMessage(
         testAgent.id,
-        message
+        message,
       )
       expect(updatedAgent).toBeDefined()
       expect(updatedAgent?.chatHistory).toBeDefined()
       expect(updatedAgent?.chatHistory?.length).toBeGreaterThan(0)
       expect(
-        updatedAgent?.chatHistory?.[updatedAgent.chatHistory.length - 1]
+        updatedAgent?.chatHistory?.[updatedAgent.chatHistory.length - 1],
       ).toMatchObject({
         ...message,
         timestamp: expect.any(String),
@@ -235,7 +238,7 @@ describe('AgentService', () => {
       }
 
       await expect(
-        agentService.addChatMessage(testAgent.id, invalidMessage)
+        agentService.addChatMessage(testAgent.id, invalidMessage),
       ).rejects.toThrow()
     })
 
@@ -247,11 +250,12 @@ describe('AgentService', () => {
 
       const updatedAgent = await agentService.addChatMessage(
         testAgent.id,
-        longMessage
+        longMessage,
       )
       expect(updatedAgent?.chatHistory?.length).toBeGreaterThan(0)
       expect(
-        updatedAgent?.chatHistory?.[updatedAgent.chatHistory.length - 1].content
+        updatedAgent?.chatHistory?.[updatedAgent.chatHistory.length - 1]
+          .content,
       ).toBe(longMessage.content)
     })
 

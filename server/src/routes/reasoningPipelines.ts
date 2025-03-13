@@ -1,6 +1,6 @@
-import { Pipeline, PipelineEdge, PipelineNode } from '@agentfleet/types'
 import { Router } from 'express'
 import { pipelineService } from '../services/agentReasoningPipeline'
+import { pipelineExecutionService } from '../services/pipelineExecutionService'
 
 const router = Router()
 
@@ -99,43 +99,11 @@ router.get('/test/stream', async (req, res) => {
       return res.end()
     }
 
-    // 파이프라인 실행 시작
-    res.write(
-      `data: ${JSON.stringify({
-        type: 'start',
-        message: '파이프라인 실행을 시작합니다.',
-        pipelineId: pipeline.id,
-        pipelineName: pipeline.name,
-      })}\n\n`,
+    await pipelineExecutionService.streamPipelineExecution(
+      pipeline,
+      input as string,
+      res,
     )
-
-    try {
-      // 파이프라인 실행
-      await executePipeline(pipeline, input as string, res)
-
-      // 파이프라인 실행 완료
-      res.write(
-        `data: ${JSON.stringify({
-          type: 'complete',
-          message: '파이프라인 실행이 완료되었습니다.',
-          pipelineId: pipeline.id,
-          finalOutput: '최종 응답이 생성되었습니다.',
-        })}\n\n`,
-      )
-    } catch (error) {
-      // 파이프라인 실행 중 오류 발생
-      res.write(
-        `data: ${JSON.stringify({
-          type: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : '파이프라인 실행 중 오류가 발생했습니다.',
-          pipelineId: pipeline.id,
-        })}\n\n`,
-      )
-    }
-
     res.end()
   } catch (error) {
     res.write(
@@ -169,43 +137,11 @@ router.post('/:id/execute', async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
 
-    // 실행 시작 알림
-    res.write(
-      `data: ${JSON.stringify({
-        type: 'start',
-        message: '파이프라인 실행을 시작합니다.',
-        pipelineId: pipeline.id,
-        pipelineName: pipeline.name,
-      })}\n\n`,
+    await pipelineExecutionService.streamPipelineExecution(
+      pipeline,
+      req.body.input || '',
+      res,
     )
-
-    try {
-      // 파이프라인 실행
-      await executePipeline(pipeline, req.body.input || '', res)
-
-      // 실행 완료 알림
-      res.write(
-        `data: ${JSON.stringify({
-          type: 'complete',
-          message: '파이프라인 실행이 완료되었습니다.',
-          pipelineId: pipeline.id,
-          finalOutput: '최종 응답이 생성되었습니다.',
-        })}\n\n`,
-      )
-    } catch (error) {
-      // 실행 중 오류 발생
-      res.write(
-        `data: ${JSON.stringify({
-          type: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : '파이프라인 실행 중 오류가 발생했습니다.',
-          pipelineId: pipeline.id,
-        })}\n\n`,
-      )
-    }
-
     res.end()
   } catch (error) {
     res.write(
@@ -269,173 +205,5 @@ router.post('/test', async (req, res) => {
     }
   }
 })
-
-interface NodeExecutionState {
-  node: PipelineNode
-  inDegree: number
-  dependencies: Set<string>
-  executed: boolean
-  output?: string
-}
-
-// 위상 정렬 및 실행 그래프 구성
-function buildExecutionGraph(
-  pipeline: Pipeline,
-): Map<string, NodeExecutionState> {
-  const executionGraph = new Map<string, NodeExecutionState>()
-
-  // 초기 상태 설정
-  pipeline.nodes.forEach((node) => {
-    executionGraph.set(node.id, {
-      node,
-      inDegree: 0,
-      dependencies: new Set<string>(),
-      executed: false,
-    })
-  })
-
-  // 의존성 관계 구성
-  pipeline.edges.forEach((edge) => {
-    const targetNode = executionGraph.get(edge.target)
-    if (targetNode) {
-      targetNode.inDegree++
-      targetNode.dependencies.add(edge.source)
-    }
-  })
-
-  return executionGraph
-}
-
-// 실행 가능한 노드 찾기
-function findExecutableNodes(
-  executionGraph: Map<string, NodeExecutionState>,
-): PipelineNode[] {
-  const executableNodes: PipelineNode[] = []
-
-  executionGraph.forEach((state, nodeId) => {
-    if (!state.executed && state.inDegree === 0) {
-      // 병렬 실행이 가능한 노드들을 한번에 수집
-      executableNodes.push(state.node)
-    }
-  })
-
-  return executableNodes
-}
-
-// 노드 실행 결과 처리 및 의존성 업데이트
-function updateExecutionState(
-  nodeId: string,
-  executionGraph: Map<string, NodeExecutionState>,
-  pipeline: Pipeline,
-): void {
-  const state = executionGraph.get(nodeId)
-  if (!state) return
-
-  state.executed = true
-
-  // 이 노드에 의존하는 다른 노드들의 진입 차수 감소
-  pipeline.edges
-    .filter((edge) => edge.source === nodeId)
-    .forEach((edge) => {
-      const targetState = executionGraph.get(edge.target)
-      if (targetState) {
-        targetState.inDegree--
-      }
-    })
-}
-
-// 노드 실행 함수
-async function executeNode(
-  node: PipelineNode,
-  input: string,
-  res: any,
-): Promise<string> {
-  // 노드 실행 시작 알림
-  res.write(
-    `data: ${JSON.stringify({
-      type: 'node-start',
-      nodeId: node.id,
-      nodeName: node.data.name,
-      nodeType: node.type,
-    })}\n\n`,
-  )
-
-  // 노드 타입별 처리 시뮬레이션
-  await new Promise((resolve) => setTimeout(resolve, Math.random() * 5000))
-
-  let output = ''
-  switch (node.type) {
-    case 'input':
-      output = `입력 처리: "${input}"`
-      break
-    case 'plan':
-      output = `계획 수립: ${node.data.description}`
-      break
-    case 'decision':
-      output = `결정: ${node.data.description}`
-      break
-    case 'action':
-      output = `행동 실행: ${node.data.description}`
-      break
-    case 'process':
-      output = `데이터 처리: ${node.data.description}`
-      break
-    case 'aggregator':
-      output = `결과 통합: ${node.data.description}`
-      break
-    case 'analysis':
-      output = `분석 수행: ${node.data.description}`
-      break
-  }
-
-  // 노드 실행 완료 알림
-  res.write(
-    `data: ${JSON.stringify({
-      type: 'node-complete',
-      nodeId: node.id,
-      output,
-      status: 'success',
-    })}\n\n`,
-  )
-
-  await new Promise((resolve) => setTimeout(resolve, 500))
-  return output
-}
-
-// 메인 파이프라인 실행 함수
-export async function executePipeline(
-  pipeline: Pipeline,
-  input: string,
-  res: any,
-) {
-  const executionGraph = buildExecutionGraph(pipeline)
-
-  while (true) {
-    // 실행 가능한 노드들 찾기
-    const executableNodes = findExecutableNodes(executionGraph)
-    if (executableNodes.length === 0) {
-      // 모든 노드가 실행되었는지 확인
-      const allExecuted = Array.from(executionGraph.values()).every(
-        (state) => state.executed,
-      )
-      if (allExecuted) break
-
-      // 사이클이 있거나 실행 불가능한 상태
-      throw new Error('파이프라인 실행 오류: 실행할 수 없는 노드가 있습니다')
-    }
-
-    // 병렬 실행이 가능한 노드들 동시 실행
-    await Promise.all(
-      executableNodes.map(async (node) => {
-        const output = await executeNode(node, input, res)
-        const state = executionGraph.get(node.id)
-        if (state) {
-          state.output = output
-        }
-        updateExecutionState(node.id, executionGraph, pipeline)
-      }),
-    )
-  }
-}
 
 export default router
