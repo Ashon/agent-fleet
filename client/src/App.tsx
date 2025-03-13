@@ -1,6 +1,5 @@
 import MainLayout from '@/layouts/MainLayout'
 import Agents from '@/pages/agents/Agents'
-import EditAgent from '@/pages/agents/edit/EditAgent'
 import NewAgent from '@/pages/agents/NewAgent'
 import Chat from '@/pages/Chat'
 import Connectors from '@/pages/connectors/Connectors'
@@ -41,15 +40,9 @@ function App() {
             <Route index element={<Agents />} />
             <Route path="new" element={<NewAgent />} />
             <Route path=":id">
+              <Route index element={<Navigate to="general" replace />} />
+              <Route path=":tab" element={<InfoAgent />} />
               <Route path="chat" element={<Chat />} />
-              <Route path="">
-                <Route index element={<Navigate to="info" replace />} />
-                <Route path=":tab" element={<InfoAgent />} />
-              </Route>
-              <Route path="edit">
-                <Route index element={<Navigate to="settings" replace />} />
-                <Route path=":tab" element={<EditAgent />} />
-              </Route>
             </Route>
           </Route>
 

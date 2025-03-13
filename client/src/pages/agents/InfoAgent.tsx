@@ -1,6 +1,6 @@
 import Breadcrumb from '@/components/Breadcrumb'
-import ChatHistory from '@/pages/agents/edit/ChatHistory'
-import ReasoningPipeline from '@/pages/agents/edit/ReasoningPipeline'
+import ChatHistory from '@/pages/agents/tabs/ChatHistory'
+import ReasoningPipeline from '@/pages/agents/tabs/ReasoningPipeline'
 import { api } from '@/services/api'
 import { Agent } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
@@ -40,7 +40,7 @@ export default function InfoAgent() {
 
   return (
     <div className="container mx-auto">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         <Breadcrumb
           items={[
             { label: 'Agents', path: '/agents' },
@@ -51,10 +51,10 @@ export default function InfoAgent() {
 
         <div className="tabs tabs-border">
           <Link
-            to={`/agents/${id}/info`}
+            to={`/agents/${id}/general`}
             className={`tab ${tab === 'general' ? 'tab-active' : ''}`}
           >
-            Info
+            General
           </Link>
           <Link
             to={`/agents/${id}/reasoning-pipeline`}
@@ -87,12 +87,6 @@ export default function InfoAgent() {
                       {agent.status}
                     </div>
                   </h2>
-                  <Link
-                    to={`/agents/${id}/edit`}
-                    className="btn btn-sm btn-primary"
-                  >
-                    Edit
-                  </Link>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
