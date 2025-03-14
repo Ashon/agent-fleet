@@ -1,6 +1,7 @@
 // ISO 8601 형식의 날짜 문자열 타입
 export type ISODateString = string
 
+// 공통 타입 정의
 export interface BaseEntity {
   id: string
   createdAt: ISODateString
@@ -24,4 +25,12 @@ export interface PaginatedResponse<T> {
   page: number
   limit: number
   hasMore: boolean
+}
+
+export interface User {
+  id: string
+  email: string
+  name: string
+  createdAt: Date
+  updatedAt: Date
 }
