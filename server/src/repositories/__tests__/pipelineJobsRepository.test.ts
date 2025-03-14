@@ -111,11 +111,11 @@ describe('PipelineJobsRepository', () => {
     })
   })
 
-  describe('findJobById', () => {
+  describe('findById', () => {
     it('작업 ID로 파이프라인 작업을 조회해야 함', async () => {
       mockDriver.findById.mockResolvedValue(mockJob)
 
-      const result = await repository.findJobById(mockJob.id)
+      const result = await repository.findById(mockJob.id)
       expect(result).toEqual(mockJob)
       expect(mockDriver.findById).toHaveBeenCalledWith(
         'pipeline-jobs',
@@ -124,11 +124,11 @@ describe('PipelineJobsRepository', () => {
     })
   })
 
-  describe('saveJob', () => {
+  describe('save', () => {
     it('파이프라인 작업을 저장하고 변환된 결과를 반환해야 함', async () => {
       mockDriver.save.mockResolvedValue(mockJob)
 
-      const result = await repository.saveJob(mockJob)
+      const result = await repository.save(mockJob)
       expect(result).toEqual(mockJob)
       expect(mockDriver.save).toHaveBeenCalledWith('pipeline-jobs', mockJob)
     })
