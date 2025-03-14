@@ -21,4 +21,8 @@ export abstract class BaseRepository<T extends Entity> {
   async delete(id: string): Promise<void> {
     await this.driver.delete(this.entityName, id)
   }
+
+  async clear(): Promise<void> {
+    await this.driver.clear(this.entityName)
+  }
 }

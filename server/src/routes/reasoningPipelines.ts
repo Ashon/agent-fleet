@@ -1,141 +1,87 @@
 import { Router } from 'express'
-import { mockPipelineJobs } from '../mocks/pipelineJobs'
-import { MockPipelineRepository } from '../repositories/mockRepository'
+import { asyncHandler } from '../middleware/asyncHandler'
+import { ApiError } from '../middleware/errorHandler'
+import {
+  MockPipelineJobsRepository,
+  MockPipelineRepository,
+} from '../repositories/mockRepository'
 import { PipelineService } from '../services/agentReasoningPipeline'
 import { PipelineExecutionService } from '../services/pipelineExecutionService'
 
 const router = Router()
 export const pipelineService = new PipelineService(new MockPipelineRepository())
 export const pipelineExecutionService = new PipelineExecutionService(
-  mockPipelineJobs,
+  new MockPipelineJobsRepository(),
 )
 
-// 워크플로우 목록 조회
-router.get('/', async (req, res) => {
-  try {
+// GET /api/reasoning-pipelines - Retrieve all pipelines with optional agent filter
+router.get(
+  '/',
+  asyncHandler(async (req, res) => {
     const { agentId } = req.query
     const pipelines = await pipelineService.getAllPipelines(
       agentId ? { agentId: agentId as string } : undefined,
     )
     res.json(pipelines)
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: '파이프라인 목록 조회 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
-// 특정 워크플로우 조회
-router.get('/:id', async (req, res) => {
-  try {
+// GET /api/reasoning-pipelines/:id - Retrieve a specific pipeline by ID
+router.get(
+  '/:id',
+  asyncHandler(async (req, res) => {
     const pipeline = await pipelineService.getPipelineById(req.params.id)
     if (!pipeline) {
-      return res.status(404).json({ message: '파이프라인을 찾을 수 없습니다.' })
+      throw new ApiError(404, 'Pipeline not found')
     }
     res.json(pipeline)
-  } catch (error) {
-    res.status(500).json({ message: '파이프라인 조회 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
-// 새로운 워크플로우 생성
-router.post('/', async (req, res) => {
-  try {
+// POST /api/reasoning-pipelines - Create a new pipeline
+router.post(
+  '/',
+  asyncHandler(async (req, res) => {
     const newPipeline = await pipelineService.createPipeline(req.body)
     res.status(201).json(newPipeline)
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(400).json({ message: error.message })
-    } else {
-      res
-        .status(500)
-        .json({ message: '파이프라인 생성 중 오류가 발생했습니다.' })
-    }
-  }
-})
+  }),
+)
 
-// 워크플로우 수정
-router.put('/:id', async (req, res) => {
-  try {
+// PUT /api/reasoning-pipelines/:id - Update an existing pipeline
+router.put(
+  '/:id',
+  asyncHandler(async (req, res) => {
     const updatedPipeline = await pipelineService.updatePipeline(
       req.params.id,
       req.body,
     )
     if (!updatedPipeline) {
-      return res.status(404).json({ message: '파이프라인을 찾을 수 없습니다.' })
+      throw new ApiError(404, 'Pipeline not found')
     }
     res.json(updatedPipeline)
-  } catch (error) {
-    res.status(500).json({ message: '파이프라인 수정 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
-// 워크플로우 삭제
-router.delete('/:id', async (req, res) => {
-  try {
+// DELETE /api/reasoning-pipelines/:id - Delete a pipeline
+router.delete(
+  '/:id',
+  asyncHandler(async (req, res) => {
     const deleted = await pipelineService.deletePipeline(req.params.id)
     if (!deleted) {
-      return res.status(404).json({ message: '파이프라인을 찾을 수 없습니다.' })
+      throw new ApiError(404, 'Pipeline not found')
     }
     res.status(204).send()
-  } catch (error) {
-    res.status(500).json({ message: '파이프라인 삭제 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
-// 파이프라인 실시간 테스트
-router.get('/test/stream', async (req, res) => {
-  const { pipelineId, input } = req.query
+// GET /api/reasoning-pipelines/test/stream - Test pipeline execution with streaming response
+router.get(
+  '/test/stream',
+  asyncHandler(async (req, res) => {
+    const { pipelineId, input } = req.query
 
-  if (!pipelineId || !input) {
-    return res.status(400).json({ message: '필수 파라미터가 누락되었습니다.' })
-  }
-
-  // SSE 헤더 설정
-  res.setHeader('Content-Type', 'text/event-stream')
-  res.setHeader('Cache-Control', 'no-cache')
-  res.setHeader('Connection', 'keep-alive')
-
-  try {
-    const pipeline = await pipelineService.getPipelineById(pipelineId as string)
-    if (!pipeline) {
-      res.write(
-        `data: ${JSON.stringify({ error: '파이프라인을 찾을 수 없습니다.' })}\n\n`,
-      )
-      return res.end()
-    }
-
-    await pipelineExecutionService.streamPipelineExecution(
-      pipeline,
-      input as string,
-      res,
-    )
-    res.end()
-  } catch (error) {
-    res.write(
-      `data: ${JSON.stringify({
-        type: 'error',
-        message: '파이프라인 실행 준비 중 오류가 발생했습니다.',
-      })}\n\n`,
-    )
-    res.end()
-  }
-})
-
-// 워크플로우 실행
-router.post('/:id/execute', async (req, res) => {
-  try {
-    // 워크플로우 유효성 검사
-    const validation = await pipelineService.validatePipeline(req.params.id)
-    if (!validation.isValid) {
-      return res.status(400).json({
-        message: validation.message || '유효하지 않은 파이프라인입니다.',
-      })
-    }
-
-    const pipeline = await pipelineService.getPipelineById(req.params.id)
-    if (!pipeline) {
-      return res.status(404).json({ message: '파이프라인을 찾을 수 없습니다.' })
+    if (!pipelineId || !input) {
+      throw new ApiError(400, 'Pipeline ID and input are required')
     }
 
     // SSE 헤더 설정
@@ -143,73 +89,107 @@ router.post('/:id/execute', async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache')
     res.setHeader('Connection', 'keep-alive')
 
-    await pipelineExecutionService.streamPipelineExecution(
-      pipeline,
-      req.body.input || '',
-      res,
-    )
-    res.end()
-  } catch (error) {
-    res.write(
-      `data: ${JSON.stringify({
-        type: 'error',
-        message: '파이프라인 실행 준비 중 오류가 발생했습니다.',
-      })}\n\n`,
-    )
-    res.end()
-  }
-})
+    const pipeline = await pipelineService.getPipelineById(pipelineId as string)
+    if (!pipeline) {
+      res.write(`data: ${JSON.stringify({ error: 'Pipeline not found' })}\n\n`)
+      return res.end()
+    }
 
-// 워크플로우 노드 업데이트
-router.put('/:id/nodes', async (req, res) => {
-  try {
+    try {
+      await pipelineExecutionService.streamPipelineExecution(
+        pipeline,
+        input as string,
+        res,
+      )
+    } catch (error) {
+      res.write(
+        `data: ${JSON.stringify({
+          type: 'error',
+          message: 'Error occurred during pipeline execution',
+        })}\n\n`,
+      )
+    } finally {
+      res.end()
+    }
+  }),
+)
+
+// POST /api/reasoning-pipelines/:id/execute - Execute a pipeline
+router.post(
+  '/:id/execute',
+  asyncHandler(async (req, res) => {
+    // 워크플로우 유효성 검사
+    const validation = await pipelineService.validatePipeline(req.params.id)
+    if (!validation.isValid) {
+      throw new ApiError(400, validation.message || 'Invalid pipeline')
+    }
+
+    const pipeline = await pipelineService.getPipelineById(req.params.id)
+    if (!pipeline) {
+      throw new ApiError(404, 'Pipeline not found')
+    }
+
+    // SSE 헤더 설정
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+
+    try {
+      await pipelineExecutionService.streamPipelineExecution(
+        pipeline,
+        req.body.input || '',
+        res,
+      )
+    } catch (error) {
+      res.write(
+        `data: ${JSON.stringify({
+          type: 'error',
+          message: 'Error occurred during pipeline execution',
+        })}\n\n`,
+      )
+    } finally {
+      res.end()
+    }
+  }),
+)
+
+// PUT /api/reasoning-pipelines/:id/nodes - Update pipeline nodes
+router.put(
+  '/:id/nodes',
+  asyncHandler(async (req, res) => {
     const updatedPipeline = await pipelineService.updatePipelineNodes(
       req.params.id,
       req.body,
     )
     if (!updatedPipeline) {
-      return res.status(404).json({ message: '파이프라인을 찾을 수 없습니다.' })
+      throw new ApiError(404, 'Pipeline not found')
     }
     res.json(updatedPipeline)
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: '파이프라인 노드 업데이트 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
-// 워크플로우 엣지 업데이트
-router.put('/:id/edges', async (req, res) => {
-  try {
+// PUT /api/reasoning-pipelines/:id/edges - Update pipeline edges
+router.put(
+  '/:id/edges',
+  asyncHandler(async (req, res) => {
     const updatedPipeline = await pipelineService.updatePipelineEdges(
       req.params.id,
       req.body,
     )
     if (!updatedPipeline) {
-      return res.status(404).json({ message: '파이프라인을 찾을 수 없습니다.' })
+      throw new ApiError(404, 'Pipeline not found')
     }
     res.json(updatedPipeline)
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: '파이프라인 엣지 업데이트 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
-// 파이프라인 테스트
-router.post('/test', async (req, res) => {
-  try {
+// POST /api/reasoning-pipelines/test - Test pipeline configuration
+router.post(
+  '/test',
+  asyncHandler(async (req, res) => {
     const result = await pipelineService.testPipeline(req.body)
     res.json(result)
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(400).json({ message: error.message })
-    } else {
-      res
-        .status(500)
-        .json({ message: '파이프라인 테스트 중 오류가 발생했습니다.' })
-    }
-  }
-})
+  }),
+)
 
 export default router

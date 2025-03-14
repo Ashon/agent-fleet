@@ -1,48 +1,46 @@
 import { Entity, RepositoryDriver } from './repositoryDriver'
 
 export class MockRepositoryDriver implements RepositoryDriver {
-  private storage: Map<string, Map<string, Entity>> = new Map()
+  private data: Record<string, Entity[]>
 
   constructor(initialData: Record<string, Entity[]> = {}) {
-    // 초기 데이터 설정
-    Object.entries(initialData).forEach(([entityName, entities]) => {
-      const entityMap = new Map<string, Entity>()
-      entities.forEach((entity) => {
-        entityMap.set(entity.id, entity)
-      })
-      this.storage.set(entityName, entityMap)
-    })
+    this.data = { ...initialData }
   }
 
   async findAll<T extends Entity>(entityName: string): Promise<T[]> {
-    const entityMap = this.storage.get(entityName) || new Map()
-    return Array.from(entityMap.values()) as T[]
+    return (this.data[entityName] || []) as T[]
   }
 
   async findById<T extends Entity>(
     entityName: string,
     id: string,
   ): Promise<T | null> {
-    const entityMap = this.storage.get(entityName)
-    if (!entityMap) return null
-    const entity = entityMap.get(id)
-    return entity ? (entity as T) : null
+    const entity = (this.data[entityName] || []).find((e) => e.id === id)
+    return (entity as T) || null
   }
 
   async save<T extends Entity>(entityName: string, entity: T): Promise<T> {
-    let entityMap = this.storage.get(entityName)
-    if (!entityMap) {
-      entityMap = new Map()
-      this.storage.set(entityName, entityMap)
+    if (!this.data[entityName]) {
+      this.data[entityName] = []
     }
-    entityMap.set(entity.id, entity)
+
+    const index = this.data[entityName].findIndex((e) => e.id === entity.id)
+    if (index >= 0) {
+      this.data[entityName][index] = entity
+    } else {
+      this.data[entityName].push(entity)
+    }
+
     return entity
   }
 
   async delete(entityName: string, id: string): Promise<void> {
-    const entityMap = this.storage.get(entityName)
-    if (entityMap) {
-      entityMap.delete(id)
-    }
+    if (!this.data[entityName]) return
+
+    this.data[entityName] = this.data[entityName].filter((e) => e.id !== id)
+  }
+
+  async clear(entityName: string): Promise<void> {
+    this.data[entityName] = []
   }
 }

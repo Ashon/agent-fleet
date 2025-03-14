@@ -34,6 +34,7 @@ describe('PipelineJobsRepository', () => {
       findById: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
+      clear: jest.fn(),
     }
     repository = new PipelineJobsRepository(mockDriver)
   })

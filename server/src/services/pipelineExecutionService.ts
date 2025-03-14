@@ -6,6 +6,7 @@ import {
 } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
+import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
 
 export class PipelineExecutionService {
   // 테스트 환경에서 사용할 지연 시간 (ms)
@@ -13,31 +14,29 @@ export class PipelineExecutionService {
   private nodeCompletionDelay = process.env.NODE_ENV === 'test' ? 50 : 500
 
   // 실행 기록 저장소
-  private executionRecords: PipelineExecutionRecord[] = []
-
-  constructor(initialExecutionRecords: PipelineExecutionRecord[] = []) {
-    this.executionRecords = initialExecutionRecords
+  private repository: PipelineJobsRepository
+  constructor(repository: PipelineJobsRepository) {
+    this.repository = repository
   }
 
   // 실행 기록 조회
   async getExecutionRecord(
     id: string,
   ): Promise<PipelineExecutionRecord | undefined> {
-    return this.executionRecords.find((record) => record.id === id)
+    const record = await this.repository.findById(id)
+    return record ?? undefined
   }
 
   // 파이프라인 ID로 실행 기록 조회
   async getExecutionRecordsByPipelineId(
     pipelineId: string,
   ): Promise<PipelineExecutionRecord[]> {
-    return this.executionRecords.filter(
-      (record) => record.pipelineId === pipelineId,
-    )
+    return this.repository.findByPipelineId(pipelineId)
   }
 
   // 모든 실행 기록 조회
   async getAllExecutionRecords(): Promise<PipelineExecutionRecord[]> {
-    return this.executionRecords
+    return this.repository.findAll()
   }
 
   private buildExecutionGraph(
@@ -106,7 +105,7 @@ export class PipelineExecutionService {
     id: string,
   ): Promise<string> {
     const startTime = new Date()
-    const record = this.executionRecords.find((record) => record.id === id)
+    const record = await this.repository.findById(id)
     if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
 
     res.write(
@@ -203,7 +202,7 @@ export class PipelineExecutionService {
     }
 
     // 실행 기록 초기화
-    this.executionRecords.push({
+    const record = await this.repository.save({
       id,
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,
@@ -242,7 +241,8 @@ export class PipelineExecutionService {
       }
 
       // 마지막 노드의 출력을 최종 결과로 저장
-      const record = this.executionRecords.find((record) => record.id === id)!
+      const record = await this.repository.findById(id)
+      if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
       const lastNodeResult = record.nodeResults.slice(-1)[0]
       if (lastNodeResult) {
         record.finalOutput = lastNodeResult.output
@@ -251,7 +251,8 @@ export class PipelineExecutionService {
       record.endTime = new Date()
     } catch (error) {
       // 실행 실패 기록
-      const record = this.executionRecords.find((record) => record.id === id)!
+      const record = await this.repository.findById(id)
+      if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
       record.status = 'failed'
       record.endTime = new Date()
       record.error = error instanceof Error ? error.message : '알 수 없는 오류'
@@ -268,7 +269,7 @@ export class PipelineExecutionService {
     const startTime = new Date()
 
     // 실행 기록 생성
-    this.executionRecords.push({
+    await this.repository.save({
       id,
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,
@@ -292,7 +293,8 @@ export class PipelineExecutionService {
       await this.executePipeline(pipeline, input, id, res)
 
       // 실행 완료 기록
-      const record = this.executionRecords.find((record) => record.id === id)!
+      const record = await this.repository.findById(id)
+      if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
       record.status = 'completed'
       record.endTime = new Date()
 
@@ -307,7 +309,8 @@ export class PipelineExecutionService {
       )
     } catch (error) {
       // 실행 실패 기록
-      const record = this.executionRecords.find((record) => record.id === id)!
+      const record = await this.repository.findById(id)
+      if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
       record.status = 'failed'
       record.endTime = new Date()
       record.error = error instanceof Error ? error.message : '알 수 없는 오류'

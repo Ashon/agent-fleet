@@ -1,74 +1,56 @@
 import { Router } from 'express'
-import { mockPipelineJobs } from '../mocks/pipelineJobs'
+import { asyncHandler } from '../middleware/asyncHandler'
+import { ApiError } from '../middleware/errorHandler'
+import { MockPipelineJobsRepository } from '../repositories/mockRepository'
 import { PipelineExecutionService } from '../services/pipelineExecutionService'
 
 const router = Router()
 
 export const pipelineExecutionService = new PipelineExecutionService(
-  mockPipelineJobs,
+  new MockPipelineJobsRepository(),
 )
 
-// 모든 실행 기록 조회
-router.get('/jobs', async (req, res) => {
-  try {
+// GET /api/pipeline-jobs/jobs - Retrieve all execution records
+router.get(
+  '/jobs',
+  asyncHandler(async (req, res) => {
     const records = await pipelineExecutionService.getAllExecutionRecords()
     res.json(records)
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : '실행 기록 조회 중 오류가 발생했습니다.',
-    })
-  }
-})
+  }),
+)
 
-// 특정 Job ID로 실행 기록 조회
-router.get('/jobs/:jobId', async (req, res) => {
-  try {
+// GET /api/pipeline-jobs/jobs/:jobId - Retrieve execution record by job ID
+router.get(
+  '/jobs/:jobId',
+  asyncHandler(async (req, res) => {
     const { jobId } = req.params
     const record = await pipelineExecutionService.getExecutionRecord(jobId)
 
     if (!record) {
-      return res.status(404).json({
-        success: false,
-        error: '해당 실행 기록을 찾을 수 없습니다.',
-      })
+      throw new ApiError(404, 'Execution record not found')
     }
 
     res.json({
       success: true,
       data: record,
     })
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : '실행 기록 조회 중 오류가 발생했습니다.',
-    })
-  }
-})
+  }),
+)
 
-// 파이프라인 ID로 실행 기록 조회
-router.get('/pipelines/:pipelineId/jobs', async (req, res) => {
-  try {
+// GET /api/pipeline-jobs/pipelines/:pipelineId/jobs - Retrieve execution records by pipeline ID
+router.get(
+  '/pipelines/:pipelineId/jobs',
+  asyncHandler(async (req, res) => {
     const { pipelineId } = req.params
     const records =
       await pipelineExecutionService.getExecutionRecordsByPipelineId(pipelineId)
 
+    if (!records || records.length === 0) {
+      throw new ApiError(404, 'No execution records found for this pipeline')
+    }
+
     res.json(records)
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : '실행 기록 조회 중 오류가 발생했습니다.',
-    })
-  }
-})
+  }),
+)
 
 export default router

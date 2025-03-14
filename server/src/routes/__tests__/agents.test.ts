@@ -1,6 +1,7 @@
 import { Agent, CreateAgentData } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
+import { errorHandler } from '../../middleware/errorHandler'
 import { AgentService } from '../../services/agent'
 import agentRoutes from '../agents'
 
@@ -39,6 +40,7 @@ describe('Agent Routes', () => {
     app = express()
     app.use(express.json())
     app.use('/api/agents', agentRoutes)
+    app.use(errorHandler)
 
     const mockAgentService = AgentService as jest.MockedClass<
       typeof AgentService
@@ -103,7 +105,7 @@ describe('Agent Routes', () => {
       const response = await request(app).get('/api/agents/999')
 
       expect(response.status).toBe(404)
-      expect(response.body.message).toBe('에이전트를 찾을 수 없습니다.')
+      expect(response.body.error).toBe('Agent not found')
     })
   })
 
@@ -118,6 +120,17 @@ describe('Agent Routes', () => {
 
       expect(response.status).toBe(201)
       expect(response.body.name).toBe('새 에이전트')
+    })
+
+    it('필수 필드가 누락된 경우 400을 반환해야 함', async () => {
+      const response = await request(app)
+        .post('/api/agents')
+        .send({ name: '새 에이전트' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(
+        'Name and description are required fields',
+      )
     })
   })
 
@@ -141,7 +154,18 @@ describe('Agent Routes', () => {
       })
 
       expect(response.status).toBe(404)
-      expect(response.body.message).toBe('에이전트를 찾을 수 없습니다.')
+      expect(response.body.error).toBe('Agent not found')
+    })
+
+    it('필수 필드가 누락된 경우 400을 반환해야 함', async () => {
+      const response = await request(app)
+        .put('/api/agents/1')
+        .send({ name: '수정된 에이전트' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe(
+        'Name and description are required fields',
+      )
     })
   })
 
@@ -156,7 +180,7 @@ describe('Agent Routes', () => {
       const response = await request(app).delete('/api/agents/999')
 
       expect(response.status).toBe(404)
-      expect(response.body.message).toBe('에이전트를 찾을 수 없습니다.')
+      expect(response.body.error).toBe('Agent not found')
     })
   })
 })

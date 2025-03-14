@@ -10,7 +10,7 @@ export class ConnectorService {
   }
 
   async getAllConnectors(): Promise<Connector[]> {
-    return this.repository.findAll()
+    return await this.repository.findAll()
   }
 
   async getConnectorById(id: string): Promise<Connector | undefined> {

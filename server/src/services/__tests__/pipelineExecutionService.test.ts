@@ -1,6 +1,7 @@
 import { Pipeline, PipelineEdge, PipelineNode } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
+import { MockPipelineJobsRepository } from '../../repositories/mockRepository'
 import { PipelineExecutionService } from '../pipelineExecutionService'
 
 // 테스트 환경 설정
@@ -19,7 +20,9 @@ describe('PipelineExecutionService', () => {
         return true
       }),
     }
-    pipelineExecutionService = new PipelineExecutionService()
+    pipelineExecutionService = new PipelineExecutionService(
+      new MockPipelineJobsRepository(),
+    )
   })
 
   const createMockPipeline = (): Pipeline => ({
@@ -224,8 +227,14 @@ describe('PipelineExecutionService', () => {
   })
 
   describe('실행 기록 관리', () => {
+    let pipelineExecutionService: PipelineExecutionService
+    let mockRepository: MockPipelineJobsRepository
+
     beforeEach(() => {
-      pipelineExecutionService = new PipelineExecutionService()
+      mockRepository = new MockPipelineJobsRepository()
+      // Mock 저장소 초기화
+      mockRepository.clear()
+      pipelineExecutionService = new PipelineExecutionService(mockRepository)
     })
 
     it('파이프라인 ID로 실행 기록을 조회할 수 있어야 함', async () => {

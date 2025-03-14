@@ -1,6 +1,7 @@
 import { CreateFleetData, Fleet } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
+import { errorHandler } from '../../middleware/errorHandler'
 import { FleetService } from '../../services/fleetService'
 import fleetRoutes from '../fleets'
 
@@ -38,6 +39,7 @@ describe('Fleet Routes', () => {
     app = express()
     app.use(express.json())
     app.use('/api/fleets', fleetRoutes)
+    app.use(errorHandler)
 
     // FleetService 메서드 모킹
     const mockFleetService = FleetService as jest.MockedClass<
@@ -133,6 +135,15 @@ describe('Fleet Routes', () => {
         updatedAt: mockDate,
       })
     })
+
+    it('필수 필드가 누락된 경우 400을 반환해야 함', async () => {
+      const response = await request(app)
+        .post('/api/fleets')
+        .send({ description: '새 설명' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe('Fleet name is required')
+    })
   })
 
   describe('PUT /api/fleets/:id', () => {
@@ -156,6 +167,13 @@ describe('Fleet Routes', () => {
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe('Fleet not found')
+    })
+
+    it('업데이트 데이터가 없는 경우 400을 반환해야 함', async () => {
+      const response = await request(app).put('/api/fleets/1').send({})
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe('No update data provided')
     })
   })
 

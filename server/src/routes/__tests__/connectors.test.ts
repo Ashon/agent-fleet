@@ -1,6 +1,7 @@
 import { Connector, CreateConnectorData } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
+import { errorHandler } from '../../middleware/errorHandler'
 import { ConnectorService } from '../../services/connectorService'
 import connectorRoutes from '../connectors'
 
@@ -47,12 +48,12 @@ describe('Connector Routes', () => {
     app = express()
     app.use(express.json())
     app.use('/api/connectors', connectorRoutes)
+    app.use(errorHandler)
 
     const mockConnectorService = ConnectorService as jest.MockedClass<
       typeof ConnectorService
     >
 
-    // 모든 메서드가 Promise를 반환하도록 수정
     mockConnectorService.prototype.getAllConnectors.mockResolvedValue(
       mockConnectors,
     )
@@ -95,8 +96,8 @@ describe('Connector Routes', () => {
         return Promise.resolve({
           success: !!connector,
           message: connector
-            ? '커넥터 테스트 성공'
-            : '커넥터를 찾을 수 없습니다.',
+            ? 'Connector test successful'
+            : 'Connector not found',
         })
       },
     )
@@ -159,6 +160,15 @@ describe('Connector Routes', () => {
         status: 'active',
       })
     })
+
+    it('필수 필드가 누락된 경우 400을 반환해야 함', async () => {
+      const response = await request(app)
+        .post('/api/connectors')
+        .send({ description: '새 설명' })
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe('Connector name and type are required')
+    })
   })
 
   describe('PUT /api/connectors/:id', () => {
@@ -190,6 +200,13 @@ describe('Connector Routes', () => {
       expect(response.status).toBe(404)
       expect(response.body.error).toBe('Connector not found')
     })
+
+    it('업데이트 데이터가 없는 경우 400을 반환해야 함', async () => {
+      const response = await request(app).put('/api/connectors/1').send({})
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe('No update data provided')
+    })
   })
 
   describe('DELETE /api/connectors/:id', () => {
@@ -214,18 +231,15 @@ describe('Connector Routes', () => {
       expect(response.status).toBe(200)
       expect(response.body).toEqual({
         success: true,
-        message: '커넥터 테스트 성공',
+        message: 'Connector test successful',
       })
     })
 
-    it('존재하지 않는 커넥터 테스트 시 실패 응답을 반환해야 함', async () => {
+    it('존재하지 않는 커넥터 테스트 시 400을 반환해야 함', async () => {
       const response = await request(app).post('/api/connectors/999/test')
 
       expect(response.status).toBe(400)
-      expect(response.body).toEqual({
-        success: false,
-        message: '커넥터를 찾을 수 없습니다.',
-      })
+      expect(response.body.error).toBe('Connector not found')
     })
   })
 })

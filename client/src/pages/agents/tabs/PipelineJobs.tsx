@@ -91,7 +91,7 @@ export default function PipelineJobs({ agent }: { agent: Agent }) {
     <div className="container mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {jobs.map((job) => (
-          <Card key={job.jobId} hover>
+          <Card key={job.id} hover>
             <div>
               <div className="flex items-start justify-between">
                 <h2 className="card-title">{job.pipelineName}</h2>
@@ -103,7 +103,7 @@ export default function PipelineJobs({ agent }: { agent: Agent }) {
               </div>
 
               <p className="text-sm text-base-content/70 mt-1">
-                Job ID: {job.jobId}
+                Job ID: {job.id}
               </p>
             </div>
 
@@ -126,7 +126,7 @@ export default function PipelineJobs({ agent }: { agent: Agent }) {
 
             <div className="mt-4 flex justify-end">
               <Link
-                to={`/pipeline-jobs/${job.jobId}`}
+                to={`/pipeline-jobs/${job.id}`}
                 className="btn btn-outline btn-sm"
               >
                 상세보기

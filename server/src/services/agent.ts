@@ -15,7 +15,7 @@ export class AgentService {
   }
 
   async getAllAgents(): Promise<Agent[]> {
-    return this.repository.findAll()
+    return await this.repository.findAll()
   }
 
   async getAgentById(id: string): Promise<Agent | undefined> {

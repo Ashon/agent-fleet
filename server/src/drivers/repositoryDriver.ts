@@ -8,4 +8,5 @@ export interface RepositoryDriver {
   findById<T extends Entity>(entityName: string, id: string): Promise<T | null>
   save<T extends Entity>(entityName: string, entity: T): Promise<T>
   delete(entityName: string, id: string): Promise<void>
+  clear(entityName: string): Promise<void>
 }

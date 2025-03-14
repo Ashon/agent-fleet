@@ -1,5 +1,6 @@
 import {
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
@@ -104,12 +105,35 @@ export class S3RepositoryDriver implements RepositoryDriver {
   // 엔티티 삭제
   async delete(entityName: string, id: string): Promise<void> {
     const key = `${entityName}/${id}.json`
-
     await this.s3Client.send(
       new DeleteObjectCommand({
         Bucket: this.bucketName,
         Key: key,
       }),
     )
+  }
+
+  async clear(entityName: string): Promise<void> {
+    const response = await this.s3Client.send(
+      new ListObjectsV2Command({
+        Bucket: this.bucketName,
+        Prefix: `${entityName}/`,
+      }),
+    )
+
+    if (response.Contents && response.Contents.length > 0) {
+      const deleteObjects = response.Contents.map((obj) => ({
+        Key: obj.Key!,
+      }))
+
+      await this.s3Client.send(
+        new DeleteObjectsCommand({
+          Bucket: this.bucketName,
+          Delete: {
+            Objects: deleteObjects,
+          },
+        }),
+      )
+    }
   }
 }
