@@ -1,7 +1,9 @@
 import { Router } from 'express'
-import { agentService } from '../services/agent'
+import { MockAgentRepository } from '../repositories/mockRepository'
+import { AgentService } from '../services/agent'
 
 const router = Router()
+export const agentService = new AgentService(new MockAgentRepository())
 
 // 에이전트 목록 조회
 router.get('/', async (req, res) => {
@@ -9,6 +11,7 @@ router.get('/', async (req, res) => {
     const agents = await agentService.getAllAgents()
     res.json(agents)
   } catch (error) {
+    console.error(error)
     res
       .status(500)
       .json({ message: '에이전트 목록 조회 중 오류가 발생했습니다.' })

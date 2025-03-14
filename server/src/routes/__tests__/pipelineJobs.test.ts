@@ -1,8 +1,7 @@
 import express from 'express'
 import request from 'supertest'
 import { mockPipelineJobs } from '../../mocks/pipelineJobs'
-import { pipelineExecutionService } from '../../services/pipelineExecutionService'
-import pipelineJobs from '../pipelineJobs'
+import pipelineJobs, { pipelineExecutionService } from '../pipelineJobs'
 
 jest.mock('../../services/pipelineExecutionService')
 
@@ -66,8 +65,8 @@ describe('Pipeline Job Routes', () => {
     })
   })
 
-  describe('GET /api/pipeline-execution/jobs/:jobId', () => {
-    const testJobId = mockPipelineJobs[0].jobId
+  describe('GET /api/pipeline-execution/jobs/:id', () => {
+    const testid = mockPipelineJobs[0].id
 
     it('특정 Job ID로 실행 기록을 성공적으로 조회해야 합니다', async () => {
       // Mock 설정
@@ -77,7 +76,7 @@ describe('Pipeline Job Routes', () => {
 
       // 테스트 실행
       const response = await request(app).get(
-        `/api/pipeline-execution/jobs/${testJobId}`,
+        `/api/pipeline-execution/jobs/${testid}`,
       )
 
       // 검증
@@ -87,7 +86,7 @@ describe('Pipeline Job Routes', () => {
         data: convertDatesToStrings(mockPipelineJobs[0]),
       })
       expect(pipelineExecutionService.getExecutionRecord).toHaveBeenCalledWith(
-        testJobId,
+        testid,
       )
     })
 
@@ -118,7 +117,7 @@ describe('Pipeline Job Routes', () => {
 
       // 테스트 실행
       const response = await request(app).get(
-        `/api/pipeline-execution/jobs/${testJobId}`,
+        `/api/pipeline-execution/jobs/${testid}`,
       )
 
       // 검증

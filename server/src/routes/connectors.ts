@@ -1,8 +1,9 @@
 import { Router } from 'express'
-import { ConnectorService } from '../services/connector'
+import { MockConnectorRepository } from '../repositories/mockRepository'
+import { ConnectorService } from '../services/connectorService'
 
 const router = Router()
-const connectorService = new ConnectorService()
+const connectorService = new ConnectorService(new MockConnectorRepository())
 
 // GET /api/connectors
 router.get('/', async (req, res) => {

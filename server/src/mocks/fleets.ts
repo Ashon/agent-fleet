@@ -2,7 +2,7 @@ import { Fleet } from '@agentfleet/types'
 
 const mockDate = '2025-03-08T06:50:43.331Z'
 
-export const fleets: Fleet[] = [
+export const mockFleets: Fleet[] = [
   {
     id: '1',
     name: '고객 서비스 Fleet',

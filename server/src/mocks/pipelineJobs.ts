@@ -2,7 +2,7 @@ import { PipelineExecutionRecord } from '@agentfleet/types'
 
 export const mockPipelineJobs: PipelineExecutionRecord[] = [
   {
-    jobId: '550e8400-e29b-41d4-a716-446655440000',
+    id: '550e8400-e29b-41d4-a716-446655440000',
     pipelineId: 'pipeline-1',
     pipelineName: '기본 추론 파이프라인',
     input: '사용자 입력 데이터',
@@ -41,7 +41,7 @@ export const mockPipelineJobs: PipelineExecutionRecord[] = [
     finalOutput: '행동 실행: 계획에 따른 작업 수행',
   },
   {
-    jobId: '550e8400-e29b-41d4-a716-446655440001',
+    id: '550e8400-e29b-41d4-a716-446655440001',
     pipelineId: 'pipeline-2',
     pipelineName: '고급 분석 파이프라인',
     input: '분석 요청 데이터',
@@ -71,7 +71,7 @@ export const mockPipelineJobs: PipelineExecutionRecord[] = [
     error: '데이터 분석 중 예외가 발생했습니다.',
   },
   {
-    jobId: '550e8400-e29b-41d4-a716-446655440002',
+    id: '550e8400-e29b-41d4-a716-446655440002',
     pipelineId: 'pipeline-1',
     pipelineName: '기본 추론 파이프라인',
     input: '두 번째 테스트 입력',

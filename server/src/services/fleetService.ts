@@ -1,24 +1,22 @@
 import { CreateFleetData, Fleet } from '@agentfleet/types'
-import { fleets } from '../mocks/fleets'
+import { v4 } from 'uuid'
+import { FleetRepository } from '../repositories/fleetRepository'
 
 export class FleetService {
-  private fleets: Fleet[] = []
+  constructor(private readonly fleetRepository: FleetRepository) {}
 
-  constructor(initialFleets: Fleet[] = []) {
-    this.fleets = [...initialFleets]
+  async getAllFleets(): Promise<Fleet[]> {
+    return await this.fleetRepository.findAll()
   }
 
-  getAllFleets(): Fleet[] {
-    return this.fleets
+  async getFleetById(id: string): Promise<Fleet | undefined> {
+    const fleet = await this.fleetRepository.findById(id)
+    return fleet || undefined
   }
 
-  getFleetById(id: string): Fleet | undefined {
-    return this.fleets.find((f) => f.id === id)
-  }
-
-  createFleet(data: CreateFleetData): Fleet {
+  async createFleet(data: CreateFleetData): Promise<Fleet> {
     const fleet: Fleet = {
-      id: (this.fleets.length + 1).toString(),
+      id: v4(),
       name: data.name,
       description: data.description,
       status: 'active',
@@ -26,32 +24,35 @@ export class FleetService {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
-    this.fleets.push(fleet)
-    return fleet
+
+    return await this.fleetRepository.save(fleet)
   }
 
-  updateFleet(id: string, data: Partial<CreateFleetData>): Fleet | undefined {
-    const index = this.fleets.findIndex((f) => f.id === id)
-    if (index === -1) {
+  async updateFleet(
+    id: string,
+    data: Partial<CreateFleetData>,
+  ): Promise<Fleet | undefined> {
+    const existingFleet = await this.fleetRepository.findById(id)
+    if (!existingFleet) {
       return undefined
     }
-    this.fleets[index] = {
-      ...this.fleets[index],
+
+    const updatedFleet: Fleet = {
+      ...existingFleet,
       ...data,
       updatedAt: new Date().toISOString(),
     }
-    return this.fleets[index]
+
+    return await this.fleetRepository.save(updatedFleet)
   }
 
-  deleteFleet(id: string): boolean {
-    const index = this.fleets.findIndex((f) => f.id === id)
-    if (index === -1) {
+  async deleteFleet(id: string): Promise<boolean> {
+    const existingFleet = await this.fleetRepository.findById(id)
+    if (!existingFleet) {
       return false
     }
-    this.fleets.splice(index, 1)
+
+    await this.fleetRepository.delete(id)
     return true
   }
 }
-
-// 실제 사용을 위한 인스턴스
-export const fleetService = new FleetService(fleets)

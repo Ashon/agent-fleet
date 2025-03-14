@@ -5,13 +5,9 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
+import { Entity, RepositoryDriver } from './repositoryDriver'
 
-export interface Entity {
-  id: string
-  [key: string]: any
-}
-
-export class S3RepositoryDriver {
+export class S3RepositoryDriver implements RepositoryDriver {
   constructor(
     private readonly s3Client: S3Client,
     private readonly bucketName: string,

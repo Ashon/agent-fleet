@@ -43,34 +43,42 @@ describe('Fleet Routes', () => {
     const mockFleetService = FleetService as jest.MockedClass<
       typeof FleetService
     >
-    mockFleetService.prototype.getAllFleets.mockReturnValue(mockFleets)
+
+    mockFleetService.prototype.getAllFleets.mockResolvedValue(mockFleets)
+
     mockFleetService.prototype.getFleetById.mockImplementation((id: string) =>
-      mockFleets.find((f) => f.id === id),
+      Promise.resolve(mockFleets.find((f) => f.id === id) || undefined),
     )
+
     mockFleetService.prototype.createFleet.mockImplementation(
-      (data: CreateFleetData) => ({
-        id: '3',
-        name: data.name,
-        description: data.description,
-        status: 'active',
-        agents: data.agents || [],
-        createdAt: mockDate,
-        updatedAt: mockDate,
-      }),
+      (data: CreateFleetData) =>
+        Promise.resolve({
+          id: '3',
+          name: data.name,
+          description: data.description,
+          status: 'active',
+          agents: data.agents || [],
+          createdAt: mockDate,
+          updatedAt: mockDate,
+        }),
     )
+
     mockFleetService.prototype.updateFleet.mockImplementation(
       (id: string, data: Partial<CreateFleetData>) => {
         const fleet = mockFleets.find((f) => f.id === id)
-        if (!fleet) return undefined
-        return {
+        if (!fleet) {
+          return Promise.resolve(undefined)
+        }
+        return Promise.resolve({
           ...fleet,
           ...data,
           updatedAt: mockDate,
-        }
+        })
       },
     )
+
     mockFleetService.prototype.deleteFleet.mockImplementation((id: string) =>
-      mockFleets.some((f) => f.id === id),
+      Promise.resolve(mockFleets.some((f) => f.id === id)),
     )
   })
 

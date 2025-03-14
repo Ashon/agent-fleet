@@ -6,17 +6,19 @@ import {
   PipelineTestRequest,
   PipelineTestResponse,
 } from '@agentfleet/types'
-import { mockPipelines } from '../mocks/agentReasoningPipeline'
+import { v4 } from 'uuid'
+import { PipelineRepository } from '../repositories/pipelineRepository'
 
 export class PipelineService {
-  private readonly pipelines: Pipeline[]
+  private readonly repository: PipelineRepository
 
-  constructor() {
-    this.pipelines = [...mockPipelines]
+  constructor(repository: PipelineRepository) {
+    this.repository = repository
   }
 
   async getAllPipelines(filters?: { agentId?: string }): Promise<Pipeline[]> {
-    let filteredPipelines = [...this.pipelines]
+    const pipelines = await this.repository.findAll()
+    let filteredPipelines = [...pipelines]
 
     if (filters?.agentId) {
       filteredPipelines = filteredPipelines.filter(
@@ -28,7 +30,8 @@ export class PipelineService {
   }
 
   async getPipelineById(id: string): Promise<Pipeline | undefined> {
-    return this.pipelines.find((pipeline) => pipeline.id === id)
+    const pipeline = await this.repository.findById(id)
+    return pipeline ?? undefined
   }
 
   async createPipeline(payload: CreatePipelinePayload): Promise<Pipeline> {
@@ -43,36 +46,36 @@ export class PipelineService {
       throw new Error('필수 필드가 누락되었습니다.')
     }
 
+    const id = v4()
     const newPipeline: Pipeline = {
-      id: `pipeline-${this.pipelines.length + 1}`,
+      id,
       ...payload,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
-    this.pipelines.push(newPipeline)
-    return newPipeline
+
+    return this.repository.save(newPipeline)
   }
 
   async updatePipeline(
     id: string,
     payload: Partial<Pipeline>,
   ): Promise<Pipeline | undefined> {
-    const index = this.pipelines.findIndex((pipeline) => pipeline.id === id)
-    if (index === -1) return undefined
+    const pipeline = await this.repository.findById(id)
+    if (!pipeline) return undefined
 
-    this.pipelines[index] = {
-      ...this.pipelines[index],
+    return this.repository.save({
+      ...pipeline,
       ...payload,
       id, // ID는 변경 불가
-    }
-    return this.pipelines[index]
+    })
   }
 
   async deletePipeline(id: string): Promise<boolean> {
-    const index = this.pipelines.findIndex((pipeline) => pipeline.id === id)
-    if (index === -1) return false
+    const pipeline = await this.repository.findById(id)
+    if (!pipeline) return false
 
-    this.pipelines.splice(index, 1)
+    await this.repository.delete(id)
     return true
   }
 
@@ -80,30 +83,26 @@ export class PipelineService {
     id: string,
     nodes: Pipeline['nodes'],
   ): Promise<Pipeline | undefined> {
-    const index = this.pipelines.findIndex((pipeline) => pipeline.id === id)
-    if (index === -1) return undefined
+    const pipeline = await this.repository.findById(id)
+    if (!pipeline) return undefined
 
-    const pipeline = this.pipelines[index]
-    this.pipelines[index] = {
+    return this.repository.save({
       ...pipeline,
       nodes,
-    }
-    return this.pipelines[index]
+    })
   }
 
   async updatePipelineEdges(
     id: string,
     edges: Pipeline['edges'],
   ): Promise<Pipeline | undefined> {
-    const index = this.pipelines.findIndex((pipeline) => pipeline.id === id)
-    if (index === -1) return undefined
+    const pipeline = await this.repository.findById(id)
+    if (!pipeline) return undefined
 
-    const pipeline = this.pipelines[index]
-    this.pipelines[index] = {
+    return this.repository.save({
       ...pipeline,
       edges,
-    }
-    return this.pipelines[index]
+    })
   }
 
   async validatePipeline(
@@ -117,17 +116,51 @@ export class PipelineService {
       }
     }
 
-    // 모든 엣지가 유효한 노드를 참조하는지 확인
-    const nodeIds = new Set(pipeline.nodes.map((node: PipelineNode) => node.id))
+    // 1. 모든 노드 ID를 Set으로 저장
+    const nodeIds = new Set(pipeline.nodes.map((node) => node.id))
+
+    // 2. 모든 엣지가 유효한 노드를 참조하는지 확인
     const hasInvalidEdge = pipeline.edges.some(
-      (edge: PipelineEdge) =>
-        !nodeIds.has(edge.source) || !nodeIds.has(edge.target),
+      (edge) => !nodeIds.has(edge.source) || !nodeIds.has(edge.target),
     )
 
     if (hasInvalidEdge) {
       return {
         isValid: false,
         message: '유효하지 않은 엣지가 있습니다.',
+      }
+    }
+
+    // 3. 순환 참조 확인
+    const visited = new Set<string>()
+    const recursionStack = new Set<string>()
+
+    const hasCycle = (nodeId: string): boolean => {
+      if (!nodeIds.has(nodeId)) return false
+      if (recursionStack.has(nodeId)) return true
+      if (visited.has(nodeId)) return false
+
+      visited.add(nodeId)
+      recursionStack.add(nodeId)
+
+      const outgoingEdges = pipeline.edges.filter(
+        (edge) => edge.source === nodeId,
+      )
+      for (const edge of outgoingEdges) {
+        if (hasCycle(edge.target)) return true
+      }
+
+      recursionStack.delete(nodeId)
+      return false
+    }
+
+    // 모든 노드에 대해 순환 참조 검사
+    for (const node of pipeline.nodes) {
+      if (hasCycle(node.id)) {
+        return {
+          isValid: false,
+          message: '순환 참조가 있습니다.',
+        }
       }
     }
 
@@ -224,5 +257,3 @@ export class PipelineService {
     }
   }
 }
-
-export const pipelineService = new PipelineService()

@@ -1,13 +1,14 @@
-import { ConnectorService } from '../connector'
-import { mockConnectors } from '../../mocks/connectors'
 import { Connector, ConnectorStatus } from '@agentfleet/types'
+import { mockConnectors } from '../../mocks/connectors'
+import { MockConnectorRepository } from '../../repositories/mockRepository'
+import { ConnectorService } from '../connectorService'
 
 describe('ConnectorService', () => {
   let connectorService: ConnectorService
   let testConnector: Connector
 
   beforeEach(() => {
-    connectorService = new ConnectorService()
+    connectorService = new ConnectorService(new MockConnectorRepository())
     testConnector = mockConnectors[0]
   })
 
@@ -26,7 +27,7 @@ describe('ConnectorService', () => {
   describe('getConnectorById', () => {
     it('존재하는 ID로 커넥터를 찾아야 합니다', async () => {
       const connector = await connectorService.getConnectorById(
-        testConnector.id
+        testConnector.id,
       )
       expect(connector).toEqual(testConnector)
     })
@@ -57,7 +58,10 @@ describe('ConnectorService', () => {
       }
 
       const createdConnector = await connectorService.createConnector(
-        newConnector as unknown as Omit<Connector, 'id' | 'status' | 'lastSync'>
+        newConnector as unknown as Omit<
+          Connector,
+          'id' | 'status' | 'lastSync'
+        >,
       )
       expect(createdConnector).toMatchObject(newConnector)
       expect(createdConnector.id).toBeDefined()
@@ -75,8 +79,8 @@ describe('ConnectorService', () => {
 
       await expect(
         connectorService.createConnector(
-          invalidConnector as unknown as Connector
-        )
+          invalidConnector as unknown as Connector,
+        ),
       ).rejects.toThrow()
     })
   })
@@ -92,7 +96,7 @@ describe('ConnectorService', () => {
 
       const updatedConnector = await connectorService.updateConnector(
         testConnector.id,
-        updateData
+        updateData,
       )
       expect(updatedConnector).toMatchObject({
         id: testConnector.id,
@@ -107,7 +111,7 @@ describe('ConnectorService', () => {
 
       const updatedConnector = await connectorService.updateConnector(
         '999',
-        updateData
+        updateData,
       )
       expect(updatedConnector).toBeUndefined()
     })
@@ -119,7 +123,7 @@ describe('ConnectorService', () => {
 
       const updatedConnector = await connectorService.updateConnector(
         testConnector.id,
-        updateData
+        updateData,
       )
       expect(updatedConnector?.id).toBe(testConnector.id)
     })
@@ -131,7 +135,7 @@ describe('ConnectorService', () => {
       expect(result).toBe(true)
 
       const deletedConnector = await connectorService.getConnectorById(
-        testConnector.id
+        testConnector.id,
       )
       expect(deletedConnector).toBeUndefined()
     })
@@ -146,7 +150,7 @@ describe('ConnectorService', () => {
     it('커넥터 상태를 업데이트해야 합니다', async () => {
       const updatedConnector = await connectorService.updateConnectorStatus(
         testConnector.id,
-        'inactive'
+        'inactive',
       )
       expect(updatedConnector?.status).toBe('inactive')
     })
@@ -155,8 +159,8 @@ describe('ConnectorService', () => {
       await expect(
         connectorService.updateConnectorStatus(
           testConnector.id,
-          'invalid' as ConnectorStatus
-        )
+          'invalid' as ConnectorStatus,
+        ),
       ).rejects.toThrow()
     })
   })
@@ -164,11 +168,11 @@ describe('ConnectorService', () => {
   describe('updateLastSync', () => {
     it('마지막 동기화 시간을 업데이트해야 합니다', async () => {
       const updatedConnector = await connectorService.updateLastSync(
-        testConnector.id
+        testConnector.id,
       )
       expect(updatedConnector?.lastSync).toBeDefined()
       expect(
-        new Date(updatedConnector?.lastSync || '').getTime()
+        new Date(updatedConnector?.lastSync || '').getTime(),
       ).toBeLessThanOrEqual(Date.now())
     })
 

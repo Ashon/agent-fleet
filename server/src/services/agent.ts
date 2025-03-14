@@ -4,21 +4,23 @@ import {
   ChatMessage,
   ChatMessageRole,
 } from '@agentfleet/types'
-import { mockAgents } from '../mocks/agents'
+import { v4 } from 'uuid'
+import { AgentRepository } from '../repositories/agentRepository'
 
 export class AgentService {
-  protected readonly agents: Agent[]
+  protected readonly repository: AgentRepository
 
-  constructor() {
-    this.agents = [...mockAgents]
+  constructor(repository: AgentRepository) {
+    this.repository = repository
   }
 
   async getAllAgents(): Promise<Agent[]> {
-    return [...this.agents]
+    return this.repository.findAll()
   }
 
   async getAgentById(id: string): Promise<Agent | undefined> {
-    return this.agents.find((agent) => agent.id === id)
+    const agent = await this.repository.findById(id)
+    return agent ?? undefined
   }
 
   async createAgent(
@@ -29,36 +31,36 @@ export class AgentService {
       throw new Error('필수 필드가 누락되었습니다.')
     }
 
+    const id = v4()
     const newAgent: Agent = {
-      id: String(this.agents.length + 1),
+      id,
       ...agentData,
       status: 'active',
       chatHistory: [],
     }
-    this.agents.push(newAgent)
-    return newAgent
+
+    return this.repository.save(newAgent)
   }
 
   async updateAgent(
     id: string,
     agentData: Partial<Agent>,
   ): Promise<Agent | undefined> {
-    const index = this.agents.findIndex((agent) => agent.id === id)
-    if (index === -1) return undefined
+    const agent = await this.repository.findById(id)
+    if (!agent) return undefined
 
-    this.agents[index] = {
-      ...this.agents[index],
+    return this.repository.save({
+      ...agent,
       ...agentData,
       id, // ID는 변경 불가
-    }
-    return this.agents[index]
+    })
   }
 
   async deleteAgent(id: string): Promise<boolean> {
-    const index = this.agents.findIndex((agent) => agent.id === id)
-    if (index === -1) return false
+    const agent = await this.repository.findById(id)
+    if (!agent) return false
 
-    this.agents.splice(index, 1)
+    await this.repository.delete(id)
     return true
   }
 
@@ -71,15 +73,13 @@ export class AgentService {
       throw new Error('유효하지 않은 상태입니다.')
     }
 
-    const index = this.agents.findIndex((agent) => agent.id === id)
-    if (index === -1) return undefined
+    const agent = await this.repository.findById(id)
+    if (!agent) return undefined
 
-    const agent = this.agents[index]
-    this.agents[index] = {
+    return this.repository.save({
       ...agent,
       status,
-    }
-    return this.agents[index]
+    })
   }
 
   async addChatMessage(
@@ -95,22 +95,17 @@ export class AgentService {
       throw new Error('유효하지 않은 메시지 형식입니다.')
     }
 
-    const index = this.agents.findIndex((agent) => agent.id === id)
-    if (index === -1) return undefined
+    const agent = await this.repository.findById(id)
+    if (!agent) return undefined
 
-    const agent = this.agents[index]
     const chatHistory = [
       ...(agent.chatHistory || []),
       { ...message, timestamp: new Date().toISOString() },
     ]
 
-    this.agents[index] = {
+    return this.repository.save({
       ...agent,
       chatHistory: chatHistory as ChatMessage[],
-    }
-
-    return this.agents[index]
+    })
   }
 }
-
-export const agentService = new AgentService()

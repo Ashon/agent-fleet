@@ -1,8 +1,14 @@
 import { Router } from 'express'
-import { pipelineService } from '../services/agentReasoningPipeline'
-import { pipelineExecutionService } from '../services/pipelineExecutionService'
+import { mockPipelineJobs } from '../mocks/pipelineJobs'
+import { MockPipelineRepository } from '../repositories/mockRepository'
+import { PipelineService } from '../services/agentReasoningPipeline'
+import { PipelineExecutionService } from '../services/pipelineExecutionService'
 
 const router = Router()
+export const pipelineService = new PipelineService(new MockPipelineRepository())
+export const pipelineExecutionService = new PipelineExecutionService(
+  mockPipelineJobs,
+)
 
 // 워크플로우 목록 조회
 router.get('/', async (req, res) => {

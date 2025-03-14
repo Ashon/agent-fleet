@@ -1,7 +1,12 @@
 import { Router } from 'express'
-import { pipelineExecutionService } from '../services/pipelineExecutionService'
+import { mockPipelineJobs } from '../mocks/pipelineJobs'
+import { PipelineExecutionService } from '../services/pipelineExecutionService'
 
 const router = Router()
+
+export const pipelineExecutionService = new PipelineExecutionService(
+  mockPipelineJobs,
+)
 
 // 모든 실행 기록 조회
 router.get('/jobs', async (req, res) => {

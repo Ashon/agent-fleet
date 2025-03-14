@@ -19,7 +19,7 @@ export interface NodeExecutionResult {
 }
 
 export interface PipelineExecutionRecord {
-  jobId: string
+  id: string
   pipelineId: string
   pipelineName: string
   input: string

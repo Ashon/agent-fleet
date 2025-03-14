@@ -1,14 +1,10 @@
-import {
-  Connector,
-  ConnectorType,
-  CreateConnectorData,
-} from '@agentfleet/types'
+import { Connector, CreateConnectorData } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
-import { ConnectorService } from '../../services/connector'
+import { ConnectorService } from '../../services/connectorService'
 import connectorRoutes from '../connectors'
 
-jest.mock('../../services/connector')
+jest.mock('../../services/connectorService')
 
 describe('Connector Routes', () => {
   let app: express.Application
@@ -91,6 +87,18 @@ describe('Connector Routes', () => {
 
     mockConnectorService.prototype.deleteConnector.mockImplementation(
       (id: string) => Promise.resolve(mockConnectors.some((c) => c.id === id)),
+    )
+
+    mockConnectorService.prototype.testConnector.mockImplementation(
+      (id: string) => {
+        const connector = mockConnectors.find((c) => c.id === id)
+        return Promise.resolve({
+          success: !!connector,
+          message: connector
+            ? '커넥터 테스트 성공'
+            : '커넥터를 찾을 수 없습니다.',
+        })
+      },
     )
   })
 
@@ -196,6 +204,28 @@ describe('Connector Routes', () => {
 
       expect(response.status).toBe(404)
       expect(response.body.error).toBe('Connector not found')
+    })
+  })
+
+  describe('POST /api/connectors/:id/test', () => {
+    it('존재하는 커넥터 테스트 시 성공 응답을 반환해야 함', async () => {
+      const response = await request(app).post('/api/connectors/1/test')
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        success: true,
+        message: '커넥터 테스트 성공',
+      })
+    })
+
+    it('존재하지 않는 커넥터 테스트 시 실패 응답을 반환해야 함', async () => {
+      const response = await request(app).post('/api/connectors/999/test')
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual({
+        success: false,
+        message: '커넥터를 찾을 수 없습니다.',
+      })
     })
   })
 })

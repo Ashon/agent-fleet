@@ -1,23 +1,25 @@
 import { Connector, ConnectorStatus } from '@agentfleet/types'
-import { mockConnectors } from '../mocks/connectors'
+import { v4 } from 'uuid'
+import { ConnectorRepository } from '../repositories/connectorRepository'
 
 export class ConnectorService {
-  private readonly connectors: Connector[]
+  private readonly repository: ConnectorRepository
 
-  constructor() {
-    this.connectors = [...mockConnectors]
+  constructor(repository: ConnectorRepository) {
+    this.repository = repository
   }
 
   async getAllConnectors(): Promise<Connector[]> {
-    return [...this.connectors]
+    return this.repository.findAll()
   }
 
   async getConnectorById(id: string): Promise<Connector | undefined> {
-    return this.connectors.find((connector) => connector.id === id)
+    const connector = await this.repository.findById(id)
+    return connector ?? undefined
   }
 
   async createConnector(
-    connectorData: Omit<Connector, 'id' | 'status' | 'lastSync'>
+    connectorData: Omit<Connector, 'id' | 'status' | 'lastSync'>,
   ): Promise<Connector> {
     // 필수 필드 검증
     if (
@@ -32,74 +34,68 @@ export class ConnectorService {
     }
 
     const newConnector: Connector = {
-      id: String(this.connectors.length + 1),
+      id: v4(),
       ...connectorData,
       status: 'active',
       lastSync: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
-    this.connectors.push(newConnector)
-    return newConnector
+    return this.repository.save(newConnector)
   }
 
   async updateConnector(
     id: string,
-    connectorData: Partial<Connector>
+    connectorData: Partial<Connector>,
   ): Promise<Connector | undefined> {
-    const index = this.connectors.findIndex((connector) => connector.id === id)
-    if (index === -1) return undefined
+    const connector = await this.repository.findById(id)
+    if (!connector) return undefined
 
-    this.connectors[index] = {
-      ...this.connectors[index],
+    return this.repository.save({
+      ...connector,
       ...connectorData,
       id, // ID는 변경 불가
-    }
-    return this.connectors[index]
+    })
   }
 
   async deleteConnector(id: string): Promise<boolean> {
-    const index = this.connectors.findIndex((connector) => connector.id === id)
-    if (index === -1) return false
+    const connector = await this.repository.findById(id)
+    if (!connector) return false
 
-    this.connectors.splice(index, 1)
+    await this.repository.delete(id)
     return true
   }
 
   async updateConnectorStatus(
     id: string,
-    status: ConnectorStatus
+    status: ConnectorStatus,
   ): Promise<Connector | undefined> {
     // 유효한 상태인지 검증
     if (status !== 'active' && status !== 'inactive') {
       throw new Error('유효하지 않은 상태입니다.')
     }
 
-    const index = this.connectors.findIndex((connector) => connector.id === id)
-    if (index === -1) return undefined
+    const connector = await this.repository.findById(id)
+    if (!connector) return undefined
 
-    const connector = this.connectors[index]
-    this.connectors[index] = {
+    return this.repository.save({
       ...connector,
       status,
-    }
-    return this.connectors[index]
+    })
   }
 
   async updateLastSync(id: string): Promise<Connector | undefined> {
-    const index = this.connectors.findIndex((connector) => connector.id === id)
-    if (index === -1) return undefined
+    const connector = await this.repository.findById(id)
+    if (!connector) return undefined
 
-    const connector = this.connectors[index]
-    this.connectors[index] = {
+    return this.repository.save({
       ...connector,
       lastSync: new Date(),
-    }
-    return this.connectors[index]
+    })
   }
 
   async testConnector(
-    id: string
+    id: string,
   ): Promise<{ success: boolean; message: string }> {
     const connector = await this.getConnectorById(id)
     if (!connector) {

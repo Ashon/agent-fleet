@@ -1,13 +1,36 @@
-import { Pipeline, PipelineNode } from '@agentfleet/types'
+import {
+  CreatePipelinePayload,
+  Pipeline,
+  PipelineNode,
+} from '@agentfleet/types'
+import { S3RepositoryDriver } from '../../drivers/s3RepositoryDriver'
 import { mockPipelines } from '../../mocks/agentReasoningPipeline'
+import { PipelineRepository } from '../../repositories/pipelineRepository'
 import { PipelineService } from '../agentReasoningPipeline'
+
+jest.mock('../../repositories/pipelineRepository')
 
 describe('PipelineService', () => {
   let pipelineService: PipelineService
   let testPipeline: Pipeline
+  let mockRepository: jest.Mocked<PipelineRepository>
 
   beforeEach(() => {
-    pipelineService = new PipelineService()
+    mockRepository = new PipelineRepository(
+      {} as S3RepositoryDriver,
+    ) as jest.Mocked<PipelineRepository>
+    mockRepository.findAll = jest.fn().mockResolvedValue(mockPipelines)
+    mockRepository.findById = jest
+      .fn()
+      .mockImplementation((id) =>
+        Promise.resolve(mockPipelines.find((p) => p.id === id) || null),
+      )
+    mockRepository.save = jest
+      .fn()
+      .mockImplementation((pipeline) => Promise.resolve(pipeline))
+    mockRepository.delete = jest.fn().mockResolvedValue(undefined)
+
+    pipelineService = new PipelineService(mockRepository)
     testPipeline = mockPipelines[0]
   })
 
@@ -15,44 +38,63 @@ describe('PipelineService', () => {
     it('모든 파이프라인을 반환해야 합니다', async () => {
       const pipelines = await pipelineService.getAllPipelines()
       expect(pipelines).toEqual(mockPipelines)
+      expect(mockRepository.findAll).toHaveBeenCalled()
     })
 
     it('반환된 배열은 원본과 다른 참조여야 합니다', async () => {
       const pipelines = await pipelineService.getAllPipelines()
       expect(pipelines).not.toBe(mockPipelines)
     })
+
+    it('agentId로 필터링된 파이프라인을 반환해야 합니다', async () => {
+      const agentId = testPipeline.agentId
+      const pipelines = await pipelineService.getAllPipelines({ agentId })
+      expect(pipelines).toEqual(
+        mockPipelines.filter((p) => p.agentId === agentId),
+      )
+    })
   })
 
   describe('getPipelineById', () => {
-    it('존재하는 ID로 파이프라인을 찾아야 합니다', async () => {
+    it('ID로 파이프라인을 조회해야 합니다', async () => {
       const pipeline = await pipelineService.getPipelineById(testPipeline.id)
       expect(pipeline).toEqual(testPipeline)
+      expect(mockRepository.findById).toHaveBeenCalledWith(testPipeline.id)
     })
 
-    it('존재하지 않는 ID는 undefined를 반환해야 합니다', async () => {
-      const pipeline = await pipelineService.getPipelineById('pipeline-999')
-      expect(pipeline).toBeUndefined()
-    })
-
-    it('빈 ID는 undefined를 반환해야 합니다', async () => {
-      const pipeline = await pipelineService.getPipelineById('')
+    it('존재하지 않는 ID로 조회 시 undefined를 반환해야 합니다', async () => {
+      const pipeline = await pipelineService.getPipelineById('non-existent')
       expect(pipeline).toBeUndefined()
     })
   })
 
   describe('createPipeline', () => {
     it('새로운 파이프라인을 생성해야 합니다', async () => {
-      const newPipeline = {
-        name: 'Test Pipeline',
-        description: '테스트용 파이프라인',
-        nodes: testPipeline.nodes,
-        edges: testPipeline.edges,
-        agentId: testPipeline.agentId,
+      const newPipeline: CreatePipelinePayload = {
+        name: '새 파이프라인',
+        description: '새로운 테스트 파이프라인',
+        agentId: 'test-agent-1',
+        nodes: [],
+        edges: [],
       }
 
-      const createdPipeline = await pipelineService.createPipeline(newPipeline)
-      expect(createdPipeline).toMatchObject(newPipeline)
-      expect(createdPipeline.id).toMatch(/^pipeline-\d+$/)
+      mockRepository.save.mockImplementationOnce((pipeline) =>
+        Promise.resolve({
+          ...pipeline,
+          id: 'new-pipeline-id',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }),
+      )
+
+      const result = await pipelineService.createPipeline(newPipeline)
+      expect(result).toMatchObject({
+        ...newPipeline,
+        id: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+      })
+      expect(mockRepository.save).toHaveBeenCalled()
     })
 
     it('필수 필드가 누락된 경우 에러를 발생시켜야 합니다', async () => {
@@ -68,32 +110,41 @@ describe('PipelineService', () => {
   })
 
   describe('updatePipeline', () => {
-    it('존재하는 파이프라인을 업데이트해야 합니다', async () => {
+    it('파이프라인을 업데이트해야 합니다', async () => {
       const updateData = {
-        name: 'Updated Pipeline',
-        description: '업데이트된 설명',
+        name: '수정된 파이프라인',
+        description: '수정된 설명',
       }
 
-      const updatedPipeline = await pipelineService.updatePipeline(
+      mockRepository.findById.mockResolvedValueOnce(testPipeline)
+      mockRepository.save.mockImplementationOnce((pipeline) =>
+        Promise.resolve({
+          ...pipeline,
+          ...updateData,
+          updatedAt: new Date(),
+        }),
+      )
+
+      const result = await pipelineService.updatePipeline(
         testPipeline.id,
         updateData,
       )
-      expect(updatedPipeline).toMatchObject({
-        id: testPipeline.id,
+      expect(result).toMatchObject({
+        ...testPipeline,
         ...updateData,
+        updatedAt: expect.any(Date),
       })
+      expect(mockRepository.save).toHaveBeenCalled()
     })
 
-    it('존재하지 않는 파이프라인은 undefined를 반환해야 합니다', async () => {
-      const updateData = {
-        name: 'Updated Pipeline',
-      }
+    it('존재하지 않는 파이프라인 업데이트 시 undefined를 반환해야 합니다', async () => {
+      mockRepository.findById.mockResolvedValueOnce(null)
 
-      const updatedPipeline = await pipelineService.updatePipeline(
-        'pipeline-999',
-        updateData,
-      )
-      expect(updatedPipeline).toBeUndefined()
+      const result = await pipelineService.updatePipeline('non-existent', {
+        name: '수정된 파이프라인',
+      })
+      expect(result).toBeUndefined()
+      expect(mockRepository.save).not.toHaveBeenCalled()
     })
 
     it('ID는 변경할 수 없어야 합니다', async () => {
@@ -110,41 +161,64 @@ describe('PipelineService', () => {
   })
 
   describe('deletePipeline', () => {
-    it('존재하는 파이프라인을 삭제해야 합니다', async () => {
+    it('파이프라인을 삭제해야 합니다', async () => {
+      mockRepository.findById.mockResolvedValueOnce(testPipeline)
+
       const result = await pipelineService.deletePipeline(testPipeline.id)
       expect(result).toBe(true)
-
-      const deletedPipeline = await pipelineService.getPipelineById(
-        testPipeline.id,
-      )
-      expect(deletedPipeline).toBeUndefined()
+      expect(mockRepository.delete).toHaveBeenCalledWith(testPipeline.id)
     })
 
-    it('존재하지 않는 파이프라인 삭제는 false를 반환해야 합니다', async () => {
-      const result = await pipelineService.deletePipeline('pipeline-999')
+    it('존재하지 않는 파이프라인 삭제 시 false를 반환해야 합니다', async () => {
+      mockRepository.findById.mockResolvedValueOnce(null)
+
+      const result = await pipelineService.deletePipeline('non-existent')
       expect(result).toBe(false)
+      expect(mockRepository.delete).not.toHaveBeenCalled()
     })
   })
 
   describe('updatePipelineNodes', () => {
-    it('파이프라인 노드를 업데이트해야 합니다', async () => {
-      const newNodes = [...testPipeline.nodes]
-      newNodes[0].data.name = 'Updated Start'
+    it('파이프라인의 노드를 업데이트해야 합니다', async () => {
+      const newNodes: PipelineNode[] = [
+        {
+          id: 'new-node-1',
+          type: 'input',
+          data: { name: '새 입력 노드' },
+          position: { x: 0, y: 0 },
+        },
+      ]
 
-      const updatedPipeline = await pipelineService.updatePipelineNodes(
+      mockRepository.findById.mockResolvedValueOnce(testPipeline)
+      mockRepository.save.mockImplementationOnce((pipeline) =>
+        Promise.resolve({
+          ...pipeline,
+          nodes: newNodes,
+          updatedAt: new Date(),
+        }),
+      )
+
+      const result = await pipelineService.updatePipelineNodes(
         testPipeline.id,
         newNodes,
       )
-      expect(updatedPipeline?.nodes[0].data.name).toBe('Updated Start')
+      expect(result).toMatchObject({
+        ...testPipeline,
+        nodes: newNodes,
+        updatedAt: expect.any(Date),
+      })
+      expect(mockRepository.save).toHaveBeenCalled()
     })
 
-    it('존재하지 않는 파이프라인은 undefined를 반환해야 합니다', async () => {
-      const newNodes = [...testPipeline.nodes]
-      const updatedPipeline = await pipelineService.updatePipelineNodes(
-        'pipeline-999',
-        newNodes,
+    it('존재하지 않는 파이프라인의 노드 업데이트 시 undefined를 반환해야 합니다', async () => {
+      mockRepository.findById.mockResolvedValueOnce(null)
+
+      const result = await pipelineService.updatePipelineNodes(
+        'non-existent',
+        [],
       )
-      expect(updatedPipeline).toBeUndefined()
+      expect(result).toBeUndefined()
+      expect(mockRepository.save).not.toHaveBeenCalled()
     })
   })
 
@@ -176,33 +250,32 @@ describe('PipelineService', () => {
       expect(result.isValid).toBe(true)
     })
 
-    it('존재하지 않는 파이프라인은 false를 반환해야 합니다', async () => {
-      const result = await pipelineService.validatePipeline('pipeline-999')
-      expect(result.isValid).toBe(false)
-      expect(result.message).toBe('파이프라인을 찾을 수 없습니다.')
-    })
-
     it('유효하지 않은 엣지가 있는 파이프라인은 false를 반환해야 합니다', async () => {
-      const pipeline = await pipelineService.getPipelineById(testPipeline.id)
-      if (!pipeline) return
-
-      const invalidPipeline = {
-        ...pipeline,
+      // 잘못된 엣지를 포함하는 파이프라인 생성
+      const invalidPipeline: Pipeline = {
+        ...testPipeline,
         edges: [
-          ...pipeline.edges,
+          ...testPipeline.edges,
           {
             id: 'invalid-edge',
-            source: 'non-existent',
-            target: 'node-1',
-            type: 'default' as const,
+            source: 'non-existent-source',
+            target: 'non-existent-target',
+            type: 'default',
           },
         ],
       }
-      await pipelineService.updatePipeline(testPipeline.id, invalidPipeline)
 
-      const result = await pipelineService.validatePipeline(testPipeline.id)
+      mockRepository.findById.mockResolvedValueOnce(invalidPipeline)
+      const result = await pipelineService.validatePipeline(invalidPipeline.id)
       expect(result.isValid).toBe(false)
       expect(result.message).toBe('유효하지 않은 엣지가 있습니다.')
+    })
+
+    it('존재하지 않는 파이프라인은 false를 반환해야 합니다', async () => {
+      mockRepository.findById.mockResolvedValueOnce(null)
+      const result = await pipelineService.validatePipeline('non-existent')
+      expect(result.isValid).toBe(false)
+      expect(result.message).toBe('파이프라인을 찾을 수 없습니다.')
     })
   })
 })

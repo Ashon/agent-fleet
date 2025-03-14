@@ -63,7 +63,7 @@ describe('PipelineExecutionService', () => {
       const mockPipeline = createMockPipeline()
       const testInput = '테스트 입력'
 
-      const jobId = await pipelineExecutionService.streamPipelineExecution(
+      const id = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         testInput,
         mockResponse as Response,
@@ -75,7 +75,7 @@ describe('PipelineExecutionService', () => {
       expect(startMessage.message).toBe('파이프라인 실행을 시작합니다.')
       expect(startMessage.pipelineId).toBe(mockPipeline.id)
       expect(startMessage.pipelineName).toBe(mockPipeline.name)
-      expect(startMessage.jobId).toBe(jobId)
+      expect(startMessage.id).toBe(id)
 
       // 노드 실행 메시지들 확인
       const nodeStartMessages = writtenData.filter((data) =>
@@ -95,14 +95,14 @@ describe('PipelineExecutionService', () => {
       expect(completeMessage.type).toBe('complete')
       expect(completeMessage.message).toBe('파이프라인 실행이 완료되었습니다.')
       expect(completeMessage.pipelineId).toBe(mockPipeline.id)
-      expect(completeMessage.jobId).toBe(jobId)
+      expect(completeMessage.id).toBe(id)
     })
 
     it('순차적인 노드 실행 순서를 지켜야 함', async () => {
       const mockPipeline = createMockPipeline()
       const testInput = '테스트 입력'
 
-      const jobId = await pipelineExecutionService.streamPipelineExecution(
+      const id = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         testInput,
         mockResponse as Response,
@@ -119,7 +119,7 @@ describe('PipelineExecutionService', () => {
       expect(nodeExecutionOrder).toEqual(['node-1', 'node-2', 'node-3'])
 
       // 실행 기록 확인
-      const record = await pipelineExecutionService.getExecutionRecord(jobId)
+      const record = await pipelineExecutionService.getExecutionRecord(id)
       expect(record).toBeDefined()
       expect(record?.status).toBe('completed')
       expect(record?.nodeResults.length).toBe(3)
@@ -136,7 +136,7 @@ describe('PipelineExecutionService', () => {
         nodes: [], // 의도적으로 노드가 없는 파이프라인 생성
       }
 
-      const jobId = await pipelineExecutionService.streamPipelineExecution(
+      const id = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         '테스트 입력',
         mockResponse as Response,
@@ -148,10 +148,10 @@ describe('PipelineExecutionService', () => {
 
       expect(errorMessage).toBeDefined()
       expect(errorMessage?.message).toBe('파이프라인에 실행할 노드가 없습니다.')
-      expect(errorMessage?.jobId).toBe(jobId)
+      expect(errorMessage?.id).toBe(id)
 
       // 실행 기록 확인
-      const record = await pipelineExecutionService.getExecutionRecord(jobId)
+      const record = await pipelineExecutionService.getExecutionRecord(id)
       expect(record).toBeDefined()
       expect(record?.status).toBe('failed')
       expect(record?.error).toBe('파이프라인에 실행할 노드가 없습니다.')
@@ -197,7 +197,7 @@ describe('PipelineExecutionService', () => {
         ],
       }
 
-      const jobId = await pipelineExecutionService.streamPipelineExecution(
+      const id = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         testInput,
         mockResponse as Response,
@@ -212,7 +212,7 @@ describe('PipelineExecutionService', () => {
       expect(nodeOutputs[2].output).toBe('행동 실행: 작업 실행')
 
       // 실행 기록 확인
-      const record = await pipelineExecutionService.getExecutionRecord(jobId)
+      const record = await pipelineExecutionService.getExecutionRecord(id)
       expect(record).toBeDefined()
       expect(record?.status).toBe('completed')
       expect(record?.nodeResults).toHaveLength(3)
@@ -230,7 +230,7 @@ describe('PipelineExecutionService', () => {
 
     it('파이프라인 ID로 실행 기록을 조회할 수 있어야 함', async () => {
       const testInput = '테스트 입력'
-      const jobId = uuidv4()
+      const id = uuidv4()
       const mockPipeline: Pipeline = {
         id: 'test-pipeline-1',
         agentId: 'test-agent-1',
@@ -289,7 +289,7 @@ describe('PipelineExecutionService', () => {
       await pipelineExecutionService.executePipeline(
         mockPipeline,
         testInput,
-        jobId,
+        id,
         mockResponse as Response,
       )
 
@@ -298,7 +298,7 @@ describe('PipelineExecutionService', () => {
           mockPipeline.id,
         )
       expect(records).toHaveLength(1)
-      expect(records[0].jobId).toBe(jobId)
+      expect(records[0].id).toBe(id)
       expect(records[0].pipelineId).toBe(mockPipeline.id)
       expect(records[0].input).toBe(testInput)
     })
@@ -306,8 +306,8 @@ describe('PipelineExecutionService', () => {
     it('모든 실행 기록을 조회할 수 있어야 함', async () => {
       const testInput1 = '테스트 입력 1'
       const testInput2 = '테스트 입력 2'
-      const jobId1 = uuidv4()
-      const jobId2 = uuidv4()
+      const id1 = uuidv4()
+      const id2 = uuidv4()
       const mockPipeline: Pipeline = {
         id: 'test-pipeline-1',
         agentId: 'test-agent-1',
@@ -366,13 +366,13 @@ describe('PipelineExecutionService', () => {
       await pipelineExecutionService.executePipeline(
         mockPipeline,
         testInput1,
-        jobId1,
+        id1,
         mockResponse as Response,
       )
       await pipelineExecutionService.executePipeline(
         mockPipeline,
         testInput2,
-        jobId2,
+        id2,
         mockResponse as Response,
       )
 
