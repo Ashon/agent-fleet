@@ -9,7 +9,6 @@ import {
   Point,
 } from './types'
 import { getNodesBound, getPathData, getViewportCenter } from './utils'
-import { groupColors } from './utils/color'
 
 type MinimapProps = {
   width: number
@@ -138,8 +137,8 @@ export default function Minimap({
               group={group}
               scale={minimapScale}
               viewOffset={minimapCenter}
-              color={groupColors(group.name.toString())}
-              padding={20}
+              color={'var(--color-gray-600)'}
+              padding={{ x: 20, y: 20 }}
               drawText={false}
             />
           ))}

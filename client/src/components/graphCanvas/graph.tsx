@@ -15,7 +15,6 @@ import {
   Point,
 } from './types'
 import { getGraphCenter, getNodesBound, getPathData } from './utils'
-import { groupColors } from './utils/color'
 
 type NodeGraphProps = {
   nodes?: GraphNode[]
@@ -203,7 +202,7 @@ function GraphCanvas({
           nodes,
           ...bound,
           style: {
-            color: groupColors(group.toString()),
+            color: 'var(--color-gray-600)',
           },
         }
       })
