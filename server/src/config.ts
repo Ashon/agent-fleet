@@ -2,8 +2,21 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-export const config = {
-  listenPort: process.env.PORT || 3001,
+export type Config = {
+  listenPort: number
+  bucketName: string
+  s3: {
+    region: string
+    endpoint: string
+    credentials: {
+      accessKeyId: string
+      secretAccessKey: string
+    }
+  }
+}
+
+export const config: Config = {
+  listenPort: Number(process.env.PORT) || 3001,
   bucketName: process.env.BUCKET_NAME || 'agent-fleet',
   s3: {
     region: process.env.AWS_REGION || 'us-east-1',

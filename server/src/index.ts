@@ -2,23 +2,14 @@ import { S3Client } from '@aws-sdk/client-s3'
 import cors from 'cors'
 import express from 'express'
 import morgan from 'morgan'
+import { createS3Client } from './clients/s3'
 import { config } from './config'
 import { S3RepositoryDriver } from './drivers/s3RepositoryDriver'
 import { errorHandler } from './middleware/errorHandler'
 import routes from './routes'
 
-const s3Client = new S3Client({
-  endpoint: config.s3.endpoint,
-  region: config.s3.region,
-  credentials: {
-    accessKeyId: config.s3.credentials.accessKeyId,
-    secretAccessKey: config.s3.credentials.secretAccessKey,
-  },
-  forcePathStyle: true,
-})
-
+const s3Client = createS3Client({ config })
 const s3RepositoryDriver = new S3RepositoryDriver(s3Client, config.bucketName)
-
 const app = express()
 
 // 미들웨어 설정
