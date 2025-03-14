@@ -23,7 +23,7 @@ export class S3RepositoryDriver implements RepositoryDriver {
           MaxKeys: 1,
         }),
       )
-    } catch (error) {
+    } catch {
       throw new Error('S3 bucket is not accessible')
     }
   }

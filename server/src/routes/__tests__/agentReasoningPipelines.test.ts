@@ -1,4 +1,9 @@
-import { CreatePipelinePayload, Pipeline } from '@agentfleet/types'
+import {
+  CreatePipelinePayload,
+  Pipeline,
+  PipelineEdge,
+  PipelineNode,
+} from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
 import { errorHandler } from '../../middleware/errorHandler'
@@ -90,7 +95,7 @@ describe('Pipeline Routes', () => {
       isValid: true,
     })
     mockPipelineService.prototype.updatePipelineNodes.mockImplementation(
-      (id: string, nodes: any[]) => {
+      (id: string, nodes: PipelineNode[]) => {
         const pipeline = mockPipelines.find((p) => p.id === id)
         if (!pipeline) return Promise.resolve(undefined)
         return Promise.resolve({
@@ -101,7 +106,7 @@ describe('Pipeline Routes', () => {
       },
     )
     mockPipelineService.prototype.updatePipelineEdges.mockImplementation(
-      (id: string, edges: any[]) => {
+      (id: string, edges: PipelineEdge[]) => {
         const pipeline = mockPipelines.find((p) => p.id === id)
         if (!pipeline) return Promise.resolve(undefined)
         return Promise.resolve({
