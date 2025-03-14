@@ -26,3 +26,6 @@ tsconfig.tsbuildinfo
 
 # Environment variables
 .env*
+
+# container volumes
+.minio-data
