@@ -1,13 +1,14 @@
 import { Router } from 'express'
+import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
-import { MockPipelineJobsRepository } from '../repositories/mockRepository'
+import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
 import { PipelineExecutionService } from '../services/pipelineExecutionService'
 
 const router = Router()
 
 export const pipelineExecutionService = new PipelineExecutionService(
-  new MockPipelineJobsRepository(),
+  new PipelineJobsRepository(new MockRepositoryDriver()),
 )
 
 // GET /api/pipeline-jobs/jobs - Retrieve all execution records

@@ -1,11 +1,14 @@
 import { Router } from 'express'
+import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
-import { MockConnectorRepository } from '../repositories/mockRepository'
+import { ConnectorRepository } from '../repositories/connectorRepository'
 import { ConnectorService } from '../services/connectorService'
 
 const router = Router()
-const connectorService = new ConnectorService(new MockConnectorRepository())
+const connectorService = new ConnectorService(
+  new ConnectorRepository(new MockRepositoryDriver()),
+)
 
 // GET /api/connectors - Retrieve all connectors
 router.get(

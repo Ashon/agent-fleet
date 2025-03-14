@@ -10,7 +10,7 @@ const s3Client = createS3Client({ config })
  */
 async function createBucket(bucketName: string): Promise<void> {
   try {
-    // 버킷 리스트 확인
+    // Check if bucket exists
     const listResponse = await s3Client.send(new ListBucketsCommand({}))
     const bucketExists = listResponse.Buckets?.some(
       (bucket) => bucket.Name === bucketName,
@@ -21,7 +21,7 @@ async function createBucket(bucketName: string): Promise<void> {
       return
     }
 
-    // 버킷 생성
+    // Create bucket
     const createBucketParams = {
       Bucket: bucketName,
     }

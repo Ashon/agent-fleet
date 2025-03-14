@@ -1,9 +1,9 @@
 import { Pipeline } from '@agentfleet/types'
-import { S3RepositoryDriver } from '../drivers/s3RepositoryDriver'
+import { RepositoryDriver } from '../drivers/repositoryDriver'
 import { BaseRepository } from './baseRepository'
 
 export class PipelineRepository extends BaseRepository<Pipeline> {
-  constructor(driver: S3RepositoryDriver) {
+  constructor(driver: RepositoryDriver) {
     super(driver, 'pipelines')
   }
 }

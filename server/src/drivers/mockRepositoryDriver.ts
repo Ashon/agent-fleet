@@ -1,10 +1,24 @@
+import { mockPipelines } from '../mocks/agentReasoningPipeline'
+import { mockAgents } from '../mocks/agents'
+import { mockConnectors } from '../mocks/connectors'
+import { mockFleets } from '../mocks/fleets'
+import { mockPipelineJobs } from '../mocks/pipelineJobs'
 import { Entity, RepositoryDriver } from './repositoryDriver'
 
 export class MockRepositoryDriver implements RepositoryDriver {
   private data: Record<string, Entity[]>
 
   constructor(initialData: Record<string, Entity[]> = {}) {
-    this.data = { ...initialData }
+    this.data = {
+      agents: [...mockAgents],
+      fleets: [...mockFleets],
+      connectors: [...mockConnectors],
+      pipelines: [...mockPipelines],
+      pipelineJobs: [...mockPipelineJobs],
+    }
+    if (initialData) {
+      this.data = { ...this.data, ...initialData }
+    }
   }
 
   async findAll<T extends Entity>(entityName: string): Promise<T[]> {

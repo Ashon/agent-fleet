@@ -1,17 +1,18 @@
 import { Router } from 'express'
+import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
-import {
-  MockPipelineJobsRepository,
-  MockPipelineRepository,
-} from '../repositories/mockRepository'
+import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
+import { PipelineRepository } from '../repositories/pipelineRepository'
 import { PipelineService } from '../services/agentReasoningPipeline'
 import { PipelineExecutionService } from '../services/pipelineExecutionService'
 
 const router = Router()
-export const pipelineService = new PipelineService(new MockPipelineRepository())
+export const pipelineService = new PipelineService(
+  new PipelineRepository(new MockRepositoryDriver()),
+)
 export const pipelineExecutionService = new PipelineExecutionService(
-  new MockPipelineJobsRepository(),
+  new PipelineJobsRepository(new MockRepositoryDriver()),
 )
 
 // GET /api/reasoning-pipelines - Retrieve all pipelines with optional agent filter

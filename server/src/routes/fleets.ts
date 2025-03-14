@@ -1,12 +1,15 @@
 import { CreateFleetData } from '@agentfleet/types'
 import { Router } from 'express'
+import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
-import { MockFleetRepository } from '../repositories/mockRepository'
+import { FleetRepository } from '../repositories/fleetRepository'
 import { FleetService } from '../services/fleetService'
 
 const router = Router()
-export const fleetService = new FleetService(new MockFleetRepository())
+export const fleetService = new FleetService(
+  new FleetRepository(new MockRepositoryDriver()),
+)
 
 // GET /api/fleets - Retrieve all fleets
 router.get(

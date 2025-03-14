@@ -1,6 +1,7 @@
 import { Connector, ConnectorStatus } from '@agentfleet/types'
+import { MockRepositoryDriver } from '../../drivers/mockRepositoryDriver'
 import { mockConnectors } from '../../mocks/connectors'
-import { MockConnectorRepository } from '../../repositories/mockRepository'
+import { ConnectorRepository } from '../../repositories/connectorRepository'
 import { ConnectorService } from '../connectorService'
 
 describe('ConnectorService', () => {
@@ -8,7 +9,9 @@ describe('ConnectorService', () => {
   let testConnector: Connector
 
   beforeEach(() => {
-    connectorService = new ConnectorService(new MockConnectorRepository())
+    connectorService = new ConnectorService(
+      new ConnectorRepository(new MockRepositoryDriver()),
+    )
     testConnector = mockConnectors[0]
   })
 

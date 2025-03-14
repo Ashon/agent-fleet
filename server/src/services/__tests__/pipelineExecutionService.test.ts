@@ -1,7 +1,8 @@
 import { Pipeline, PipelineEdge, PipelineNode } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
-import { MockPipelineJobsRepository } from '../../repositories/mockRepository'
+import { MockRepositoryDriver } from '../../drivers/mockRepositoryDriver'
+import { PipelineJobsRepository } from '../../repositories/pipelineJobsRepository'
 import { PipelineExecutionService } from '../pipelineExecutionService'
 
 // 테스트 환경 설정
@@ -21,7 +22,7 @@ describe('PipelineExecutionService', () => {
       }),
     }
     pipelineExecutionService = new PipelineExecutionService(
-      new MockPipelineJobsRepository(),
+      new PipelineJobsRepository(new MockRepositoryDriver()),
     )
   })
 
@@ -228,10 +229,10 @@ describe('PipelineExecutionService', () => {
 
   describe('실행 기록 관리', () => {
     let pipelineExecutionService: PipelineExecutionService
-    let mockRepository: MockPipelineJobsRepository
+    let mockRepository: PipelineJobsRepository
 
     beforeEach(() => {
-      mockRepository = new MockPipelineJobsRepository()
+      mockRepository = new PipelineJobsRepository(new MockRepositoryDriver())
       // Mock 저장소 초기화
       mockRepository.clear()
       pipelineExecutionService = new PipelineExecutionService(mockRepository)

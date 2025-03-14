@@ -1,11 +1,14 @@
 import { Router } from 'express'
+import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
-import { MockAgentRepository } from '../repositories/mockRepository'
+import { AgentRepository } from '../repositories/agentRepository'
 import { AgentService } from '../services/agent'
 
 const router = Router()
-export const agentService = new AgentService(new MockAgentRepository())
+export const agentService = new AgentService(
+  new AgentRepository(new MockRepositoryDriver()),
+)
 
 // GET /api/agents
 router.get(
