@@ -14,7 +14,7 @@ export class MockRepositoryDriver implements RepositoryDriver {
       fleets: [...mockFleets],
       connectors: [...mockConnectors],
       pipelines: [...mockPipelines],
-      pipelineJobs: [...mockPipelineJobs],
+      'pipeline-jobs': [...mockPipelineJobs],
     }
     if (initialData) {
       this.data = { ...this.data, ...initialData }
