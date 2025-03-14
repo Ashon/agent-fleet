@@ -1,125 +1,107 @@
 import { Router } from 'express'
+import { asyncHandler } from '../middleware/asyncHandler'
+import { ApiError } from '../middleware/errorHandler'
 import { MockAgentRepository } from '../repositories/mockRepository'
 import { AgentService } from '../services/agent'
 
 const router = Router()
 export const agentService = new AgentService(new MockAgentRepository())
 
-// 에이전트 목록 조회
-router.get('/', async (req, res) => {
-  try {
+// GET /api/agents
+router.get(
+  '/',
+  asyncHandler(async (req, res) => {
     const agents = await agentService.getAllAgents()
     res.json(agents)
-  } catch (error) {
-    console.error(error)
-    res
-      .status(500)
-      .json({ message: '에이전트 목록 조회 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
-// 특정 에이전트 조회
-router.get('/:id', async (req, res) => {
-  try {
+// GET /api/agents/:id
+router.get(
+  '/:id',
+  asyncHandler(async (req, res) => {
     const { id } = req.params
     const agent = await agentService.getAgentById(id)
 
     if (!agent) {
-      return res.status(404).json({ message: '에이전트를 찾을 수 없습니다.' })
+      throw new ApiError(404, 'Agent not found')
     }
 
     res.json(agent)
-  } catch (error) {
-    res.status(500).json({ message: '에이전트 조회 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
-// 새로운 에이전트 생성
-router.post('/', async (req, res) => {
-  try {
+// POST /api/agents
+router.post(
+  '/',
+  asyncHandler(async (req, res) => {
     const agent = req.body
 
-    // 필수 필드 검증
     if (!agent.name || !agent.description) {
-      return res.status(400).json({
-        message: '이름과 설명은 필수 필드입니다.',
-      })
+      throw new ApiError(400, 'Name and description are required fields')
     }
 
     const newAgent = await agentService.createAgent(agent)
     res.status(201).json(newAgent)
-  } catch (error) {
-    if (error instanceof Error) {
-      res.status(400).json({ message: error.message })
-    } else {
-      res.status(500).json({ message: '에이전트 생성 중 오류가 발생했습니다.' })
-    }
-  }
-})
+  }),
+)
 
-// 에이전트 수정
-router.put('/:id', async (req, res) => {
-  try {
+// PUT /api/agents/:id
+router.put(
+  '/:id',
+  asyncHandler(async (req, res) => {
     const { id } = req.params
     const agent = req.body
 
-    // 필수 필드 검증
     if (!agent.name || !agent.description) {
-      return res.status(400).json({
-        message: '이름과 설명은 필수 필드입니다.',
-      })
+      throw new ApiError(400, 'Name and description are required fields')
     }
 
     const updatedAgent = await agentService.updateAgent(id, agent)
     if (!updatedAgent) {
-      return res.status(404).json({ message: '에이전트를 찾을 수 없습니다.' })
+      throw new ApiError(404, 'Agent not found')
     }
 
     res.json(updatedAgent)
-  } catch (error) {
-    res.status(500).json({ message: '에이전트 수정 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
-// 에이전트 삭제
-router.delete('/:id', async (req, res) => {
-  try {
+// DELETE /api/agents/:id
+router.delete(
+  '/:id',
+  asyncHandler(async (req, res) => {
     const { id } = req.params
     const deleted = await agentService.deleteAgent(id)
 
     if (!deleted) {
-      return res.status(404).json({ message: '에이전트를 찾을 수 없습니다.' })
+      throw new ApiError(404, 'Agent not found')
     }
 
     res.status(204).send()
-  } catch (error) {
-    res.status(500).json({ message: '에이전트 삭제 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
-// 에이전트 상태 변경
-router.patch('/:id/status', async (req, res) => {
-  try {
+// PATCH /api/agents/:id/status
+router.patch(
+  '/:id/status',
+  asyncHandler(async (req, res) => {
     const { id } = req.params
     const { status } = req.body
 
     if (!status || !['active', 'inactive'].includes(status)) {
-      return res.status(400).json({
-        message: '유효한 상태 값(active/inactive)을 입력해주세요.',
-      })
+      throw new ApiError(
+        400,
+        'Valid status value (active/inactive) is required',
+      )
     }
 
     const updatedAgent = await agentService.updateAgentStatus(id, status)
     if (!updatedAgent) {
-      return res.status(404).json({ message: '에이전트를 찾을 수 없습니다.' })
+      throw new ApiError(404, 'Agent not found')
     }
 
     res.json(updatedAgent)
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: '에이전트 상태 변경 중 오류가 발생했습니다.' })
-  }
-})
+  }),
+)
 
 export default router

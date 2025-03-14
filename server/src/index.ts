@@ -4,11 +4,8 @@ import dotenv from 'dotenv'
 import express from 'express'
 import morgan from 'morgan'
 import { S3RepositoryDriver } from './drivers/s3RepositoryDriver'
-import agentsRouter from './routes/agents'
-import connectorsRouter from './routes/connectors'
-import fleetsRouter from './routes/fleets'
-import pipelineJobRoutes from './routes/pipelineJobs'
-import reasoningPipelinesRouter from './routes/reasoningPipelines'
+import { errorHandler } from './middleware/errorHandler'
+import routes from './routes'
 
 dotenv.config()
 
@@ -42,6 +39,7 @@ const app = express()
 // 미들웨어 설정
 app.use(cors())
 app.use(express.json())
+app.use(errorHandler)
 app.use(morgan('dev')) // 개발 환경용 로그 포맷
 
 // 기본 라우트
@@ -50,11 +48,7 @@ app.get('/', (req, res) => {
 })
 
 // API 라우트
-app.use('/api/agents', agentsRouter)
-app.use('/api/connectors', connectorsRouter)
-app.use('/api/reasoning-pipelines', reasoningPipelinesRouter)
-app.use('/api/fleets', fleetsRouter)
-app.use('/api/pipeline-execution', pipelineJobRoutes)
+app.use('/api', routes)
 
 // 404 에러 처리
 app.use((req, res) => {
