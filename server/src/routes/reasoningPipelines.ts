@@ -103,6 +103,8 @@ router.get(
         res,
       )
     } catch (error) {
+      console.error(error)
+
       res.write(
         `data: ${JSON.stringify({
           type: 'error',
@@ -142,6 +144,8 @@ router.post(
         res,
       )
     } catch (error) {
+      console.error(error)
+
       res.write(
         `data: ${JSON.stringify({
           type: 'error',

@@ -5,9 +5,12 @@ import {
   useImperativeHandle,
   useRef,
 } from 'react'
+import { Point } from './types'
 
 type ContextMenuProps = {
-  state: any
+  state: Point & {
+    visible: boolean
+  }
   children: React.ReactNode
 }
 

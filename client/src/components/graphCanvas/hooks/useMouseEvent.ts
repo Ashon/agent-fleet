@@ -1,16 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { DragRef } from '../types'
+import { DisplayNode, DragRef, Point } from '../types'
 
 type UseMouseEventProps = {
   containerRef: React.RefObject<HTMLDivElement | null>
-  displayNodes: any[]
+  displayNodes: DisplayNode[]
   zoomScale: number
-  viewOffset: { x: number; y: number }
+  viewOffset: Point
   minZoomScale: number
   maxZoomScale: number
-  onDrag: (subject: any) => void
-  onPanning: ({ x, y }: { x: number; y: number }) => void
-  onZoom: ({ scale, x, y }: { scale: number; x: number; y: number }) => void
+  onDrag: ({
+    subject,
+    x,
+    y,
+  }: Point & {
+    subject: string | number
+  }) => void
+  onPanning: ({ x, y }: Point) => void
+  onZoom: ({ scale, x, y }: Point & { scale: number }) => void
 }
 
 export const useMouseEvent = ({
@@ -36,20 +42,23 @@ export const useMouseEvent = ({
 
   const onNodeMouseDown = (
     e: React.MouseEvent<HTMLDivElement | SVGElement>,
-    nodeId: any,
+    nodeId: string | number,
     scale: number,
   ) => {
     e.preventDefault()
     e.stopPropagation()
 
     if (containerRef.current === null) return
-    const containerRect = (containerRef.current as any).getBoundingClientRect()
-    const node: any = displayNodes.find((n) => n.id === nodeId)
+    const containerRect = containerRef.current.getBoundingClientRect()
+    const node = displayNodes.find((n) => n.id === nodeId)
 
     dragRef.current = {
       nodeId,
-      offsetX: (e.clientX - containerRect.left - viewOffset.x) / scale - node.x,
-      offsetY: (e.clientY - containerRect.top - viewOffset.y) / scale - node.y,
+      offsetX:
+        (e.clientX - containerRect.left - viewOffset.x) / scale -
+        (node?.x || 0),
+      offsetY:
+        (e.clientY - containerRect.top - viewOffset.y) / scale - (node?.y || 0),
       lastX: e.clientX,
       lastY: e.clientY,
     }
@@ -58,13 +67,13 @@ export const useMouseEvent = ({
   }
 
   const handleWheel = useCallback(
-    (e: any) => {
+    (e: WheelEvent) => {
       if (!e.ctrlKey && !e.metaKey) return
 
       e.preventDefault()
       e.stopPropagation()
 
-      const container: any = containerRef.current
+      const container = containerRef.current
       if (!container) return
 
       const rect = container.getBoundingClientRect()
@@ -74,7 +83,6 @@ export const useMouseEvent = ({
       // 마우스 위치를 기준으로 한 상대 좌표
       const x = (mouseX - viewOffset.x) / zoomScale
       const y = (mouseY - viewOffset.y) / zoomScale
-
       // 새로운 스케일 계산
       const delta = e.deltaY > 0 ? 0.9 : 1.1
       const newZoomScale = Math.min(
@@ -91,15 +99,16 @@ export const useMouseEvent = ({
     [containerRef, zoomScale, viewOffset, minZoomScale, maxZoomScale, onZoom],
   )
 
-  const onBackgroundMouseDown = (e: any) => {
+  const onBackgroundMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (containerRef.current === null) return
     if (dragRef.current === null) return
 
     if (
       e.target === containerRef.current ||
-      e.target.classList.contains('main-svg')
+      (e.target instanceof Element && e.target.classList.contains('main-svg'))
     ) {
-      ;(dragRef as any).current = {
+      dragRef.current = {
+        ...dragRef.current,
         lastX: e.clientX,
         lastY: e.clientY,
       }
@@ -113,9 +122,7 @@ export const useMouseEvent = ({
     if (dragRef.current === null) return
 
     if (isDragging && dragRef.current.nodeId != null) {
-      const containerRect = (
-        containerRef.current as any
-      ).getBoundingClientRect()
+      const containerRect = containerRef.current.getBoundingClientRect()
       const newX =
         (e.clientX - containerRect.left - viewOffset.x) / zoomScale -
         dragRef.current.offsetX
@@ -144,7 +151,9 @@ export const useMouseEvent = ({
     const container = containerRef.current
 
     if (container) {
-      container.addEventListener('wheel', handleWheel, { passive: false })
+      container.addEventListener('wheel', handleWheel, {
+        passive: false,
+      })
     }
 
     return () => {

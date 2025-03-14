@@ -62,6 +62,7 @@ export class S3RepositoryDriver implements RepositoryDriver {
 
       const bodyContents = await response.Body?.transformToString()
       return bodyContents ? JSON.parse(bodyContents) : null
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error.name === 'NoSuchKey') {
         return null

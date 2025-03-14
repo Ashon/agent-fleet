@@ -1,6 +1,11 @@
-export const getNodesBound = (nodes: any) => {
+import { DisplayNode } from '../types'
+
+export const getNodesBound = (nodes: DisplayNode[]) => {
   const bounds = nodes.reduce(
-    (acc: any, node: any) => ({
+    (
+      acc: { minX: number; maxX: number; minY: number; maxY: number },
+      node: DisplayNode,
+    ) => ({
       minX: Math.min(acc.minX, node.x),
       maxX: Math.max(acc.maxX, node.x),
       minY: Math.min(acc.minY, node.y),
@@ -17,7 +22,7 @@ export const getNodesBound = (nodes: any) => {
   }
 }
 
-export const getGraphCenter = (nodes: any) => {
+export const getGraphCenter = (nodes: DisplayNode[]) => {
   // 노드들의 경계 계산
   const bounds = getNodesBound(nodes)
 

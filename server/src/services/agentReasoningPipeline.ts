@@ -2,7 +2,6 @@ import {
   CreatePipelinePayload,
   Pipeline,
   PipelineEdge,
-  PipelineNode,
   PipelineTestRequest,
   PipelineTestResponse,
 } from '@agentfleet/types'

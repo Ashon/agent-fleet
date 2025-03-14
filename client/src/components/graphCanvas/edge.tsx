@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { DisplayEdge, PathData } from './types'
+import { DisplayEdge, PathData, Point } from './types'
 import { getArrowPath } from './utils'
 
 const CIRCLE_SIZE = 2
@@ -9,7 +9,7 @@ type pathSolver = (
   container: HTMLElement | null,
   edge: DisplayEdge,
   scale: number,
-  viewOffset: any,
+  viewOffset: Point,
 ) => PathData
 
 type ReactEdgeProps = {
@@ -17,7 +17,7 @@ type ReactEdgeProps = {
   pathAnchorSolver: pathSolver
   container: HTMLElement | null
   scale: number
-  viewOffset: any
+  viewOffset: Point
   drawText?: boolean
   animationDisabled?: boolean
 }
@@ -33,7 +33,7 @@ export function Edge({
 }: ReactEdgeProps) {
   const rootPathRef = useRef<SVGPathElement>(null)
   const [pathLength, setPathLength] = useState(0)
-  const [textAnchor, setTextAnchor] = useState({ x: 0, y: 0 })
+  const [textAnchor, setTextAnchor] = useState<Point>({ x: 0, y: 0 })
   const prevPathRef = useRef<string>('')
 
   const pathData = useMemo(

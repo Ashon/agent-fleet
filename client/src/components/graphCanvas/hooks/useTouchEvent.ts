@@ -1,12 +1,20 @@
 import { useRef, useState } from 'react'
-import { DragRef } from '../types'
+import { DisplayNode, DragRef, Point } from '../types'
 
 type UseTouchEventProps = {
   containerRef: React.RefObject<HTMLDivElement | null>
-  displayNodes: any[]
+  displayNodes: DisplayNode[]
   zoomScale: number
-  viewOffset: { x: number; y: number }
-  onDrag: (subject: any) => void
+  viewOffset: Point
+  onDrag: ({
+    subject,
+    x,
+    y,
+  }: {
+    subject: string | number
+    x: number
+    y: number
+  }) => void
   onPanning: ({ x, y }: { x: number; y: number }) => void
 }
 
@@ -47,6 +55,7 @@ export const useTouchEvent = ({
   const handleTouchMove = (
     e: React.TouchEvent<HTMLDivElement | SVGElement>,
   ) => {
+    if (containerRef.current === null) return
     e.preventDefault()
 
     if (e.touches.length === 1) {
@@ -54,9 +63,7 @@ export const useTouchEvent = ({
 
       if (dragRef.current.nodeId != null) {
         // 노드 드래그 로직
-        const containerRect = (
-          containerRef.current as any
-        ).getBoundingClientRect()
+        const containerRect = containerRef.current.getBoundingClientRect()
         const newX =
           (touch.clientX - containerRect.left - viewOffset.x) / zoomScale -
           dragRef.current.offsetX
@@ -87,8 +94,10 @@ export const useTouchEvent = ({
     if (containerRef.current === null || e.touches.length !== 1) return
 
     const touch = e.touches[0]
-    const containerRect = (containerRef.current as any).getBoundingClientRect()
-    const node: any = displayNodes.find((n) => n.id === nodeId)
+    const containerRect = containerRef.current.getBoundingClientRect()
+    const node = displayNodes.find((n) => n.id === nodeId)
+
+    if (!node) return
 
     dragRef.current = {
       nodeId,

@@ -17,13 +17,13 @@ type MinimapProps = {
   groups: DisplayGroup[]
   nodes: DisplayNode[]
   edges: DisplayEdge[]
-  container: any
+  container: HTMLElement | null
   viewOffset: Point
   zoomScale: number
 }
 
 const calculateMinimapViewport = (
-  container: any,
+  container: HTMLElement | null,
   viewOffset: Point,
   zoomScale: number,
 ): BoundingRect => {
@@ -95,7 +95,7 @@ export default function Minimap({
     {
       clientWidth: width + scaledPadding,
       clientHeight: height + scaledPadding,
-    },
+    } as HTMLElement,
     nodes,
     minimapScale,
   )

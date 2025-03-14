@@ -1,4 +1,3 @@
-import { S3Client } from '@aws-sdk/client-s3'
 import cors from 'cors'
 import express from 'express'
 import morgan from 'morgan'
@@ -32,17 +31,10 @@ app.use((req, res) => {
 })
 
 // 에러 처리 미들웨어
-app.use(
-  (
-    err: Error,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction,
-  ) => {
-    console.error(err.stack)
-    res.status(500).json({ message: 'Internal Server Error' })
-  },
-)
+app.use((err: Error, req: express.Request, res: express.Response) => {
+  console.error(err.stack)
+  res.status(500).json({ message: 'Internal Server Error' })
+})
 
 // 서버 시작
 s3RepositoryDriver.preflight()

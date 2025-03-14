@@ -30,16 +30,12 @@ type NodeGraphProps = {
   }
 }
 
-type DragEvent = {
-  subject: any
-  x: number
-  y: number
+type DragEvent = Point & {
+  subject: string | number
 }
 
-type ZoomEvent = {
+type ZoomEvent = Point & {
   scale: number
-  x: number
-  y: number
 }
 
 function GraphCanvas({
@@ -206,7 +202,7 @@ function GraphCanvas({
           },
         }
       })
-      .filter((g: any) => g.nodes.length > 1) as DisplayGroup[]
+      .filter((g: DisplayGroup) => g.nodes.length > 1)
   }, [displayNodes])
 
   // Memoize rendered nodes
@@ -282,7 +278,7 @@ function GraphCanvas({
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
-        onWheel={handleWheel}
+        onWheel={(e) => handleWheel(e as unknown as WheelEvent)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -386,17 +382,15 @@ function GraphCanvas({
         <ContextMenu.Item text="메뉴 항목 3" />
       </ContextMenu>
 
-      {minimap.enabled && (
+      {minimap.enabled && containerRef.current && (
         <Minimap
           width={
             minimap.width ||
-            (containerRef?.current as any)?.clientWidth *
-              (minimap.scale || 0.15)
+            containerRef.current.clientWidth * (minimap.scale || 0.15)
           }
           height={
             minimap.height ||
-            (containerRef?.current as any)?.clientHeight *
-              (minimap.scale || 0.15)
+            containerRef.current.clientHeight * (minimap.scale || 0.15)
           }
           groups={displayGroups}
           nodes={displayNodes}

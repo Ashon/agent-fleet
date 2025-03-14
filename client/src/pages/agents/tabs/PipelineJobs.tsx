@@ -38,7 +38,7 @@ export default function PipelineJobs({ agent }: { agent: Agent }) {
 
         fetchJobs()
       })
-  }, [])
+  }, [agent.id])
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)

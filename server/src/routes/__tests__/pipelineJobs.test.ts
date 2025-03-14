@@ -12,6 +12,7 @@ app.use('/api/pipeline-execution', pipelineJobs)
 app.use(errorHandler)
 
 // 날짜를 문자열로 변환하는 헬퍼 함수
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const convertDatesToStrings = (obj: any): any => {
   if (obj === null || obj === undefined) return obj
   if (obj instanceof Date) return obj.toISOString()

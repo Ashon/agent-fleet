@@ -1,9 +1,10 @@
-import { DisplayEdge, DisplayNode, PathData } from '../types'
+import { DisplayEdge, DisplayNode, PathData, Point } from '../types'
 
 export const getAnchorPoints = (
   container: HTMLElement | null,
   node: DisplayNode,
   scale: number,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   viewOffset: any,
 ) => {
   const nodeElement =
@@ -45,11 +46,11 @@ export const getAnchorPoints = (
 }
 
 // 두 점 사이의 거리 계산
-export const getDistance = (p1: any, p2: any) => {
+export const getDistance = (p1: Point, p2: Point) => {
   return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2))
 }
 
-export const getAnchorDirection = (anchorPoint: any, nodeCenter: any) => {
+export const getAnchorDirection = (anchorPoint: Point, nodeCenter: Point) => {
   const dx = anchorPoint.x - nodeCenter.x
   const dy = anchorPoint.y - nodeCenter.y
 
@@ -65,7 +66,7 @@ export const getPathData = (
   container: HTMLElement | null,
   edge: DisplayEdge,
   scale: number,
-  viewOffset: any,
+  viewOffset: Point,
 ) => {
   const sourceAnchors = getAnchorPoints(
     container,
@@ -171,11 +172,11 @@ export const getPathData = (
 }
 
 export const getLinePathData = (
-  // @ts-ignore
+  // @ts-expect-error TS6133
   container: HTMLElement | null,
   edge: DisplayEdge,
   scale: number,
-  viewOffset: any,
+  viewOffset: Point,
 ) => {
   const sourceX = edge.source.x * scale + viewOffset.x
   const sourceY = edge.source.y * scale + viewOffset.y

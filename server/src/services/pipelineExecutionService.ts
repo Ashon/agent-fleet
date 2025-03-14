@@ -202,7 +202,7 @@ export class PipelineExecutionService {
     }
 
     // 실행 기록 초기화
-    const record = await this.repository.save({
+    await this.repository.save({
       id,
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,

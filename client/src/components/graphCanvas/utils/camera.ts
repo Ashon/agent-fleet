@@ -1,10 +1,13 @@
+import { DisplayNode } from '../types'
 import { getGraphCenter } from './coord'
 
 export const getViewportCenter = (
-  container: any,
-  nodes: any,
+  container: HTMLElement | null,
+  nodes: DisplayNode[],
   zoomScale: number,
 ) => {
+  if (!container) return { x: 0, y: 0 }
+
   const containerWidth = container.clientWidth
   const containerHeight = container.clientHeight
 

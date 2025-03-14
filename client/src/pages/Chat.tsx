@@ -28,7 +28,7 @@ export default function Chat() {
       setAgent(agent)
       setIsLoading(false)
     })
-  }, [id])
+  }, [id, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
