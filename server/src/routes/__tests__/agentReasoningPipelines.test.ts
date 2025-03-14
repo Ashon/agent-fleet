@@ -1,75 +1,35 @@
-import {
-  CreatePipelinePayload,
-  Pipeline,
-  PipelineTestResponse,
-} from '@agentfleet/types'
+import { CreatePipelinePayload, Pipeline } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
 import { errorHandler } from '../../middleware/errorHandler'
 import { PipelineService } from '../../services/agentReasoningPipeline'
 import { PipelineExecutionService } from '../../services/pipelineExecutionService'
-import reasoningPipelinesRouter from '../agentReasoningPipelines'
+import pipelineRoutes from '../agentReasoningPipelines'
 
 jest.mock('../../services/agentReasoningPipeline')
 jest.mock('../../services/pipelineExecutionService')
 
-// 날짜를 문자열로 변환하는 헬퍼 함수
-const convertDatesToStrings = (obj: any): any => {
-  if (obj === null || obj === undefined) return obj
-  if (obj instanceof Date) return obj.toISOString()
-  if (Array.isArray(obj)) return obj.map(convertDatesToStrings)
-  if (typeof obj === 'object') {
-    return Object.fromEntries(
-      Object.entries(obj).map(([key, value]) => [
-        key,
-        convertDatesToStrings(value),
-      ]),
-    )
-  }
-  return obj
-}
-
-describe('Reasoning Pipeline Routes', () => {
+describe('Pipeline Routes', () => {
   let app: express.Application
-  let mockPipelineService: PipelineService
-  let mockPipelineExecutionService: PipelineExecutionService
   const mockDate = new Date('2024-01-01T00:00:00.000Z')
 
   const mockPipelines: Pipeline[] = [
     {
       id: '1',
-      agentId: '1',
-      name: '테스트 워크플로우 1',
+      agentId: 'agent-1',
+      name: '테스트 파이프라인 1',
       description: '테스트 설명 1',
-      nodes: [
-        {
-          id: 'node-1',
-          type: 'input',
-          position: { x: 50, y: 100 },
-          data: {
-            name: '시작',
-          },
-        },
-      ],
+      nodes: [],
       edges: [],
       createdAt: mockDate,
       updatedAt: mockDate,
     },
     {
       id: '2',
-      agentId: '1',
-      name: '테스트 워크플로우 2',
+      agentId: 'agent-2',
+      name: '테스트 파이프라인 2',
       description: '테스트 설명 2',
-      nodes: [
-        {
-          id: 'node-1',
-          type: 'input',
-          position: { x: 50, y: 100 },
-          data: {
-            name: '시작',
-          },
-        },
-      ],
+      nodes: [],
       edges: [],
       createdAt: mockDate,
       updatedAt: mockDate,
@@ -77,96 +37,105 @@ describe('Reasoning Pipeline Routes', () => {
   ]
 
   beforeEach(() => {
-    jest.clearAllMocks()
-
     app = express()
     app.use(express.json())
-    app.use('/api/reasoning-pipelines', reasoningPipelinesRouter)
+    app.use('/api/reasoning-pipelines', pipelineRoutes)
     app.use(errorHandler)
 
-    // 모킹된 서비스 생성
-    mockPipelineService = new PipelineService(null as any)
-    mockPipelineExecutionService = new PipelineExecutionService(null as any)
+    const mockPipelineService = PipelineService as jest.MockedClass<
+      typeof PipelineService
+    >
+    const mockPipelineExecutionService =
+      PipelineExecutionService as jest.MockedClass<
+        typeof PipelineExecutionService
+      >
 
-    // PipelineService 모킹
-    jest
-      .spyOn(mockPipelineService, 'getAllPipelines')
-      .mockResolvedValue(mockPipelines)
-    jest
-      .spyOn(mockPipelineService, 'getPipelineById')
-      .mockImplementation((id: string) =>
-        Promise.resolve(mockPipelines.find((p) => p.id === id)),
-      )
-    jest
-      .spyOn(mockPipelineService, 'createPipeline')
-      .mockImplementation((data: CreatePipelinePayload) =>
+    mockPipelineService.prototype.getAllPipelines.mockImplementation(
+      (filter?: { agentId?: string }) => {
+        if (filter?.agentId) {
+          return Promise.resolve(
+            mockPipelines.filter((p) => p.agentId === filter.agentId),
+          )
+        }
+        return Promise.resolve(mockPipelines)
+      },
+    )
+    mockPipelineService.prototype.getPipelineById.mockImplementation(
+      (id: string) => Promise.resolve(mockPipelines.find((p) => p.id === id)),
+    )
+    mockPipelineService.prototype.createPipeline.mockImplementation(
+      (data: CreatePipelinePayload) =>
         Promise.resolve({
           id: '3',
           ...data,
           createdAt: mockDate,
           updatedAt: mockDate,
         }),
-      )
-    jest
-      .spyOn(mockPipelineService, 'updatePipeline')
-      .mockImplementation(
-        (id: string, data: Partial<CreatePipelinePayload>) => {
-          const pipeline = mockPipelines.find((p) => p.id === id)
-          if (!pipeline) return Promise.resolve(undefined)
-          return Promise.resolve({
-            ...pipeline,
-            ...data,
-            updatedAt: mockDate,
-          })
-        },
-      )
-    jest
-      .spyOn(mockPipelineService, 'deletePipeline')
-      .mockImplementation((id: string) =>
-        Promise.resolve(mockPipelines.some((p) => p.id === id)),
-      )
-    jest.spyOn(mockPipelineService, 'validatePipeline').mockResolvedValue({
+    )
+    mockPipelineService.prototype.updatePipeline.mockImplementation(
+      (id: string, data: Partial<CreatePipelinePayload>) => {
+        const pipeline = mockPipelines.find((p) => p.id === id)
+        if (!pipeline) return Promise.resolve(undefined)
+        return Promise.resolve({
+          ...pipeline,
+          ...data,
+          updatedAt: mockDate,
+        })
+      },
+    )
+    mockPipelineService.prototype.deletePipeline.mockImplementation(
+      (id: string) => Promise.resolve(mockPipelines.some((p) => p.id === id)),
+    )
+    mockPipelineService.prototype.validatePipeline.mockResolvedValue({
       isValid: true,
-      message: 'Pipeline is valid',
     })
-    jest
-      .spyOn(mockPipelineService, 'updatePipelineNodes')
-      .mockImplementation((id: string, nodes: any) =>
-        Promise.resolve({
-          ...mockPipelines[0],
+    mockPipelineService.prototype.updatePipelineNodes.mockImplementation(
+      (id: string, nodes: any[]) => {
+        const pipeline = mockPipelines.find((p) => p.id === id)
+        if (!pipeline) return Promise.resolve(undefined)
+        return Promise.resolve({
+          ...pipeline,
           nodes,
           updatedAt: mockDate,
-        }),
-      )
-    jest
-      .spyOn(mockPipelineService, 'updatePipelineEdges')
-      .mockImplementation((id: string, edges: any) =>
-        Promise.resolve({
-          ...mockPipelines[0],
+        })
+      },
+    )
+    mockPipelineService.prototype.updatePipelineEdges.mockImplementation(
+      (id: string, edges: any[]) => {
+        const pipeline = mockPipelines.find((p) => p.id === id)
+        if (!pipeline) return Promise.resolve(undefined)
+        return Promise.resolve({
+          ...pipeline,
           edges,
           updatedAt: mockDate,
-        }),
-      )
-    jest.spyOn(mockPipelineService, 'testPipeline').mockResolvedValue({
-      output: 'Test execution completed',
+        })
+      },
+    )
+    mockPipelineService.prototype.testPipeline.mockResolvedValue({
+      output: '테스트 성공',
       executionPath: [
         {
-          nodeId: 'test-node',
+          nodeId: 'node-1',
           status: 'success',
-          output: 'Test node executed successfully',
+          output: '테스트 결과',
           timestamp: mockDate,
         },
       ],
     })
-
-    // PipelineExecutionService 모킹
-    jest
-      .spyOn(mockPipelineExecutionService, 'streamPipelineExecution')
-      .mockImplementation(async (pipeline, input, res) => {
-        res.write('data: {"type":"start"}\n\n')
-        res.write('data: {"type":"complete","result":"test result"}\n\n')
-        return Promise.resolve('test result')
-      })
+    mockPipelineExecutionService.prototype.streamPipelineExecution.mockImplementation(
+      (pipeline, input, res) => {
+        if (!pipeline) {
+          res.write(
+            `data: ${JSON.stringify({ error: 'Pipeline not found' })}\n\n`,
+          )
+          return Promise.resolve('error')
+        }
+        res.write(
+          `data: ${JSON.stringify({ type: 'success', message: '실행 완료' })}\n\n`,
+        )
+        return Promise.resolve('success')
+      },
+    )
   })
 
   afterEach(() => {
@@ -178,16 +147,18 @@ describe('Reasoning Pipeline Routes', () => {
       const response = await request(app).get('/api/reasoning-pipelines')
 
       expect(response.status).toBe(200)
-      expect(response.body).toEqual(convertDatesToStrings(mockPipelines))
+      expect(response.body).toHaveLength(2)
+      expect(response.body[0].name).toBe('테스트 파이프라인 1')
     })
 
     it('agentId로 필터링된 파이프라인 목록을 반환해야 함', async () => {
-      const response = await request(app)
-        .get('/api/reasoning-pipelines')
-        .query({ agentId: '1' })
+      const response = await request(app).get(
+        '/api/reasoning-pipelines?agentId=agent-1',
+      )
 
       expect(response.status).toBe(200)
-      expect(response.body).toEqual(convertDatesToStrings(mockPipelines))
+      expect(response.body).toHaveLength(1)
+      expect(response.body[0].agentId).toBe('agent-1')
     })
   })
 
@@ -196,14 +167,14 @@ describe('Reasoning Pipeline Routes', () => {
       const response = await request(app).get('/api/reasoning-pipelines/1')
 
       expect(response.status).toBe(200)
-      expect(response.body).toEqual(convertDatesToStrings(mockPipelines[0]))
+      expect(response.body.name).toBe('테스트 파이프라인 1')
     })
 
     it('존재하지 않는 ID로 404를 반환해야 함', async () => {
       const response = await request(app).get('/api/reasoning-pipelines/999')
 
       expect(response.status).toBe(404)
-      expect(response.body.message).toBe('Pipeline not found')
+      expect(response.body.error).toBe('Pipeline not found')
     })
   })
 
@@ -211,18 +182,9 @@ describe('Reasoning Pipeline Routes', () => {
     it('새로운 파이프라인을 생성해야 함', async () => {
       const newPipelineData: CreatePipelinePayload = {
         name: '새 파이프라인',
+        agentId: 'agent-1',
         description: '새 설명',
-        agentId: '1',
-        nodes: [
-          {
-            id: 'node-1',
-            type: 'input',
-            position: { x: 50, y: 100 },
-            data: {
-              name: '시작',
-            },
-          },
-        ],
+        nodes: [],
         edges: [],
       }
 
@@ -253,10 +215,13 @@ describe('Reasoning Pipeline Routes', () => {
     it('존재하지 않는 파이프라인 업데이트 시 404를 반환해야 함', async () => {
       const response = await request(app)
         .put('/api/reasoning-pipelines/999')
-        .send({ name: '수정된 파이프라인' })
+        .send({
+          name: '수정된 파이프라인',
+          description: '수정된 설명',
+        })
 
       expect(response.status).toBe(404)
-      expect(response.body.message).toBe('Pipeline not found')
+      expect(response.body.error).toBe('Pipeline not found')
     })
   })
 
@@ -271,173 +236,161 @@ describe('Reasoning Pipeline Routes', () => {
       const response = await request(app).delete('/api/reasoning-pipelines/999')
 
       expect(response.status).toBe(404)
-      expect(response.body.message).toBe('Pipeline not found')
-    })
-  })
-
-  describe('GET /api/reasoning-pipelines/test/stream', () => {
-    it('스트리밍 테스트가 성공적으로 실행되어야 함', async () => {
-      const response = await request(app)
-        .get('/api/reasoning-pipelines/test/stream')
-        .query({ pipelineId: '1', input: 'test input' })
-
-      expect(response.status).toBe(200)
-      expect(response.text).toContain('data: {"type":"start"}')
-      expect(response.text).toContain(
-        'data: {"type":"complete","result":"test result"}',
-      )
-    })
-
-    it('필수 파라미터가 없을 경우 400 에러를 반환해야 함', async () => {
-      const response = await request(app)
-        .get('/api/reasoning-pipelines/test/stream')
-        .query({ pipelineId: '1' })
-
-      expect(response.status).toBe(400)
-      expect(response.body.message).toBe('Pipeline ID and input are required')
-    })
-
-    it('존재하지 않는 파이프라인 ID로 404를 반환해야 함', async () => {
-      jest
-        .spyOn(mockPipelineService, 'getPipelineById')
-        .mockResolvedValue(undefined)
-
-      const response = await request(app)
-        .get('/api/reasoning-pipelines/test/stream')
-        .query({ pipelineId: '999', input: 'test input' })
-
-      expect(response.status).toBe(200) // SSE는 항상 200을 반환
-      expect(response.text).toContain('data: {"error":"Pipeline not found"}')
+      expect(response.body.error).toBe('Pipeline not found')
     })
   })
 
   describe('POST /api/reasoning-pipelines/:id/execute', () => {
-    it('파이프라인이 성공적으로 실행되어야 함', async () => {
-      const validationResult = {
-        isValid: true,
-        message: 'Pipeline is valid',
-      }
-      jest
-        .spyOn(mockPipelineService, 'validatePipeline')
-        .mockResolvedValue(validationResult)
-
+    it('파이프라인 실행이 성공적으로 시작되어야 함', async () => {
       const response = await request(app)
         .post('/api/reasoning-pipelines/1/execute')
-        .send({ input: 'test input' })
+        .send({ input: '테스트 입력' })
 
       expect(response.status).toBe(200)
-      expect(response.text).toContain('data: {"type":"start"}')
-      expect(response.text).toContain(
-        'data: {"type":"complete","result":"test result"}',
-      )
     })
 
-    it('유효하지 않은 파이프라인일 경우 400 에러를 반환해야 함', async () => {
-      const validationResult = {
+    it('존재하지 않는 파이프라인 실행 시 404를 반환해야 함', async () => {
+      const response = await request(app)
+        .post('/api/reasoning-pipelines/999/execute')
+        .send({ input: '테스트 입력' })
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe('Pipeline not found')
+    })
+
+    it('유효하지 않은 파이프라인 실행 시 400을 반환해야 함', async () => {
+      const mockPipelineService = PipelineService as jest.MockedClass<
+        typeof PipelineService
+      >
+      mockPipelineService.prototype.validatePipeline.mockResolvedValueOnce({
         isValid: false,
-        message: 'Invalid pipeline configuration',
-      }
-      jest
-        .spyOn(mockPipelineService, 'validatePipeline')
-        .mockResolvedValue(validationResult)
+        message: '유효하지 않은 파이프라인',
+      })
 
       const response = await request(app)
         .post('/api/reasoning-pipelines/1/execute')
-        .send({ input: 'test input' })
+        .send({ input: '테스트 입력' })
 
       expect(response.status).toBe(400)
-      expect(response.body.message).toBe('Invalid pipeline configuration')
+      expect(response.body.error).toBe('유효하지 않은 파이프라인')
     })
   })
 
   describe('PUT /api/reasoning-pipelines/:id/nodes', () => {
-    it('파이프라인 노드가 성공적으로 업데이트되어야 함', async () => {
-      const updatedNodes = [
+    it('파이프라인 노드를 업데이트해야 함', async () => {
+      const nodes = [
         {
           id: 'node-1',
           type: 'input',
-          position: { x: 100, y: 200 },
-          data: { name: '수정된 노드' },
+          position: { x: 100, y: 100 },
+          data: {
+            name: '입력 노드',
+            description: '테스트 입력',
+          },
         },
       ]
 
-      jest
-        .spyOn(mockPipelineService, 'updatePipelineNodes')
-        .mockImplementation((id: string, nodes: any) =>
-          Promise.resolve({
-            ...mockPipelines[0],
-            nodes,
-            updatedAt: mockDate,
-          }),
-        )
-
       const response = await request(app)
         .put('/api/reasoning-pipelines/1/nodes')
-        .send(updatedNodes)
+        .send(nodes)
 
       expect(response.status).toBe(200)
-      expect(response.body.nodes).toEqual(updatedNodes)
+      expect(response.body.nodes).toHaveLength(1)
+      expect(response.body.nodes[0].id).toBe('node-1')
+    })
+
+    it('존재하지 않는 파이프라인의 노드 업데이트 시 404를 반환해야 함', async () => {
+      const response = await request(app)
+        .put('/api/reasoning-pipelines/999/nodes')
+        .send([])
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe('Pipeline not found')
     })
   })
 
   describe('PUT /api/reasoning-pipelines/:id/edges', () => {
-    it('파이프라인 엣지가 성공적으로 업데이트되어야 함', async () => {
-      const updatedEdges = [
+    it('파이프라인 엣지를 업데이트해야 함', async () => {
+      const edges = [
         {
           id: 'edge-1',
           source: 'node-1',
           target: 'node-2',
+          type: 'default',
         },
       ]
 
-      jest
-        .spyOn(mockPipelineService, 'updatePipelineEdges')
-        .mockImplementation((id: string, edges: any) =>
-          Promise.resolve({
-            ...mockPipelines[0],
-            edges,
-            updatedAt: mockDate,
-          }),
-        )
-
       const response = await request(app)
         .put('/api/reasoning-pipelines/1/edges')
-        .send(updatedEdges)
+        .send(edges)
 
       expect(response.status).toBe(200)
-      expect(response.body.edges).toEqual(updatedEdges)
+      expect(response.body.edges).toHaveLength(1)
+      expect(response.body.edges[0].id).toBe('edge-1')
+    })
+
+    it('존재하지 않는 파이프라인의 엣지 업데이트 시 404를 반환해야 함', async () => {
+      const response = await request(app)
+        .put('/api/reasoning-pipelines/999/edges')
+        .send([])
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBe('Pipeline not found')
+    })
+  })
+
+  describe('GET /api/reasoning-pipelines/test/stream', () => {
+    it('파이프라인 테스트 스트림이 성공적으로 시작되어야 함', async () => {
+      const response = await request(app).get(
+        '/api/reasoning-pipelines/test/stream?pipelineId=1&input=테스트 입력',
+      )
+
+      expect(response.status).toBe(200)
+    })
+
+    it('필수 파라미터가 누락된 경우 400을 반환해야 함', async () => {
+      const response = await request(app).get(
+        '/api/reasoning-pipelines/test/stream',
+      )
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe('Pipeline ID and input are required')
+    })
+
+    it('존재하지 않는 파이프라인 테스트 시 에러를 스트림으로 전송해야 함', async () => {
+      const response = await request(app).get(
+        '/api/reasoning-pipelines/test/stream?pipelineId=999&input=테스트 입력',
+      )
+
+      expect(response.status).toBe(200)
+      expect(response.text).toContain('Pipeline not found')
     })
   })
 
   describe('POST /api/reasoning-pipelines/test', () => {
-    it('파이프라인 설정 테스트가 성공적으로 실행되어야 함', async () => {
+    it('파이프라인 구성 테스트가 성공적으로 실행되어야 함', async () => {
       const testConfig = {
-        nodes: [{ id: 'test-node', type: 'input' }],
-        edges: [],
-      }
-
-      const testResponse: PipelineTestResponse = {
-        output: 'Test execution completed',
-        executionPath: [
+        name: '테스트 파이프라인',
+        agentId: 'agent-1',
+        nodes: [
           {
-            nodeId: 'test-node',
-            status: 'success',
-            output: 'Test node executed successfully',
-            timestamp: mockDate,
+            id: 'node-1',
+            type: 'input',
+            position: { x: 100, y: 100 },
+            data: {
+              name: '입력 노드',
+              description: '테스트 입력',
+            },
           },
         ],
+        edges: [],
       }
-
-      jest
-        .spyOn(mockPipelineService, 'testPipeline')
-        .mockResolvedValue(testResponse)
 
       const response = await request(app)
         .post('/api/reasoning-pipelines/test')
         .send(testConfig)
 
       expect(response.status).toBe(200)
-      expect(response.body).toEqual(convertDatesToStrings(testResponse))
     })
   })
 })

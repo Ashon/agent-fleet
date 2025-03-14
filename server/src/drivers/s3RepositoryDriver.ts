@@ -24,7 +24,6 @@ export class S3RepositoryDriver implements RepositoryDriver {
         }),
       )
     } catch (error) {
-      console.error('S3 bucket check failed:', error)
       throw new Error('S3 bucket is not accessible')
     }
   }

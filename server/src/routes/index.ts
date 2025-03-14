@@ -1,9 +1,9 @@
 import { Router } from 'express'
+import reasoningPipelinesRouter from './agentReasoningPipelines'
 import agentsRouter from './agents'
 import connectorsRouter from './connectors'
 import fleetRouter from './fleets'
 import pipelineJobsRouter from './pipelineJobs'
-import reasoningPipelinesRouter from './reasoningPipelines'
 
 const router = Router()
 
