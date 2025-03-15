@@ -1,6 +1,6 @@
 import ChatPannel, { ChatMessageWithExtra } from '@/panels/ChatPannel'
 import { api } from '@/services/api'
-import { Agent, Pipeline } from '@agentfleet/types'
+import { Agent, NodeExecutionResult, Pipeline } from '@agentfleet/types'
 import { useCallback, useEffect, useState } from 'react'
 
 // ChatMessageWithExtra 타입 확장
@@ -9,33 +9,26 @@ interface ProgressMessage extends ChatMessageWithExtra {
   extra?: NodeExecutionResult[]
 }
 
-interface NodeExecutionResult {
-  nodeId: string
-  nodeName: string
-  nodeType: string
-  status: 'running' | 'success' | 'error'
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  output?: any
-  message?: string
-  timestamp: Date
-}
-
 const NODE_STATUS = {
   RUNNING: 'running',
   SUCCESS: 'success',
-  ERROR: 'error',
+  FAILED: 'failed',
 } as const
 
 interface ReasoningPipelineTestProps {
   agent: Agent
   pipeline: Pipeline | null
   onActiveNodeIdsChange: (activeNodeIds: Set<string>) => void
+  onNodeResultsChange: (
+    nodeResults: Record<string, NodeExecutionResult>,
+  ) => void
 }
 
 export function ReasoningPipelineTest({
   agent,
   pipeline,
   onActiveNodeIdsChange,
+  onNodeResultsChange,
 }: ReasoningPipelineTestProps) {
   const [messages, setMessages] = useState<ProgressMessage[]>([])
   const [input, setInput] = useState('')
@@ -56,7 +49,10 @@ export function ReasoningPipelineTest({
       nodeName: data.nodeName,
       nodeType: data.nodeType,
       status: NODE_STATUS.RUNNING,
-      timestamp: new Date(),
+      input: data.input,
+      output: data.output,
+      startTime: data.startTime,
+      endTime: data.endTime,
     }
 
     setActiveNodeIds((prev) => {
@@ -92,7 +88,9 @@ export function ReasoningPipelineTest({
       nodeType: data.nodeType,
       status: NODE_STATUS.SUCCESS,
       output: data.output,
-      timestamp: new Date(),
+      input: data.input,
+      startTime: data.startTime,
+      endTime: data.endTime,
     }
 
     setActiveNodeIds((prev) => {
@@ -181,8 +179,7 @@ export function ReasoningPipelineTest({
             if (node) {
               next.set(nodeId, {
                 ...node,
-                status: NODE_STATUS.ERROR,
-                message: data.message,
+                status: NODE_STATUS.FAILED,
               })
             }
           })
@@ -266,6 +263,10 @@ export function ReasoningPipelineTest({
   useEffect(() => {
     onActiveNodeIdsChange(activeNodeIds)
   }, [activeNodeIds, onActiveNodeIdsChange])
+
+  useEffect(() => {
+    onNodeResultsChange(Object.fromEntries(nodeResults))
+  }, [nodeResults, onNodeResultsChange])
 
   return (
     <div className="h-full pt-2">

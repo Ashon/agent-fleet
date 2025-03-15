@@ -88,9 +88,26 @@ export default function PipelineCanvas({
               {getNodeIcon(node.type)}
               <div className="text-xs font-medium opacity-80">{node.type}</div>
             </div>
-            <div className="flex items-center gap-1 w-5">
-              {activeNodeIds.has(node.id) && (
+            <div className="flex items-center gap-1 w-3">
+              {activeNodeIds.has(node.id) ? (
                 <span className="loading loading-spinner loading-sm"></span>
+              ) : (
+                nodeResults[node.id] && (
+                  <div
+                    className={`
+                      w-3 h-3 rounded-full
+                      ${
+                        nodeResults[node.id].status === 'success'
+                          ? 'bg-success'
+                          : nodeResults[node.id].status === 'error'
+                            ? 'bg-error'
+                            : nodeResults[node.id].status === 'running'
+                              ? 'bg-warning'
+                              : 'bg-base-content/20'
+                      }
+                    `}
+                  />
+                )
               )}
             </div>
           </div>
@@ -100,30 +117,19 @@ export default function PipelineCanvas({
             {node.data.description}
           </div>
 
-          {nodeResults[node.id] && (
-            <div className="absolute bottom-2 left-3 right-3">
-              <div className="flex items-center gap-2 text-xs">
-                <div
-                  className={`
-                  w-2 h-2 rounded-full
-                  ${
-                    nodeResults[node.id].status === 'success'
-                      ? 'bg-success'
-                      : nodeResults[node.id].status === 'error'
-                        ? 'bg-error'
-                        : nodeResults[node.id].status === 'running'
-                          ? 'bg-warning'
-                          : 'bg-base-content/20'
-                  }
-                `}
-                />
-                <div className="opacity-60">{nodeResults[node.id].status}</div>
-              </div>
+          {/* <pre className="text-xs">
+            {JSON.stringify(node.data.config, null, 2)}
+          </pre> */}
+
+          {/* {nodeResults[node.id] && (
+            <div className="flex flex-col gap-1">
               <div className="text-xs opacity-60 truncate mt-1">
-                {nodeResults[node.id].output}
+                <pre className="max-w-100 whitespace-pre-wrap">
+                  {nodeResults[node.id].output}
+                </pre>
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     ),

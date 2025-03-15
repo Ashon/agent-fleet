@@ -1,6 +1,11 @@
 import { default as PipelineCanvas } from '@/components/PipelineCanvas'
 import { api } from '@/services/api'
-import { Agent, Pipeline, PipelineNode } from '@agentfleet/types'
+import {
+  Agent,
+  NodeExecutionResult,
+  Pipeline,
+  PipelineNode,
+} from '@agentfleet/types'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
@@ -12,14 +17,16 @@ interface ReasoningPipelineProps {
 }
 
 export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
-  const { subTab = 'test' } = useParams<{
+  const { subTab = 'config' } = useParams<{
     subTab: 'test' | 'config'
   }>()
 
   const [pipeline, setPipeline] = useState<Pipeline | null>(null)
-
   const [activeNodeIds, setActiveNodeIds] = useState<Set<string>>(new Set())
   const [selectedNode, setSelectedNode] = useState<PipelineNode | null>(null)
+  const [nodeResults, setNodeResults] = useState<
+    Record<string, NodeExecutionResult>
+  >({})
 
   // 디바운스를 위한 타이머 ref
   const updateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -93,7 +100,7 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
 
   return (
     <div className="px-4 flex flex-col h-full">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:h-[calc(100vh-12rem)] h-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="rounded-lg overflow-hidden col-span-2 shadow-lg">
           {pipeline ? (
             <PipelineCanvas
@@ -101,6 +108,15 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
               onNodeClick={setSelectedNode}
               onUpdate={onUpdate}
               activeNodeIds={activeNodeIds}
+              nodeResults={Object.fromEntries(
+                Object.entries(nodeResults).map(([key, value]) => [
+                  key,
+                  {
+                    status: value.status,
+                    output: JSON.stringify(value.output),
+                  },
+                ]),
+              )}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
@@ -114,33 +130,34 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
             </div>
           )}
         </div>
-        <div className="flex flex-col">
-          <div className="tabs tabs-border">
-            <Link
-              to={`/agents/${agent.id}/reasoning-pipeline/test`}
-              className={`tab ${subTab === 'test' ? 'tab-active' : ''}`}
-            >
-              Test
-            </Link>
+        <div className="flex flex-col h-full">
+          <div className="tabs tabs-border shrink-0">
             <Link
               to={`/agents/${agent.id}/reasoning-pipeline/config`}
               className={`tab ${subTab === 'config' ? 'tab-active' : ''}`}
             >
               Config
             </Link>
+            <Link
+              to={`/agents/${agent.id}/reasoning-pipeline/test`}
+              className={`tab ${subTab === 'test' ? 'tab-active' : ''}`}
+            >
+              Test
+            </Link>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 min-h-[calc(100vh-16rem)] max-h-[calc(100vh-16rem)] overflow-y-auto">
+            {subTab === 'config' && (
+              <ReasoningPipelineConfig
+                selectedNode={selectedNode}
+                pipelineId={pipeline?.id || ''}
+              />
+            )}
             {subTab === 'test' && (
               <ReasoningPipelineTest
                 agent={agent}
                 pipeline={pipeline}
                 onActiveNodeIdsChange={setActiveNodeIds}
-              />
-            )}
-            {subTab === 'config' && (
-              <ReasoningPipelineConfig
-                selectedNode={selectedNode}
-                pipelineId={pipeline?.id || ''}
+                onNodeResultsChange={setNodeResults}
               />
             )}
           </div>

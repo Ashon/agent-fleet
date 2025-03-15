@@ -18,7 +18,7 @@ export interface NodeExecutionResult {
   output: Record<string, any> | string
   startTime: Date
   endTime: Date
-  status: 'success' | 'failed'
+  status: 'running' | 'success' | 'failed'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>
 }

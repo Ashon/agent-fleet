@@ -149,7 +149,7 @@ export function ReasoningPipelineConfig({
   }
 
   return (
-    <div className="h-full pt-2 space-y-6">
+    <div className="pt-2 space-y-2 overflow-y-auto">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-bold">프롬프트 노드 설정</h3>
         <div className="flex items-center gap-2">
@@ -175,6 +175,28 @@ export function ReasoningPipelineConfig({
       </div>
 
       <div className="space-y-4">
+        <TextField
+          label="작업 이름"
+          value={selectedNode.data.name}
+          onChange={(e) =>
+            handleConfigChange({
+              name: e.target.value,
+            })
+          }
+        />
+
+        <TextField
+          label="작업 설명"
+          value={selectedNode.data.description}
+          onChange={(e) =>
+            handleConfigChange({
+              description: e.target.value,
+            })
+          }
+        />
+
+        <div className="divider"></div>
+
         <Select
           label="프롬프트 템플릿"
           required
