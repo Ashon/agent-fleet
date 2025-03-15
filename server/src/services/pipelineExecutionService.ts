@@ -39,6 +39,7 @@ export class PipelineExecutionService {
     return this.repository.findAll()
   }
 
+  // 실행 그래프 생성
   private buildExecutionGraph(
     pipeline: Pipeline,
   ): Map<string, NodeExecutionState> {
@@ -64,6 +65,7 @@ export class PipelineExecutionService {
     return executionGraph
   }
 
+  // 실행 가능한 노드 찾기
   private findExecutableNodes(
     executionGraph: Map<string, NodeExecutionState>,
   ): PipelineNode[] {
@@ -78,6 +80,7 @@ export class PipelineExecutionService {
     return executableNodes
   }
 
+  // 실행 상태 업데이트
   private updateExecutionState(
     nodeId: string,
     executionGraph: Map<string, NodeExecutionState>,
@@ -98,6 +101,7 @@ export class PipelineExecutionService {
       })
   }
 
+  // 노드 실행
   private async executeNode(
     node: PipelineNode,
     input: string,
@@ -108,6 +112,7 @@ export class PipelineExecutionService {
     const record = await this.repository.findById(id)
     if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
 
+    console.log('node-start', node.id, node.data.name, node.type)
     res.write(
       `data: ${JSON.stringify({
         type: 'node-start',
@@ -174,6 +179,7 @@ export class PipelineExecutionService {
       await new Promise((resolve) =>
         setTimeout(resolve, Math.random() * this.nodeCompletionDelay),
       )
+
       return output
     } catch (error) {
       const endTime = new Date()
@@ -191,6 +197,7 @@ export class PipelineExecutionService {
     }
   }
 
+  // 파이프라인 실행
   async executePipeline(
     pipeline: Pipeline,
     input: string,
@@ -260,6 +267,7 @@ export class PipelineExecutionService {
     }
   }
 
+  // 파이프라인 실행 스트리밍
   async streamPipelineExecution(
     pipeline: Pipeline,
     input: string,

@@ -8,17 +8,20 @@
     "types"
   ],
   "scripts": {
-    "dev": "npm run build:types && concurrently \"npm run dev:types\" \"npm run dev:server\" \"npm run dev:ui\"",
+    "dev": "npm run build:types && concurrently \"npm run dev:db\" \"npm run dev:types\" \"npm run dev:server\" \"npm run dev:ui\"",
     "dev:types": "npm run dev --workspace=@agentfleet/types",
     "dev:ui": "npm run dev --workspace=client",
     "dev:server": "npm run dev --workspace=server",
+    "dev:db": "docker compose up db",
     "build": "npm run build:types && npm run build:client && npm run build:server",
     "build:types": "npm run build --workspace=@agentfleet/types",
     "build:client": "npm run build --workspace=client",
     "build:server": "npm run build --workspace=server",
     "start": "npm run start --workspace=server",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "npm run test:server",
+    "test:server": "cd server && npm run test"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
