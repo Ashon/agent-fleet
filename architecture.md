@@ -1,280 +1,277 @@
-# Agent Fleet 아키텍처 문서
+# Agent Fleet Architecture Document
 
-## 1. 시스템 개요
+## 1. System Overview
 
-Agent Fleet은 클라이언트-서버 아키텍처를 기반으로 하는 웹 애플리케이션입니다. 서버는 Node.js와 Express.js를 사용하여 구현되었으며, 객체 스토리지(MinIO)를 활용하여 데이터를 관리합니다.
+Agent Fleet is a web application based on client-server architecture. The server is implemented using Node.js and Express.js, utilizing object storage (MinIO) for data management.
 
-## 2. 기술 스택
+## 2. Technology Stack
 
-### 서버 (Backend)
+### Server (Backend)
 
 - Runtime: Node.js
-- 프레임워크: Express.js
-- 언어: TypeScript
-- 객체 스토리지: MinIO (S3 호환)
+- Framework: Express.js
+- Language: TypeScript
+- Object Storage: MinIO (S3 compatible)
 
-### 클라이언트 (Frontend)
+### Client (Frontend)
 
-- React.js 기반의 웹 애플리케이션
+- React.js based web application
 
-## 3. 서버 아키텍처
+## 3. Server Architecture
 
-### 디렉토리 구조
+### Directory Structure
 
 ```
 server/
 ├── src/
-│   ├── routes/      # API 라우트 정의
-│   ├── services/    # 비즈니스 로직
-│   ├── middleware/  # Express 미들웨어
-│   ├── repositories/# 데이터 접근 계층
-│   ├── clients/     # 외부 서비스 클라이언트
-│   ├── drivers/     # 저장소 드라이버
-│   ├── mocks/       # 테스트용 목 데이터
-│   ├── config.ts    # 환경 설정
-│   └── index.ts     # 애플리케이션 엔트리포인트
+│   ├── routes/      # API route definitions
+│   ├── services/    # Business logic
+│   ├── middleware/  # Express middleware
+│   ├── repositories/# Data access layer
+│   ├── clients/     # External service clients
+│   ├── drivers/     # Storage drivers
+│   ├── mocks/       # Test mock data
+│   ├── config.ts    # Environment configuration
+│   └── index.ts     # Application entry point
 ```
 
-### 계층 구조
+### Layer Structure
 
-1. **라우트 계층 (Routes)**
+1. **Route Layer**
 
-- API 엔드포인트 정의
-- 요청/응답 처리
+   - API endpoint definitions
+   - Request/Response handling
 
-2. **서비스 계층 (Services)**
+2. **Service Layer**
 
-- 비즈니스 로직 구현
-- 트랜잭션 관리
+   - Business logic implementation
+   - Transaction management
 
-3. **리포지토리 계층 (Repositories)**
+3. **Repository Layer**
 
-- 데이터 접근 추상화
-- CRUD 작업 처리
+   - Data access abstraction
+   - CRUD operations
 
-4. **드라이버 계층 (Drivers)**
+4. **Driver Layer**
+   - Storage implementations
+   - S3 compatible storage integration
 
-- 저장소 구현체
-- S3 호환 스토리지 연동
+### Key Components
 
-### 주요 컴포넌트
+1. **Error Handling Middleware**
 
-1. **에러 처리 미들웨어**
+   - Global error handling
+   - HTTP status code management
 
-- 전역 에러 핸들링
-- HTTP 상태 코드 관리
+2. **S3 Repository Driver**
 
-2. **S3 리포지토리 드라이버**
+   - MinIO object storage integration
+   - File upload/download management
 
-- MinIO 객체 스토리지 연동
-- 파일 업로드/다운로드 관리
+3. **Security**
+   - CORS configuration
+   - Request validation
 
-3. **보안**
+## 4. Infrastructure
 
-- CORS 설정
-- 요청 검증
+### Containerization
 
-## 4. 인프라 구조
+- Docker-based containerization
+- Local development environment through Docker Compose
 
-### 컨테이너화
+### Main Containers
 
-- Docker 기반 컨테이너화
-- Docker Compose를 통한 로컬 개발 환경 구성
+1. Server Application
+2. Client Application
+3. MinIO Object Storage
 
-### 주요 컨테이너
+## 5. Development Environment
 
-1. 서버 애플리케이션
-2. 클라이언트 애플리케이션
-3. MinIO 객체 스토리지
-
-## 5. 개발 환경
-
-### 도구
+### Tools
 
 - TypeScript
 - ESLint
 - Docker & Docker Compose
 
-### 설정 파일
+### Configuration Files
 
-- `tsconfig.json`: TypeScript 설정
-- `docker-compose.yml`: 컨테이너 구성
-- `.env`: 환경 변수
+- `tsconfig.json`: TypeScript configuration
+- `docker-compose.yml`: Container configuration
+- `.env`: Environment variables
 
-## 6. 비즈니스 로직 상세
+## 6. Business Logic Details
 
-### 핵심 도메인 모델
+### Core Domain Models
 
-1. **Agent (에이전트)**
+1. **Agent**
 
-- 개별 AI 에이전트를 나타내는 도메인 모델
-- 속성:
-  - id: 고유 식별자
-  - name: 에이전트 이름
-  - status: 활성 상태 (active/inactive)
-  - chatHistory: 대화 이력
-- 주요 기능:
-  - 에이전트 생성/수정/삭제
-  - 상태 관리
-  - 대화 이력 관리
+   - Domain model representing individual AI agents
+   - Properties:
+     - id: Unique identifier
+     - name: Agent name
+     - status: Active status (active/inactive)
+     - chatHistory: Conversation history
+   - Key Functions:
+     - Agent creation/modification/deletion
+     - Status management
+     - Chat history management
 
-2. **Fleet (플릿)**
+2. **Fleet**
 
-- 여러 에이전트를 그룹화하는 상위 개념
-- 속성:
-  - id: 고유 식별자
-  - name: 플릿 이름
-  - description: 설명
-  - agents: 소속 에이전트 목록
-  - status: 활성 상태
-  - createdAt/updatedAt: 생성/수정 시간
-- 주요 기능:
-  - 플릿 생성/수정/삭제
-  - 에이전트 그룹 관리
+   - High-level concept grouping multiple agents
+   - Properties:
+     - id: Unique identifier
+     - name: Fleet name
+     - description: Description
+     - agents: List of member agents
+     - status: Active status
+     - createdAt/updatedAt: Creation/modification times
+   - Key Functions:
+     - Fleet creation/modification/deletion
+     - Agent group management
 
-3. **Pipeline (파이프라인)**
+3. **Pipeline**
 
-- 에이전트의 추론 및 실행 프로세스
-- 구성 요소:
-  - 커넥터: 외부 시스템과의 연동
-  - 추론 엔진: 에이전트의 의사결정 처리
-  - 실행 엔진: 결정된 작업 수행
+   - Agent's reasoning and execution process
+   - Components:
+     - Connectors: External system integration
+     - Reasoning Engine: Agent decision processing
+     - Execution Engine: Decided task execution
 
-4. **PipelineJob (파이프라인 작업)**
-   - 파이프라인의 실행 인스턴스를 나타내는 도메인 모델
-   - 속성:
-     - id: 작업 고유 식별자
-     - pipelineId: 실행된 파이프라인 ID
-     - pipelineName: 파이프라인 이름
-     - input: 입력 데이터
-     - status: 실행 상태 (running/completed/failed)
-     - startTime/endTime: 시작/종료 시간
-     - nodeResults: 각 노드의 실행 결과
-     - finalOutput: 최종 출력 결과
-     - error: 오류 정보 (실패 시)
-   - 주요 기능:
-     - 실행 상태 추적
-     - 노드별 실행 결과 관리
-     - 실행 이력 조회
+4. **PipelineJob**
+   - Domain model representing pipeline execution instance
+   - Properties:
+     - id: Job unique identifier
+     - pipelineId: Executed pipeline ID
+     - pipelineName: Pipeline name
+     - input: Input data
+     - status: Execution status (running/completed/failed)
+     - startTime/endTime: Start/End times
+     - nodeResults: Node execution results
+     - finalOutput: Final output result
+     - error: Error information (if failed)
+   - Key Functions:
+     - Execution status tracking
+     - Node-level result management
+     - Execution history querying
 
-### 서비스 계층 구조
+### Service Layer Structure
 
 1. **AgentService**
 
-- 에이전트 생명주기 관리
-- 대화 처리 및 이력 관리
-- 상태 변경 관리
+   - Agent lifecycle management
+   - Conversation processing and history management
+   - Status change management
 
 2. **FleetService**
 
-- 플릿 생명주기 관리
-- 에이전트 그룹 관리
-- 플릿 상태 모니터링
+   - Fleet lifecycle management
+   - Agent group management
+   - Fleet status monitoring
 
 3. **PipelineExecutionService**
 
-- 파이프라인 작업 실행 관리
-- 주요 기능:
-  - 파이프라인 실행 스트리밍
-  - 실행 상태 모니터링
-  - 실행 기록 관리
-  - 노드별 실행 결과 처리
+   - Pipeline job execution management
+   - Key Functions:
+     - Pipeline execution streaming
+     - Execution status monitoring
+     - Execution record management
+     - Node-level result processing
 
 4. **ConnectorService**
+   - External system integration
+   - API integration
+   - Data transformation
 
-- 외부 시스템 연동
-- API 통합
-- 데이터 변환
+### Key Business Processes
 
-### 주요 비즈니스 프로세스
+1. **Agent Creation and Initialization**
 
-1. **에이전트 생성 및 초기화**
-
-```
-1. 에이전트 기본 정보 검증
-2. 고유 ID 생성
-3. 초기 상태 설정 (active)
-4. 저장소에 에이전트 정보 저장
-```
-
-2. **플릿 관리**
-
-```
-1. 플릿 생성/수정
-2. 에이전트 할당/제거
-3. 플릿 상태 업데이트
-4. 메타데이터 관리
-```
-
-3. **파이프라인 실행**
-
-```
-1. 파이프라인 초기화
-2. 커넥터 설정
-3. 추론 프로세스 실행
-4. 결과 처리 및 저장
-```
-
-4. **파이프라인 작업 처리**
    ```
-   실행 요청 → 작업 생성 →
-   노드별 순차 실행 → 실시간 상태 전송 →
-   결과 저장 → 완료 통지
+   1. Validate agent basic information
+   2. Generate unique ID
+   3. Set initial status (active)
+   4. Store agent information in repository
    ```
 
-### 데이터 흐름
+2. **Fleet Management**
 
-1. **에이전트 작업 처리**
-
-```
-User Request → API 라우터 → AgentService →
-Pipeline 실행 → Connector 처리 →
-결과 저장 → Response
-```
-
-2. **플릿 작업 처리**
-
-```
-Fleet 요청 → FleetService →
-개별 에이전트 처리 →
-결과 집계 → Response
-```
-
-3. **파이프라인 작업 처리**
    ```
-   실행 요청 → 작업 생성 →
-   노드별 순차 실행 → 실시간 상태 전송 →
-   결과 저장 → 완료 통지
+   1. Fleet creation/modification
+   2. Agent assignment/removal
+   3. Fleet status update
+   4. Metadata management
    ```
 
-### 오류 처리
+3. **Pipeline Execution**
 
-1. **검증 오류**
+   ```
+   1. Pipeline initialization
+   2. Connector setup
+   3. Reasoning process execution
+   4. Result processing and storage
+   ```
 
-- 필수 필드 누락
-- 잘못된 형식의 데이터
-- 상태 값 검증
+4. **Pipeline Job Processing**
+   ```
+   Request → Job Creation →
+   Sequential Node Execution → Real-time Status Updates →
+   Result Storage → Completion Notification
+   ```
 
-2. **비즈니스 규칙 위반**
+### Data Flow
 
-- 중복된 에이전트/플릿 생성
-- 잘못된 상태 전이
-- 권한 위반
+1. **Agent Task Processing**
 
-3. **시스템 오류**
+   ```
+   User Request → API Router → AgentService →
+   Pipeline Execution → Connector Processing →
+   Result Storage → Response
+   ```
 
-- 저장소 연결 실패
-- 외부 서비스 통신 오류
-- 리소스 부족
+2. **Fleet Task Processing**
 
-4. **실행 오류**
-   - 노드 실행 실패
-   - 타임아웃
-   - 리소스 제한 초과
+   ```
+   Fleet Request → FleetService →
+   Individual Agent Processing →
+   Result Aggregation → Response
+   ```
 
-## 7. 시스템 다이어그램
+3. **Pipeline Job Processing**
+   ```
+   Execution Request → Job Creation →
+   Sequential Node Execution → Real-time Status Updates →
+   Result Storage → Completion Notification
+   ```
 
-### 시스템 아키텍처 다이어그램
+### Error Handling
+
+1. **Validation Errors**
+
+   - Missing required fields
+   - Invalid data format
+   - Status value validation
+
+2. **Business Rule Violations**
+
+   - Duplicate agent/fleet creation
+   - Invalid state transitions
+   - Permission violations
+
+3. **System Errors**
+
+   - Storage connection failure
+   - External service communication failure
+   - Resource exhaustion
+
+4. **Execution Errors**
+   - Node execution failure
+   - Timeout
+   - Resource limit exceeded
+
+## 7. System Diagram
+
+### System Architecture Diagram
 
 ```mermaid
 graph TB
@@ -306,7 +303,7 @@ graph TB
   Repos --> MinIO
 ```
 
-### 도메인 모델 관계도
+### Domain Model Relationship Diagram
 
 ```mermaid
 classDiagram
@@ -398,9 +395,9 @@ classDiagram
   }
 ```
 
-### 비즈니스 프로세스 흐름도
+### Business Process Flow Diagram
 
-1. **에이전트 생성 프로세스**
+1. **Agent Creation Process**
 
 ```mermaid
 sequenceDiagram
@@ -422,7 +419,7 @@ sequenceDiagram
   API-->>C: 201 Created
 ```
 
-2. **파이프라인 실행 프로세스**
+2. **Pipeline Execution Process**
 
 ```mermaid
 sequenceDiagram
@@ -433,22 +430,22 @@ sequenceDiagram
   participant S as Storage
 
   C->>PS: executePipeline(pipeline, input)
-  PS->>PES: 작업 ID 생성
-  PES->>PJR: 작업 기록 생성
+  PS->>PES: Job ID Creation
+  PES->>PJR: Job Record Creation
 
-  loop 각 노드 실행
-    PES->>PES: 노드 실행
-    PES->>PJR: 노드 결과 업데이트
-    PES-->>C: 실시간 실행 상태
+  loop Each Node Execution
+    PES->>PES: Node Execution
+    PES->>PJR: Node Result Update
+    PES-->>C: Real-time Execution Status
   end
 
-  PES->>PJR: 최종 결과 저장
-  PJR->>S: 저장
-  PES-->>PS: 실행 완료
-  PS-->>C: 최종 응답
+  PES->>PJR: Final Result Storage
+  PJR->>S: Store
+  PES-->>PS: Execution Completion
+  PS-->>C: Final Response
 ```
 
-### 데이터 저장소 구조
+### Data Storage Structure
 
 ```mermaid
 erDiagram
