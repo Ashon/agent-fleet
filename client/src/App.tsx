@@ -40,7 +40,12 @@ function App() {
             <Route path="new" element={<NewAgent />} />
             <Route path=":id">
               <Route index element={<Navigate to="general" replace />} />
-              <Route path=":tab" element={<InfoAgent />} />
+              <Route path=":tab">
+                <Route index element={<InfoAgent />} />
+                <Route path=":subTab">
+                  <Route index element={<InfoAgent />} />
+                </Route>
+              </Route>
               <Route path="chat" element={<Chat />} />
             </Route>
           </Route>

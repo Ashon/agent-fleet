@@ -347,7 +347,7 @@ function GraphCanvas({
             <div
               key={node.id}
               data-node-id={node.id}
-              className="absolute cursor-move select-none"
+              className="absolute"
               style={{
                 transformOrigin: 'center',
                 transform: [
@@ -359,8 +359,12 @@ function GraphCanvas({
                 touchAction: 'none',
                 pointerEvents: 'auto',
               }}
-              onMouseDown={(e) => onNodeMouseDown(e, node.id, zoomScale)}
-              onTouchStart={(e) => onNodeTouchStart(e, node.id, zoomScale)}
+              onMouseDown={(e) => {
+                onNodeMouseDown(e, node.id, zoomScale)
+              }}
+              onTouchStart={(e) => {
+                onNodeTouchStart(e, node.id, zoomScale)
+              }}
               onMouseEnter={() => {
                 setHoverRef(node)
               }}

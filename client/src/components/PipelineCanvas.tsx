@@ -11,6 +11,7 @@ import {
   BeakerIcon,
   BoltIcon,
   ChartBarIcon,
+  ChatBubbleLeftRightIcon,
   DocumentTextIcon,
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
@@ -33,10 +34,13 @@ const getNodeIcon = (type: PipelineNodeType['type']) => {
       return <ArchiveBoxIcon className="h-5 w-5 text-orange-500" />
     case 'analysis':
       return <ChartBarIcon className="h-5 w-5 text-indigo-500" />
+    case 'prompt':
+      return <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-500" />
     default:
       return null
   }
 }
+
 interface PipelineCanvasProps {
   pipeline: Pipeline
   onUpdate: (pipeline: Pipeline) => void
@@ -65,12 +69,12 @@ export default function PipelineCanvas({
     render: () => (
       <div
         className={`
-          p-3 select-none shadow-lg border-2 rounded-lg bg-base-100 border-2
+          p-3 select-none shadow-lg border-2 rounded-lg bg-base-100 border-2 hover:shadow-xl
           ${getNodeStyle(node)}
           ${
             selectedNode === node.id
-              ? 'ring-2 ring-primary ring-offset-2 ring-offset-base-100'
-              : ''
+              ? 'ring-2 ring-primary ring-offset-2 ring-offset-base-100 cursor-move'
+              : 'cursor-pointer'
           }
         `}
         onClick={() => {

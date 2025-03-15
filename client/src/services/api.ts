@@ -292,9 +292,20 @@ export const api = {
     return response.json()
   },
 
+  async getReasoningPipelineStream(
+    pipelineId: string,
+    input: string,
+  ): Promise<EventSource> {
+    const eventSource = new EventSource(
+      `${import.meta.env.VITE_API_URL}/api/reasoning-pipelines/test/stream?pipelineId=${pipelineId}&input=${encodeURIComponent(input)}`,
+    )
+
+    return eventSource
+  },
+
   // Pipeline Jobs API
   async getPipelineJobs(): Promise<PipelineExecutionRecord[]> {
-    const response = await fetch(`${API_URL}/api/pipeline-execution/jobs`)
+    const response = await fetch(`${API_URL}/api/pipeline-executions/jobs`)
     if (!response.ok) {
       throw new Error('Failed to fetch pipeline jobs')
     }
@@ -302,7 +313,9 @@ export const api = {
   },
 
   async getPipelineJobDetail(id: string): Promise<PipelineExecutionRecord> {
-    const response = await fetch(`${API_URL}/api/pipeline-execution/jobs/${id}`)
+    const response = await fetch(
+      `${API_URL}/api/pipeline-executions/jobs/${id}`,
+    )
     if (!response.ok) {
       throw new Error('Failed to fetch pipeline job')
     }

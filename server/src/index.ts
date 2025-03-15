@@ -1,24 +1,10 @@
 import cors from 'cors'
 import express from 'express'
 import morgan from 'morgan'
-import { createS3Client } from './clients/s3'
 import config from './config'
-import { S3RepositoryDriver } from './drivers/s3RepositoryDriver'
 import { errorHandler } from './middleware/errorHandler'
 import routes from './routes'
 
-const s3Client = createS3Client({
-  endpoint: config.storage.endpoint,
-  region: config.storage.region,
-  accessKeyId: config.storage.accessKey,
-  secretAccessKey: config.storage.secretKey,
-  forcePathStyle: true,
-})
-
-const s3RepositoryDriver = new S3RepositoryDriver(
-  s3Client,
-  config.storage.bucket,
-)
 const app = express()
 
 // 미들웨어 설정
@@ -40,14 +26,7 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Not Found' })
 })
 
-// 에러 처리 미들웨어
-app.use((err: Error, req: express.Request, res: express.Response) => {
-  console.error(err.stack)
-  res.status(500).json({ message: 'Internal Server Error' })
-})
-
 // 서버 시작
-s3RepositoryDriver.preflight()
 app.listen(config.port, () => {
   console.log(`Server is running on port ${config.port}`)
 })

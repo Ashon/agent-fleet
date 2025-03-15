@@ -3,11 +3,9 @@ import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { MockRepositoryDriver } from '../../drivers/mockRepositoryDriver'
 import { PipelineExecutionsRepository } from '../../repositories/pipelineExecution.repository'
-import { PromptTemplateRepository } from '../../repositories/promptTemplate.repository'
 import { NodeExecutorFactory } from '../nodeExecutors/NodeExecutorFactory'
 import { MockNodeExecutor } from '../nodeExecutors/NoopNodeExecutor'
 import { PipelineExecutionService } from '../pipelineExecution.service'
-import { PromptService } from '../prompt.service'
 
 // 테스트 환경 설정
 process.env.NODE_ENV = 'test'
@@ -17,7 +15,6 @@ describe('PipelineExecutionService', () => {
   let writtenData: string[]
   let pipelineExecutionService: PipelineExecutionService
   let nodeExecutorFactory: NodeExecutorFactory
-  let promptService: PromptService
   let mockRepositoryDriver: MockRepositoryDriver
 
   beforeEach(() => {
@@ -45,12 +42,6 @@ describe('PipelineExecutionService', () => {
     ].forEach((nodeType) => {
       nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
     })
-
-    // PromptService 설정
-    const promptTemplateRepository = new PromptTemplateRepository(
-      mockRepositoryDriver,
-    )
-    promptService = new PromptService(promptTemplateRepository)
 
     pipelineExecutionService = new PipelineExecutionService(
       new PipelineExecutionsRepository(mockRepositoryDriver),
@@ -259,7 +250,6 @@ describe('PipelineExecutionService', () => {
   describe('실행 기록 관리', () => {
     let pipelineExecutionService: PipelineExecutionService
     let mockRepository: PipelineExecutionsRepository
-    let promptService: PromptService
     let mockRepositoryDriver: MockRepositoryDriver
 
     beforeEach(() => {
@@ -269,12 +259,6 @@ describe('PipelineExecutionService', () => {
       ;['input', 'process', 'plan', 'action'].forEach((nodeType) => {
         nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
       })
-
-      // PromptService 설정
-      const promptTemplateRepository = new PromptTemplateRepository(
-        mockRepositoryDriver,
-      )
-      promptService = new PromptService(promptTemplateRepository)
 
       pipelineExecutionService = new PipelineExecutionService(
         mockRepository,
