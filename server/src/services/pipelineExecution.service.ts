@@ -7,7 +7,7 @@ import {
 } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
-import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
+import { PipelineExecutionsRepository } from '../repositories/pipelineExecutionsRepository'
 import { NodeExecutorFactory } from './nodeExecutors/NodeExecutorFactory'
 
 interface StreamMessage {
@@ -30,7 +30,7 @@ const sendStreamMessage = (res: Response, message: StreamMessage) => {
 
 export class PipelineExecutionService {
   constructor(
-    private readonly repository: PipelineJobsRepository,
+    private readonly repository: PipelineExecutionsRepository,
     private readonly nodeExecutorFactory: NodeExecutorFactory,
   ) {}
 

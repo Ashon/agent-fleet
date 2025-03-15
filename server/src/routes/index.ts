@@ -3,7 +3,7 @@ import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { AgentRepository } from '../repositories/agentRepository'
 import { ConnectorRepository } from '../repositories/connectorRepository'
 import { FleetRepository } from '../repositories/fleetRepository'
-import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
+import { PipelineExecutionsRepository } from '../repositories/pipelineExecutionsRepository'
 import { PipelineRepository } from '../repositories/pipelineRepository'
 import { PromptTemplateRepository } from '../repositories/promptTemplateRepository'
 import { AgentService } from '../services/agent.service'
@@ -15,36 +15,22 @@ import { MockNodeExecutor } from '../services/nodeExecutors/NoopNodeExecutor'
 import { PipelineExecutionService } from '../services/pipelineExecution.service'
 import { PromptService } from '../services/prompt.service'
 import { createAgentReasoningPipelinesRouter } from './agentReasoningPipelines.routes'
-import { createAgentsRouter } from './agents'
-import { createConnectorsRouter } from './connectors'
+import { createAgentsRouter } from './agents.routes'
+import { createConnectorsRouter } from './connectors.routes'
 import { createFleetsRouter } from './fleets.routes'
-import { createPipelineJobsRouter } from './pipelineJobs.routes'
+import { createPipelineExecutionsRouter } from './pipelineJobs.routes'
 import { createPromptsRouter } from './prompts.routes'
 
-const router = Router()
+const repositoryDriver = new MockRepositoryDriver()
 
-const mockRepositoryDriver = new MockRepositoryDriver()
-
-export const agentService = new AgentService(
-  new AgentRepository(mockRepositoryDriver),
+const agentRepository = new AgentRepository(repositoryDriver)
+const connectorRepository = new ConnectorRepository(repositoryDriver)
+const fleetRepository = new FleetRepository(repositoryDriver)
+const pipelineRepository = new PipelineRepository(repositoryDriver)
+const pipelineExecutionsRepository = new PipelineExecutionsRepository(
+  repositoryDriver,
 )
-
-export const connectorService = new ConnectorService(
-  new ConnectorRepository(mockRepositoryDriver),
-)
-
-export const fleetService = new FleetService(
-  new FleetRepository(mockRepositoryDriver),
-)
-
-export const pipelineExecutionService = new PipelineExecutionService(
-  new PipelineJobsRepository(mockRepositoryDriver),
-  new NodeExecutorFactory(),
-)
-
-export const pipelineService = new PipelineService(
-  new PipelineRepository(mockRepositoryDriver),
-)
+const promptTemplateRepository = new PromptTemplateRepository(repositoryDriver)
 
 // 노드 실행기 팩토리 설정
 const nodeExecutorFactory = new NodeExecutorFactory()
@@ -60,14 +46,24 @@ const nodeExecutorFactory = new NodeExecutorFactory()
   nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
 })
 
-const promptService = new PromptService(
-  new PromptTemplateRepository(mockRepositoryDriver),
+export const agentService = new AgentService(agentRepository)
+export const connectorService = new ConnectorService(connectorRepository)
+export const fleetService = new FleetService(fleetRepository)
+export const pipelineService = new PipelineService(pipelineRepository)
+export const promptService = new PromptService(promptTemplateRepository)
+export const pipelineExecutionService = new PipelineExecutionService(
+  pipelineExecutionsRepository,
+  nodeExecutorFactory,
 )
 
+const router = Router()
 router.use('/agents', createAgentsRouter(agentService))
 router.use('/connectors', createConnectorsRouter(connectorService))
 router.use('/fleets', createFleetsRouter(fleetService))
-router.use('/pipeline-jobs', createPipelineJobsRouter(pipelineExecutionService))
+router.use(
+  '/pipeline-executions',
+  createPipelineExecutionsRouter(pipelineExecutionService),
+)
 router.use(
   '/reasoning-pipelines',
   createAgentReasoningPipelinesRouter(

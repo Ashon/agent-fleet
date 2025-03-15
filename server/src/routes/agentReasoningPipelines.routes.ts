@@ -1,40 +1,8 @@
 import { Router } from 'express'
-import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
-import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
-import { PipelineRepository } from '../repositories/pipelineRepository'
 import { PipelineService } from '../services/agentReasoningPipeline.service'
-import { NodeExecutorFactory } from '../services/nodeExecutors/NodeExecutorFactory'
-import { MockNodeExecutor } from '../services/nodeExecutors/NoopNodeExecutor'
 import { PipelineExecutionService } from '../services/pipelineExecution.service'
-
-const router = Router()
-const mockRepositoryDriver = new MockRepositoryDriver()
-
-export const pipelineService = new PipelineService(
-  new PipelineRepository(mockRepositoryDriver),
-)
-
-// 노드 실행기 팩토리 설정
-const nodeExecutorFactory = new NodeExecutorFactory()
-;[
-  'input',
-  'process',
-  'plan',
-  'action',
-  'decision',
-  'aggregator',
-  'analysis',
-].forEach((nodeType) => {
-  nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
-})
-
-// PromptService 설정
-export const pipelineExecutionService = new PipelineExecutionService(
-  new PipelineJobsRepository(mockRepositoryDriver),
-  nodeExecutorFactory,
-)
 
 export const createAgentReasoningPipelinesRouter = (
   pipelineService: PipelineService,

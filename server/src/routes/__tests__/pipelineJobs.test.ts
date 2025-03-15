@@ -1,16 +1,16 @@
 import express from 'express'
 import request from 'supertest'
 import { errorHandler } from '../../middleware/errorHandler'
-import { mockPipelineJobs } from '../../mocks/pipelineJobs'
+import { mockPipelineExecutions } from '../../mocks/mockPipelineExecutions'
 import { pipelineExecutionService } from '../index'
-import { createPipelineJobsRouter } from '../pipelineJobs.routes'
+import { createPipelineExecutionsRouter } from '../pipelineJobs.routes'
 
 jest.mock('../../services/pipelineExecution.service')
 
 const app = express()
-const router = createPipelineJobsRouter(pipelineExecutionService)
+const router = createPipelineExecutionsRouter(pipelineExecutionService)
 app.use(express.json())
-app.use('/api/pipeline-execution', router)
+app.use('/api/pipeline-executions', router)
 app.use(errorHandler)
 
 // 날짜를 문자열로 변환하는 헬퍼 함수
@@ -36,16 +36,18 @@ describe('Pipeline Job Routes', () => {
     jest.clearAllMocks()
   })
 
-  describe('GET /api/pipeline-execution/jobs', () => {
+  describe('GET /api/pipeline-executions/jobs', () => {
     it('모든 실행 기록을 성공적으로 조회해야 합니다', async () => {
       jest
         .spyOn(pipelineExecutionService, 'getAllExecutionRecords')
-        .mockResolvedValue(mockPipelineJobs)
+        .mockResolvedValue(mockPipelineExecutions)
 
-      const response = await request(app).get('/api/pipeline-execution/jobs')
+      const response = await request(app).get('/api/pipeline-executions/jobs')
 
       expect(response.status).toBe(200)
-      expect(response.body).toEqual(convertDatesToStrings(mockPipelineJobs))
+      expect(response.body).toEqual(
+        convertDatesToStrings(mockPipelineExecutions),
+      )
       expect(pipelineExecutionService.getAllExecutionRecords).toHaveBeenCalled()
     })
 
@@ -54,29 +56,29 @@ describe('Pipeline Job Routes', () => {
         .spyOn(pipelineExecutionService, 'getAllExecutionRecords')
         .mockRejectedValue(new Error('Service error'))
 
-      const response = await request(app).get('/api/pipeline-execution/jobs')
+      const response = await request(app).get('/api/pipeline-executions/jobs')
 
       expect(response.status).toBe(500)
       expect(response.body.error).toBe('서버 오류가 발생했습니다.')
     })
   })
 
-  describe('GET /api/pipeline-execution/jobs/:id', () => {
-    const testid = mockPipelineJobs[0].id
+  describe('GET /api/pipeline-executions/jobs/:id', () => {
+    const testid = mockPipelineExecutions[0].id
 
     it('특정 Job ID로 실행 기록을 성공적으로 조회해야 합니다', async () => {
       jest
         .spyOn(pipelineExecutionService, 'getExecutionRecord')
-        .mockResolvedValue(mockPipelineJobs[0])
+        .mockResolvedValue(mockPipelineExecutions[0])
 
       const response = await request(app).get(
-        `/api/pipeline-execution/jobs/${testid}`,
+        `/api/pipeline-executions/jobs/${testid}`,
       )
 
       expect(response.status).toBe(200)
       expect(response.body).toEqual({
         success: true,
-        data: convertDatesToStrings(mockPipelineJobs[0]),
+        data: convertDatesToStrings(mockPipelineExecutions[0]),
       })
       expect(pipelineExecutionService.getExecutionRecord).toHaveBeenCalledWith(
         testid,
@@ -89,7 +91,7 @@ describe('Pipeline Job Routes', () => {
         .mockResolvedValue(undefined)
 
       const response = await request(app).get(
-        '/api/pipeline-execution/jobs/non-existent-id',
+        '/api/pipeline-executions/jobs/non-existent-id',
       )
 
       expect(response.status).toBe(404)
@@ -102,7 +104,7 @@ describe('Pipeline Job Routes', () => {
         .mockRejectedValue(new Error('Service error'))
 
       const response = await request(app).get(
-        `/api/pipeline-execution/jobs/${testid}`,
+        `/api/pipeline-executions/jobs/${testid}`,
       )
 
       expect(response.status).toBe(500)
@@ -110,23 +112,23 @@ describe('Pipeline Job Routes', () => {
     })
   })
 
-  describe('GET /api/pipeline-execution/pipelines/:pipelineId/jobs', () => {
-    const testPipelineId = mockPipelineJobs[0].pipelineId
+  describe('GET /api/pipeline-executions/pipelines/:pipelineId/jobs', () => {
+    const testPipelineId = mockPipelineExecutions[0].pipelineId
 
     it('파이프라인 ID로 실행 기록을 성공적으로 조회해야 합니다', async () => {
-      const pipelineJobs = mockPipelineJobs.filter(
-        (job) => job.pipelineId === testPipelineId,
+      const pipelineExecutions = mockPipelineExecutions.filter(
+        (execution) => execution.pipelineId === testPipelineId,
       )
       jest
         .spyOn(pipelineExecutionService, 'getExecutionRecordsByPipelineId')
-        .mockResolvedValue(pipelineJobs)
+        .mockResolvedValue(pipelineExecutions)
 
       const response = await request(app).get(
-        `/api/pipeline-execution/pipelines/${testPipelineId}/jobs`,
+        `/api/pipeline-executions/pipelines/${testPipelineId}/jobs`,
       )
 
       expect(response.status).toBe(200)
-      expect(response.body).toEqual(convertDatesToStrings(pipelineJobs))
+      expect(response.body).toEqual(convertDatesToStrings(pipelineExecutions))
       expect(
         pipelineExecutionService.getExecutionRecordsByPipelineId,
       ).toHaveBeenCalledWith(testPipelineId)
@@ -138,7 +140,7 @@ describe('Pipeline Job Routes', () => {
         .mockResolvedValue([])
 
       const response = await request(app).get(
-        `/api/pipeline-execution/pipelines/${testPipelineId}/jobs`,
+        `/api/pipeline-executions/pipelines/${testPipelineId}/jobs`,
       )
 
       expect(response.status).toBe(404)
@@ -153,7 +155,7 @@ describe('Pipeline Job Routes', () => {
         .mockRejectedValue(new Error('Service error'))
 
       const response = await request(app).get(
-        `/api/pipeline-execution/pipelines/${testPipelineId}/jobs`,
+        `/api/pipeline-executions/pipelines/${testPipelineId}/jobs`,
       )
 
       expect(response.status).toBe(500)

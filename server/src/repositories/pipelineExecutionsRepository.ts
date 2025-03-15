@@ -2,11 +2,11 @@ import { PipelineExecutionRecord } from '@agentfleet/types'
 import { RepositoryDriver } from '../drivers/repositoryDriver'
 import { BaseEntity, BaseRepository } from './baseRepository'
 
-type PipelineJobEntity = PipelineExecutionRecord & BaseEntity
+type PipelineExecutionEntity = PipelineExecutionRecord & BaseEntity
 
-export class PipelineJobsRepository extends BaseRepository<PipelineJobEntity> {
+export class PipelineExecutionsRepository extends BaseRepository<PipelineExecutionEntity> {
   constructor(driver: RepositoryDriver) {
-    super(driver, 'pipeline-jobs')
+    super(driver, 'pipeline-executions')
   }
 
   async findByPipelineId(

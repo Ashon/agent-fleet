@@ -4,7 +4,7 @@ import request from 'supertest'
 import { connectorService } from '..'
 import { errorHandler } from '../../middleware/errorHandler'
 import { ConnectorService } from '../../services/connector.service'
-import { createConnectorsRouter } from '../connectors'
+import { createConnectorsRouter } from '../connectors.routes'
 
 jest.mock('../../services/connector.service')
 

@@ -4,7 +4,7 @@ import request from 'supertest'
 import { agentService } from '..'
 import { errorHandler } from '../../middleware/errorHandler'
 import { AgentService } from '../../services/agent.service'
-import { createAgentsRouter } from '../agents'
+import { createAgentsRouter } from '../agents.routes'
 
 jest.mock('../../services/agent.service')
 

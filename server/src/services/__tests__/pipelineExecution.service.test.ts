@@ -2,7 +2,7 @@ import { Pipeline } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
 import { MockRepositoryDriver } from '../../drivers/mockRepositoryDriver'
-import { PipelineJobsRepository } from '../../repositories/pipelineJobsRepository'
+import { PipelineExecutionsRepository } from '../../repositories/pipelineExecutionsRepository'
 import { PromptTemplateRepository } from '../../repositories/promptTemplateRepository'
 import { NodeExecutorFactory } from '../nodeExecutors/NodeExecutorFactory'
 import { MockNodeExecutor } from '../nodeExecutors/NoopNodeExecutor'
@@ -53,7 +53,7 @@ describe('PipelineExecutionService', () => {
     promptService = new PromptService(promptTemplateRepository)
 
     pipelineExecutionService = new PipelineExecutionService(
-      new PipelineJobsRepository(mockRepositoryDriver),
+      new PipelineExecutionsRepository(mockRepositoryDriver),
       nodeExecutorFactory,
     )
   })
@@ -258,13 +258,13 @@ describe('PipelineExecutionService', () => {
 
   describe('실행 기록 관리', () => {
     let pipelineExecutionService: PipelineExecutionService
-    let mockRepository: PipelineJobsRepository
+    let mockRepository: PipelineExecutionsRepository
     let promptService: PromptService
     let mockRepositoryDriver: MockRepositoryDriver
 
     beforeEach(() => {
       mockRepositoryDriver = new MockRepositoryDriver()
-      mockRepository = new PipelineJobsRepository(mockRepositoryDriver)
+      mockRepository = new PipelineExecutionsRepository(mockRepositoryDriver)
       nodeExecutorFactory = new NodeExecutorFactory()
       ;['input', 'process', 'plan', 'action'].forEach((nodeType) => {
         nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
@@ -303,7 +303,7 @@ describe('PipelineExecutionService', () => {
     })
 
     it('모든 실행 기록을 조회할 수 있어야 함', async () => {
-      mockRepositoryDriver.clear('pipeline-jobs')
+      mockRepositoryDriver.clear('pipeline-executions')
       const mockPipeline = createMockPipeline()
       const jobId1 = uuidv4()
       const jobId2 = uuidv4()

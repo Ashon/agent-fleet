@@ -1,10 +1,10 @@
 import { PipelineExecutionRecord } from '@agentfleet/types'
 import { RepositoryDriver } from '../../drivers/repositoryDriver'
-import { PipelineJobsRepository } from '../pipelineJobsRepository'
+import { PipelineExecutionsRepository } from '../pipelineExecutionsRepository'
 
 describe('PipelineJobsRepository', () => {
   let mockDriver: jest.Mocked<RepositoryDriver>
-  let repository: PipelineJobsRepository
+  let repository: PipelineExecutionsRepository
 
   const mockJob: PipelineExecutionRecord = {
     id: 'test-job-1',
@@ -40,7 +40,7 @@ describe('PipelineJobsRepository', () => {
       clear: jest.fn(),
       exists: jest.fn(),
     }
-    repository = new PipelineJobsRepository(mockDriver)
+    repository = new PipelineExecutionsRepository(mockDriver)
   })
 
   describe('findAll', () => {
@@ -57,7 +57,7 @@ describe('PipelineJobsRepository', () => {
 
       const result = await repository.findAll()
       expect(result).toEqual(mockJobs)
-      expect(mockDriver.findAll).toHaveBeenCalledWith('pipeline-jobs')
+      expect(mockDriver.findAll).toHaveBeenCalledWith('pipeline-executions')
     })
   })
 
@@ -68,7 +68,7 @@ describe('PipelineJobsRepository', () => {
       const result = await repository.findById(mockJob.id)
       expect(result).toEqual(mockJob)
       expect(mockDriver.findById).toHaveBeenCalledWith(
-        'pipeline-jobs',
+        'pipeline-executions',
         mockJob.id,
       )
     })
@@ -87,7 +87,10 @@ describe('PipelineJobsRepository', () => {
 
       const result = await repository.save(mockJob)
       expect(result).toEqual(mockJob)
-      expect(mockDriver.save).toHaveBeenCalledWith('pipeline-jobs', mockJob)
+      expect(mockDriver.save).toHaveBeenCalledWith(
+        'pipeline-executions',
+        mockJob,
+      )
     })
   })
 
@@ -105,7 +108,7 @@ describe('PipelineJobsRepository', () => {
 
       const result = await repository.findByPipelineId('test-pipeline-1')
       expect(result).toEqual(mockJobs)
-      expect(mockDriver.findAll).toHaveBeenCalledWith('pipeline-jobs')
+      expect(mockDriver.findAll).toHaveBeenCalledWith('pipeline-executions')
     })
 
     it('존재하지 않는 파이프라인 ID로 조회 시 빈 배열을 반환해야 함', async () => {
@@ -123,7 +126,7 @@ describe('PipelineJobsRepository', () => {
       const result = await repository.findById(mockJob.id)
       expect(result).toEqual(mockJob)
       expect(mockDriver.findById).toHaveBeenCalledWith(
-        'pipeline-jobs',
+        'pipeline-executions',
         mockJob.id,
       )
     })
@@ -135,7 +138,10 @@ describe('PipelineJobsRepository', () => {
 
       const result = await repository.save(mockJob)
       expect(result).toEqual(mockJob)
-      expect(mockDriver.save).toHaveBeenCalledWith('pipeline-jobs', mockJob)
+      expect(mockDriver.save).toHaveBeenCalledWith(
+        'pipeline-executions',
+        mockJob,
+      )
     })
   })
 })

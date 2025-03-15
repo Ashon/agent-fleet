@@ -3,7 +3,9 @@ import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
 import { PipelineExecutionService } from '../services/pipelineExecution.service'
 
-export const createPipelineJobsRouter = (service: PipelineExecutionService) => {
+export const createPipelineExecutionsRouter = (
+  service: PipelineExecutionService,
+) => {
   const router = Router()
 
   // GET /api/pipeline-jobs/jobs - Retrieve all execution records
