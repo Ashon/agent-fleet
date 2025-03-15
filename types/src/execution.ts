@@ -12,8 +12,8 @@ export interface NodeExecutionResult {
   nodeId: string
   nodeName: string
   nodeType: string
-  input: Record<string, any>
-  output: Record<string, any>
+  input: Record<string, any> | string
+  output: Record<string, any> | string
   startTime: Date
   endTime: Date
   status: 'success' | 'failed'

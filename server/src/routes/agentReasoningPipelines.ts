@@ -1,18 +1,49 @@
 import { Router } from 'express'
+import { NoopProvider } from '../clients/llm/NoopProvider'
 import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
 import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
 import { PipelineRepository } from '../repositories/pipelineRepository'
+import { PromptTemplateRepository } from '../repositories/promptTemplateRepository'
+import { MockNodeExecutor } from '../services/__tests__/mocks/MockNodeExecutor'
 import { PipelineService } from '../services/agentReasoningPipeline'
+import { NodeExecutorFactory } from '../services/nodeExecutors/NodeExecutorFactory'
 import { PipelineExecutionService } from '../services/pipelineExecutionService'
+import { PromptService } from '../services/prompt.service'
 
 const router = Router()
+const mockRepositoryDriver = new MockRepositoryDriver()
+
 export const pipelineService = new PipelineService(
-  new PipelineRepository(new MockRepositoryDriver()),
+  new PipelineRepository(mockRepositoryDriver),
 )
+
+// 노드 실행기 팩토리 설정
+const nodeExecutorFactory = new NodeExecutorFactory()
+;[
+  'input',
+  'process',
+  'plan',
+  'action',
+  'decision',
+  'aggregator',
+  'analysis',
+].forEach((nodeType) => {
+  nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
+})
+
+// PromptService 설정
+const promptTemplateRepository = new PromptTemplateRepository(
+  mockRepositoryDriver,
+)
+const promptService = new PromptService(promptTemplateRepository)
+
 export const pipelineExecutionService = new PipelineExecutionService(
-  new PipelineJobsRepository(new MockRepositoryDriver()),
+  new PipelineJobsRepository(mockRepositoryDriver),
+  promptService,
+  new NoopProvider(),
+  nodeExecutorFactory,
 )
 
 // GET /api/reasoning-pipelines - Retrieve all pipelines with optional agent filter

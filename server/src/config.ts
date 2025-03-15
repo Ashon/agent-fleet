@@ -17,8 +17,8 @@ export interface Config {
   }
   storage: {
     type: 'minio'
+    region: string
     endpoint: string
-    port: number
     useSSL: boolean
     accessKey: string
     secretKey: string
@@ -43,8 +43,8 @@ const config: Config = {
   },
   storage: {
     type: 'minio',
-    endpoint: process.env.MINIO_ENDPOINT || 'localhost',
-    port: parseInt(process.env.MINIO_PORT || '9000', 10),
+    region: process.env.MINIO_REGION || 'us-east-1',
+    endpoint: process.env.MINIO_ENDPOINT || 'http://localhost:9000',
     useSSL: process.env.MINIO_USE_SSL === 'true',
     accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
     secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',

@@ -109,12 +109,18 @@ export class PipelineExecutionService {
     input: string,
     res: Response,
     jobId: string,
-  ): Promise<string> {
+  ): Promise<NodeExecutionResult> {
     const executor = this.nodeExecutorFactory.getExecutor(node)
     const result = await executor.execute(node, input, { jobId, response: res })
 
-    // 실행 결과를 문자열로 변환
-    return JSON.stringify(result.output)
+    // 실행 결과를 실행 기록에 저장
+    const record = await this.repository.findById(jobId)
+    if (record) {
+      record.nodeResults = [...(record.nodeResults || []), result]
+      await this.repository.save(record)
+    }
+
+    return result
   }
 
   // 프롬프트 노드 실행
@@ -186,10 +192,6 @@ export class PipelineExecutionService {
     jobId: string,
     res: Response,
   ) {
-    if (!pipeline.nodes.length) {
-      throw new Error('파이프라인에 실행할 노드가 없습니다.')
-    }
-
     // 실행 기록 초기화
     await this.repository.save({
       id: jobId,
@@ -203,9 +205,13 @@ export class PipelineExecutionService {
       updatedAt: new Date(),
     })
 
-    const executionGraph = this.buildExecutionGraph(pipeline)
-
     try {
+      if (!pipeline.nodes.length) {
+        throw new Error('파이프라인에 실행할 노드가 없습니다.')
+      }
+
+      const executionGraph = this.buildExecutionGraph(pipeline)
+
       while (true) {
         const executableNodes = this.findExecutableNodes(executionGraph)
         if (executableNodes.length === 0) {
@@ -221,10 +227,10 @@ export class PipelineExecutionService {
 
         await Promise.all(
           executableNodes.map(async (node) => {
-            const output = await this.executeNode(node, input, res, jobId)
+            const result = await this.executeNode(node, input, res, jobId)
             const state = executionGraph.get(node.id)
             if (state) {
-              state.output = output
+              state.output = JSON.stringify(result.output)
             }
             this.updateExecutionState(node.id, executionGraph, pipeline)
           }),
@@ -248,13 +254,13 @@ export class PipelineExecutionService {
 
       return ''
     } catch (error) {
-      // 실행 실패 처리
+      // 에러 발생 시 실행 기록 업데이트
       const record = await this.repository.findById(jobId)
       if (record) {
         record.status = 'failed'
-        record.endTime = new Date()
         record.error =
           error instanceof Error ? error.message : '알 수 없는 오류'
+        record.endTime = new Date()
         await this.repository.save(record)
       }
 

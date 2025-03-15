@@ -19,6 +19,7 @@ describe('PipelineJobsRepository', () => {
         nodeId: 'node-1',
         nodeName: '테스트 노드',
         nodeType: 'input',
+        input: '테스트 입력',
         output: '테스트 출력',
         startTime: new Date('2024-03-15T09:00:00.000Z'),
         endTime: new Date('2024-03-15T09:02:00.000Z'),

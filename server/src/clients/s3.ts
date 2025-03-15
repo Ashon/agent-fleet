@@ -1,15 +1,20 @@
 import { S3Client } from '@aws-sdk/client-s3'
-import { Config } from '../config'
 
-export const createS3Client = ({ config }: { config: Config }) => {
+export const createS3Client = ({
+  endpoint = '',
+  region = '',
+  accessKeyId = '',
+  secretAccessKey = '',
+  forcePathStyle = true,
+}) => {
   const s3Client = new S3Client({
-    endpoint: config.s3.endpoint,
-    region: config.s3.region,
+    endpoint,
+    region,
     credentials: {
-      accessKeyId: config.s3.credentials.accessKeyId,
-      secretAccessKey: config.s3.credentials.secretAccessKey,
+      accessKeyId,
+      secretAccessKey,
     },
-    forcePathStyle: true,
+    forcePathStyle,
   })
 
   return s3Client

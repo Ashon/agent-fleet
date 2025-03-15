@@ -1,8 +1,14 @@
 import { CreateBucketCommand, ListBucketsCommand } from '@aws-sdk/client-s3'
 import { createS3Client } from '../src/clients/s3'
-import { config } from '../src/config'
+import config from '../src/config'
 
-const s3Client = createS3Client({ config })
+const s3Client = createS3Client({
+  endpoint: config.storage.endpoint,
+  region: config.storage.region,
+  accessKeyId: config.storage.accessKey,
+  secretAccessKey: config.storage.secretKey,
+  forcePathStyle: true,
+})
 
 /**
  * Create new bucket

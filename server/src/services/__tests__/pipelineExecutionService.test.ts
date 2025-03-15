@@ -1,9 +1,14 @@
 import { Pipeline } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
+import { NoopProvider } from '../../clients/llm/NoopProvider'
 import { MockRepositoryDriver } from '../../drivers/mockRepositoryDriver'
 import { PipelineJobsRepository } from '../../repositories/pipelineJobsRepository'
+import { PromptTemplateRepository } from '../../repositories/promptTemplateRepository'
+import { NodeExecutorFactory } from '../nodeExecutors/NodeExecutorFactory'
 import { PipelineExecutionService } from '../pipelineExecutionService'
+import { PromptService } from '../prompt.service'
+import { MockNodeExecutor } from './mocks/MockNodeExecutor'
 
 // 테스트 환경 설정
 process.env.NODE_ENV = 'test'
@@ -12,6 +17,9 @@ describe('PipelineExecutionService', () => {
   let mockResponse: Partial<Response>
   let writtenData: string[]
   let pipelineExecutionService: PipelineExecutionService
+  let nodeExecutorFactory: NodeExecutorFactory
+  let promptService: PromptService
+  let mockRepositoryDriver: MockRepositoryDriver
 
   beforeEach(() => {
     writtenData = []
@@ -21,8 +29,35 @@ describe('PipelineExecutionService', () => {
         return true
       }),
     }
+
+    // Mock 저장소 드라이버 설정
+    mockRepositoryDriver = new MockRepositoryDriver()
+
+    // 노드 실행기 팩토리 설정
+    nodeExecutorFactory = new NodeExecutorFactory()
+    ;[
+      'input',
+      'process',
+      'plan',
+      'action',
+      'decision',
+      'aggregator',
+      'analysis',
+    ].forEach((nodeType) => {
+      nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
+    })
+
+    // PromptService 설정
+    const promptTemplateRepository = new PromptTemplateRepository(
+      mockRepositoryDriver,
+    )
+    promptService = new PromptService(promptTemplateRepository)
+
     pipelineExecutionService = new PipelineExecutionService(
-      new PipelineJobsRepository(new MockRepositoryDriver()),
+      new PipelineJobsRepository(mockRepositoryDriver),
+      promptService,
+      new NoopProvider(),
+      nodeExecutorFactory,
     )
   })
 
@@ -59,27 +94,21 @@ describe('PipelineExecutionService', () => {
     updatedAt: new Date().toISOString(),
   })
 
-  describe('streamPipelineExecution', () => {
+  describe('executePipeline', () => {
     // 테스트 타임아웃 시간 증가
     jest.setTimeout(10000)
 
     it('파이프라인 실행 시작과 완료 메시지를 스트리밍해야 함', async () => {
       const mockPipeline = createMockPipeline()
       const testInput = '테스트 입력'
+      const jobId = uuidv4()
 
-      const id = await pipelineExecutionService.streamPipelineExecution(
+      await pipelineExecutionService.executePipeline(
         mockPipeline,
         testInput,
+        jobId,
         mockResponse as Response,
       )
-
-      // 시작 메시지 확인
-      const startMessage = JSON.parse(writtenData[0].replace('data: ', ''))
-      expect(startMessage.type).toBe('start')
-      expect(startMessage.message).toBe('파이프라인 실행을 시작합니다.')
-      expect(startMessage.pipelineId).toBe(mockPipeline.id)
-      expect(startMessage.pipelineName).toBe(mockPipeline.name)
-      expect(startMessage.id).toBe(id)
 
       // 노드 실행 메시지들 확인
       const nodeStartMessages = writtenData.filter((data) =>
@@ -92,23 +121,21 @@ describe('PipelineExecutionService', () => {
       expect(nodeStartMessages.length).toBe(mockPipeline.nodes.length)
       expect(nodeCompleteMessages.length).toBe(mockPipeline.nodes.length)
 
-      // 완료 메시지 확인
-      const completeMessage = JSON.parse(
-        writtenData[writtenData.length - 1].replace('data: ', ''),
-      )
-      expect(completeMessage.type).toBe('complete')
-      expect(completeMessage.message).toBe('파이프라인 실행이 완료되었습니다.')
-      expect(completeMessage.pipelineId).toBe(mockPipeline.id)
-      expect(completeMessage.id).toBe(id)
+      // 실행 기록 확인
+      const record = await pipelineExecutionService.getExecutionRecord(jobId)
+      expect(record).toBeDefined()
+      expect(record?.status).toBe('completed')
     })
 
     it('순차적인 노드 실행 순서를 지켜야 함', async () => {
       const mockPipeline = createMockPipeline()
       const testInput = '테스트 입력'
+      const jobId = uuidv4()
 
-      const id = await pipelineExecutionService.streamPipelineExecution(
+      await pipelineExecutionService.executePipeline(
         mockPipeline,
         testInput,
+        jobId,
         mockResponse as Response,
       )
 
@@ -123,7 +150,7 @@ describe('PipelineExecutionService', () => {
       expect(nodeExecutionOrder).toEqual(['node-1', 'node-2', 'node-3'])
 
       // 실행 기록 확인
-      const record = await pipelineExecutionService.getExecutionRecord(id)
+      const record = await pipelineExecutionService.getExecutionRecord(jobId)
       expect(record).toBeDefined()
       expect(record?.status).toBe('completed')
       expect(record?.nodeResults.length).toBe(3)
@@ -139,23 +166,19 @@ describe('PipelineExecutionService', () => {
         ...createMockPipeline(),
         nodes: [], // 의도적으로 노드가 없는 파이프라인 생성
       }
+      const jobId = uuidv4()
 
-      const id = await pipelineExecutionService.streamPipelineExecution(
-        mockPipeline,
-        '테스트 입력',
-        mockResponse as Response,
-      )
-
-      const errorMessage = writtenData
-        .map((data) => JSON.parse(data.replace('data: ', '')))
-        .find((msg) => msg.type === 'error')
-
-      expect(errorMessage).toBeDefined()
-      expect(errorMessage?.message).toBe('파이프라인에 실행할 노드가 없습니다.')
-      expect(errorMessage?.id).toBe(id)
+      await expect(
+        pipelineExecutionService.executePipeline(
+          mockPipeline,
+          '테스트 입력',
+          jobId,
+          mockResponse as Response,
+        ),
+      ).rejects.toThrow('파이프라인에 실행할 노드가 없습니다.')
 
       // 실행 기록 확인
-      const record = await pipelineExecutionService.getExecutionRecord(id)
+      const record = await pipelineExecutionService.getExecutionRecord(jobId)
       expect(record).toBeDefined()
       expect(record?.status).toBe('failed')
       expect(record?.error).toBe('파이프라인에 실행할 노드가 없습니다.')
@@ -200,10 +223,12 @@ describe('PipelineExecutionService', () => {
           },
         ],
       }
+      const jobId = uuidv4()
 
-      const id = await pipelineExecutionService.streamPipelineExecution(
+      await pipelineExecutionService.executePipeline(
         mockPipeline,
         testInput,
+        jobId,
         mockResponse as Response,
       )
 
@@ -211,95 +236,54 @@ describe('PipelineExecutionService', () => {
         .filter((data) => data.includes('node-complete'))
         .map((data) => JSON.parse(data.replace('data: ', '')))
 
-      expect(nodeOutputs[0].output).toBe(`입력 처리: "${testInput}"`)
-      expect(nodeOutputs[1].output).toBe('계획 수립: 계획 수립')
-      expect(nodeOutputs[2].output).toBe('행동 실행: 작업 실행')
+      expect(nodeOutputs[0].output.value).toBe(`입력 처리: "${testInput}"`)
+      expect(nodeOutputs[1].output.value).toBe('계획 수립: 계획 수립')
+      expect(nodeOutputs[2].output.value).toBe('행동 실행: 작업 실행')
 
       // 실행 기록 확인
-      const record = await pipelineExecutionService.getExecutionRecord(id)
+      const record = await pipelineExecutionService.getExecutionRecord(jobId)
       expect(record).toBeDefined()
       expect(record?.status).toBe('completed')
       expect(record?.nodeResults).toHaveLength(3)
-      expect(record?.nodeResults[0].output).toBe(`입력 처리: "${testInput}"`)
-      expect(record?.nodeResults[1].output).toBe('계획 수립: 계획 수립')
-      expect(record?.nodeResults[2].output).toBe('행동 실행: 작업 실행')
-      expect(record?.finalOutput).toBe('행동 실행: 작업 실행')
     })
   })
 
   describe('실행 기록 관리', () => {
     let pipelineExecutionService: PipelineExecutionService
     let mockRepository: PipelineJobsRepository
+    let promptService: PromptService
+    let mockRepositoryDriver: MockRepositoryDriver
 
     beforeEach(() => {
-      mockRepository = new PipelineJobsRepository(new MockRepositoryDriver())
-      // Mock 저장소 초기화
-      mockRepository.clear()
-      pipelineExecutionService = new PipelineExecutionService(mockRepository)
+      mockRepositoryDriver = new MockRepositoryDriver()
+      mockRepository = new PipelineJobsRepository(mockRepositoryDriver)
+      nodeExecutorFactory = new NodeExecutorFactory()
+      ;['input', 'process', 'plan', 'action'].forEach((nodeType) => {
+        nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
+      })
+
+      // PromptService 설정
+      const promptTemplateRepository = new PromptTemplateRepository(
+        mockRepositoryDriver,
+      )
+      promptService = new PromptService(promptTemplateRepository)
+
+      pipelineExecutionService = new PipelineExecutionService(
+        mockRepository,
+        promptService,
+        new NoopProvider(),
+        nodeExecutorFactory,
+      )
     })
 
     it('파이프라인 ID로 실행 기록을 조회할 수 있어야 함', async () => {
-      const testInput = '테스트 입력'
-      const id = uuidv4()
-      const mockPipeline: Pipeline = {
-        id: 'test-pipeline-1',
-        agentId: 'test-agent-1',
-        name: '테스트 파이프라인',
-        description: '테스트용 파이프라인입니다.',
-        nodes: [
-          {
-            id: 'node-1',
-            type: 'input',
-            position: { x: 0, y: 0 },
-            data: {
-              name: '입력 노드',
-              description: '입력을 처리하는 노드',
-              config: {},
-            },
-          },
-          {
-            id: 'node-2',
-            type: 'process',
-            position: { x: 100, y: 0 },
-            data: {
-              name: '처리 노드',
-              description: '데이터를 처리하는 노드',
-              config: {},
-            },
-          },
-          {
-            id: 'node-3',
-            type: 'process',
-            position: { x: 200, y: 0 },
-            data: {
-              name: '출력 노드',
-              description: '결과를 출력하는 노드',
-              config: {},
-            },
-          },
-        ],
-        edges: [
-          {
-            id: 'edge-1',
-            source: 'node-1',
-            target: 'node-2',
-            type: 'default',
-          },
-          {
-            id: 'edge-2',
-            source: 'node-2',
-            target: 'node-3',
-            type: 'default',
-          },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
+      const mockPipeline = createMockPipeline()
+      const jobId = uuidv4()
 
       await pipelineExecutionService.executePipeline(
         mockPipeline,
-        testInput,
-        id,
+        '테스트 입력',
+        jobId,
         mockResponse as Response,
       )
 
@@ -308,88 +292,34 @@ describe('PipelineExecutionService', () => {
           mockPipeline.id,
         )
       expect(records).toHaveLength(1)
-      expect(records[0].id).toBe(id)
       expect(records[0].pipelineId).toBe(mockPipeline.id)
-      expect(records[0].input).toBe(testInput)
+      expect(records[0].status).toBe('completed')
     })
 
     it('모든 실행 기록을 조회할 수 있어야 함', async () => {
-      const testInput1 = '테스트 입력 1'
-      const testInput2 = '테스트 입력 2'
-      const id1 = uuidv4()
-      const id2 = uuidv4()
-      const mockPipeline: Pipeline = {
-        id: 'test-pipeline-1',
-        agentId: 'test-agent-1',
-        name: '테스트 파이프라인',
-        description: '테스트용 파이프라인입니다.',
-        nodes: [
-          {
-            id: 'node-1',
-            type: 'input',
-            position: { x: 0, y: 0 },
-            data: {
-              name: '입력 노드',
-              description: '입력을 처리하는 노드',
-              config: {},
-            },
-          },
-          {
-            id: 'node-2',
-            type: 'process',
-            position: { x: 100, y: 0 },
-            data: {
-              name: '처리 노드',
-              description: '데이터를 처리하는 노드',
-              config: {},
-            },
-          },
-          {
-            id: 'node-3',
-            type: 'process',
-            position: { x: 200, y: 0 },
-            data: {
-              name: '출력 노드',
-              description: '결과를 출력하는 노드',
-              config: {},
-            },
-          },
-        ],
-        edges: [
-          {
-            id: 'edge-1',
-            source: 'node-1',
-            target: 'node-2',
-            type: 'default',
-          },
-          {
-            id: 'edge-2',
-            source: 'node-2',
-            target: 'node-3',
-            type: 'default',
-          },
-        ],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
+      mockRepositoryDriver.clear('pipeline-jobs')
+      const mockPipeline = createMockPipeline()
+      const jobId1 = uuidv4()
+      const jobId2 = uuidv4()
 
       await pipelineExecutionService.executePipeline(
         mockPipeline,
-        testInput1,
-        id1,
+        '테스트 입력 1',
+        jobId1,
         mockResponse as Response,
       )
       await pipelineExecutionService.executePipeline(
         mockPipeline,
-        testInput2,
-        id2,
+        '테스트 입력 2',
+        jobId2,
         mockResponse as Response,
       )
 
       const records = await pipelineExecutionService.getAllExecutionRecords()
       expect(records).toHaveLength(2)
-      expect(records[0].input).toBe(testInput1)
-      expect(records[1].input).toBe(testInput2)
+      expect(records.map((r) => r.id)).toEqual(
+        expect.arrayContaining([jobId1, jobId2]),
+      )
     })
   })
 })

@@ -3,64 +3,88 @@ import { mockAgents } from '../mocks/agents'
 import { mockConnectors } from '../mocks/connectors'
 import { mockFleets } from '../mocks/fleets'
 import { mockPipelineJobs } from '../mocks/pipelineJobs'
+import { mockPromptTemplates } from '../mocks/promptTemplates'
 import { Entity, RepositoryDriver } from './repositoryDriver'
 
 export class MockRepositoryDriver implements RepositoryDriver {
-  private data: Record<string, Entity[]>
+  private data: Map<string, Map<string, Entity>> = new Map()
 
-  constructor(initialData: Record<string, Entity[]> = {}) {
-    this.data = {
-      agents: [...mockAgents],
-      fleets: [...mockFleets],
-      connectors: [...mockConnectors],
-      pipelines: [...mockPipelines],
-      'pipeline-jobs': [...mockPipelineJobs],
-    }
-    if (initialData) {
-      this.data = { ...this.data, ...initialData }
-    }
-  }
-
-  async exists(id: string): Promise<boolean> {
-    return Object.values(this.data).some((entities) =>
-      entities.some((entity) => entity.id === id),
+  constructor() {
+    // 초기 데이터 설정
+    this.data.set(
+      'fleets',
+      new Map(mockFleets.map((fleet) => [fleet.id, fleet])),
+    )
+    this.data.set(
+      'agents',
+      new Map(mockAgents.map((agent) => [agent.id, agent])),
+    )
+    this.data.set(
+      'connectors',
+      new Map(mockConnectors.map((connector) => [connector.id, connector])),
+    )
+    this.data.set(
+      'pipelines',
+      new Map(mockPipelines.map((pipeline) => [pipeline.id, pipeline])),
+    )
+    this.data.set(
+      'prompt-templates',
+      new Map(mockPromptTemplates.map((template) => [template.id, template])),
+    )
+    this.data.set(
+      'pipeline-jobs',
+      new Map(mockPipelineJobs.map((job) => [job.id, job])),
     )
   }
 
   async findAll<T extends Entity>(entityName: string): Promise<T[]> {
-    return (this.data[entityName] || []) as T[]
+    const entityMap = this.data.get(entityName)
+    if (!entityMap) {
+      return []
+    }
+    return Array.from(entityMap.values()) as T[]
   }
 
   async findById<T extends Entity>(
     entityName: string,
     id: string,
   ): Promise<T | null> {
-    const entity = (this.data[entityName] || []).find((e) => e.id === id)
-    return (entity as T) || null
+    const entityMap = this.data.get(entityName)
+    if (!entityMap) {
+      return null
+    }
+    return (entityMap.get(id) as T) || null
+  }
+
+  async exists(entityName: string, id: string): Promise<boolean> {
+    const entityMap = this.data.get(entityName)
+    if (!entityMap) {
+      return false
+    }
+    return entityMap.has(id)
   }
 
   async save<T extends Entity>(entityName: string, entity: T): Promise<T> {
-    if (!this.data[entityName]) {
-      this.data[entityName] = []
+    let entityMap = this.data.get(entityName)
+    if (!entityMap) {
+      entityMap = new Map()
+      this.data.set(entityName, entityMap)
     }
-
-    const index = this.data[entityName].findIndex((e) => e.id === entity.id)
-    if (index >= 0) {
-      this.data[entityName][index] = entity
-    } else {
-      this.data[entityName].push(entity)
-    }
-
+    entityMap.set(entity.id, entity)
     return entity
   }
 
   async delete(entityName: string, id: string): Promise<void> {
-    if (!this.data[entityName]) return
-
-    this.data[entityName] = this.data[entityName].filter((e) => e.id !== id)
+    const entityMap = this.data.get(entityName)
+    if (entityMap) {
+      entityMap.delete(id)
+    }
   }
 
   async clear(entityName: string): Promise<void> {
-    this.data[entityName] = []
+    const entityMap = this.data.get(entityName)
+    if (entityMap) {
+      entityMap.clear()
+    }
   }
 }

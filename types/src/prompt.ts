@@ -52,15 +52,15 @@ export interface PromptExecutionResult {
   status: 'success' | 'error'
 }
 
-export interface NodeExecutionResult {
-  nodeId: string
-  nodeName: string
-  nodeType: string
-  input: Record<string, any>
-  output: Record<string, any>
-  startTime: Date
-  endTime: Date
-  status: 'success' | 'failed'
-  error?: string
-  metadata?: Record<string, any>
-}
+// export interface NodeExecutionResult {
+//   nodeId: string
+//   nodeName: string
+//   nodeType: string
+//   input: Record<string, any>
+//   output: Record<string, any>
+//   startTime: Date
+//   endTime: Date
+//   status: 'success' | 'failed'
+//   error?: string
+//   metadata?: Record<string, any>
+// }

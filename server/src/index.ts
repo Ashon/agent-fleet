@@ -2,13 +2,23 @@ import cors from 'cors'
 import express from 'express'
 import morgan from 'morgan'
 import { createS3Client } from './clients/s3'
-import { config } from './config'
+import config from './config'
 import { S3RepositoryDriver } from './drivers/s3RepositoryDriver'
 import { errorHandler } from './middleware/errorHandler'
 import routes from './routes'
 
-const s3Client = createS3Client({ config })
-const s3RepositoryDriver = new S3RepositoryDriver(s3Client, config.bucketName)
+const s3Client = createS3Client({
+  endpoint: config.storage.endpoint,
+  region: config.storage.region,
+  accessKeyId: config.storage.accessKey,
+  secretAccessKey: config.storage.secretKey,
+  forcePathStyle: true,
+})
+
+const s3RepositoryDriver = new S3RepositoryDriver(
+  s3Client,
+  config.storage.bucket,
+)
 const app = express()
 
 // 미들웨어 설정
@@ -38,6 +48,6 @@ app.use((err: Error, req: express.Request, res: express.Response) => {
 
 // 서버 시작
 s3RepositoryDriver.preflight()
-app.listen(config.listenPort, () => {
-  console.log(`Server is running on port ${config.listenPort}`)
+app.listen(config.port, () => {
+  console.log(`Server is running on port ${config.port}`)
 })
