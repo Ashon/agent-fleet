@@ -36,6 +36,7 @@
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/jest": "^29.5.14",
+    "@types/lodash": "^4.17.16",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^10.0.0",
     "aws-sdk-client-mock": "^4.1.0",

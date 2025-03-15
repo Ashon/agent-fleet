@@ -327,7 +327,7 @@ export const api = {
     pipelineId: string,
   ): Promise<PipelineExecutionRecord[]> {
     const response = await fetch(
-      `${API_URL}/api/pipeline-jobs/pipelines/${pipelineId}/jobs`,
+      `${API_URL}/api/pipeline-executions/pipelines/${pipelineId}/jobs`,
     )
     if (!response.ok) {
       throw new Error('Failed to fetch pipeline jobs')

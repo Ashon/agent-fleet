@@ -22,6 +22,16 @@ interface StreamMessage {
   timestamp: Date
   pipelineId?: string
   pipelineName?: string
+  result?: {
+    executionId: string
+    pipelineId: string
+    pipelineName: string
+    status: 'completed' | 'failed'
+    startTime: Date
+    endTime: Date
+    nodeResults: NodeExecutionResult[]
+    finalOutput: string
+  }
 }
 
 const sendStreamMessage = (res: Response, message: StreamMessage) => {
@@ -402,6 +412,16 @@ export class PipelineExecutionService {
         type: 'complete',
         message: '파이프라인 실행이 완료되었습니다.',
         output: finalOutput,
+        result: {
+          executionId: id,
+          pipelineId: pipeline.id,
+          pipelineName: pipeline.name,
+          status: 'completed',
+          startTime: startTime,
+          endTime: new Date(),
+          nodeResults: record?.nodeResults || [],
+          finalOutput,
+        },
         timestamp: new Date(),
       })
     } catch (error) {

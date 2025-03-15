@@ -149,7 +149,7 @@ export function ReasoningPipelineTest({
           {
             id: completionId,
             role: 'assistant',
-            content: data.message,
+            content: JSON.stringify(JSON.parse(data.output).completion),
             createdAt: new Date(),
             extra: Array.from(next.values()).map((result) => ({
               ...result,

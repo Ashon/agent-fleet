@@ -7,7 +7,8 @@ import {
   PromptNodeConfig,
   PromptTemplate,
 } from '@agentfleet/types'
-import { useEffect, useState } from 'react'
+import debounce from 'lodash/debounce'
+import { useCallback, useEffect, useState } from 'react'
 
 interface ReasoningPipelineConfigProps {
   selectedNode: PipelineNode | null
@@ -19,6 +20,8 @@ interface TemplateFormData {
   description: string
   content: string
   variables: string[]
+  isValid: boolean
+  validationError: string
 }
 
 export function ReasoningPipelineConfig({
@@ -36,6 +39,8 @@ export function ReasoningPipelineConfig({
     description: '',
     content: '',
     variables: [],
+    isValid: true,
+    validationError: '',
   })
   const [config, setConfig] = useState<PromptNodeConfig>(
     (selectedNode?.data.config as PromptNodeConfig) || {
@@ -105,29 +110,105 @@ export function ReasoningPipelineConfig({
   }
 
   const handleCreateTemplate = async () => {
+    if (!templateFormData.isValid) {
+      return // 유효하지 않은 템플릿은 생성하지 않음
+    }
+
     try {
-      await api.createPromptTemplate({
+      const newTemplate = await api.createPromptTemplate({
         name: templateFormData.name,
         description: templateFormData.description,
         content: templateFormData.content,
         variables: templateFormData.variables,
       })
-
-      // 템플릿 목록 새로고침
-      await loadTemplates()
-
-      // 모달 닫기 및 폼 초기화
+      setTemplates([...templates, newTemplate])
+      setSelectedTemplate(newTemplate)
+      setConfig({
+        ...config,
+        templateId: newTemplate.id,
+      })
       setIsTemplateModalOpen(false)
       setTemplateFormData({
         name: '',
         description: '',
         content: '',
         variables: [],
+        isValid: true,
+        validationError: '',
       })
     } catch (error) {
       console.error('Failed to create template:', error)
     }
   }
+
+  // 템플릿 유효성 검증 함수
+  const validateTemplate = (
+    content: string,
+  ): { isValid: boolean; error: string; variables: string[] } => {
+    if (!content.trim()) {
+      return {
+        isValid: false,
+        error: '프롬프트 내용을 입력해주세요.',
+        variables: [],
+      }
+    }
+
+    try {
+      // 변수 추출
+      const variables = Array.from(content.matchAll(/{{(\w+)}}/g)).map(
+        (m) => m[1],
+      )
+
+      // 중괄호 쌍 검사
+      const openBraces = (content.match(/{{/g) || []).length
+      const closeBraces = (content.match(/}}/g) || []).length
+
+      if (openBraces !== closeBraces) {
+        return {
+          isValid: false,
+          error:
+            '중괄호 쌍이 맞지 않습니다. 모든 {{ 에 대응하는 }} 가 있는지 확인해주세요.',
+          variables: Array.from(new Set(variables)),
+        }
+      }
+
+      // 중첩된 중괄호 검사
+      if (content.includes('{{{{') || content.includes('}}}}')) {
+        return {
+          isValid: false,
+          error:
+            '중첩된 중괄호가 있습니다. {{ 와 }} 사이에 다른 중괄호가 없어야 합니다.',
+          variables: Array.from(new Set(variables)),
+        }
+      }
+
+      return {
+        isValid: true,
+        error: '',
+        variables: Array.from(new Set(variables)),
+      }
+    } catch (error) {
+      return {
+        isValid: false,
+        error: '템플릿 구문 분석 중 오류가 발생했습니다.',
+        variables: [],
+      }
+    }
+  }
+
+  // 디바운스된 템플릿 내용 변경 핸들러
+  const debouncedValidateTemplate = useCallback(
+    debounce((content: string) => {
+      const { isValid, error, variables } = validateTemplate(content)
+      setTemplateFormData((prev) => ({
+        ...prev,
+        isValid,
+        validationError: error,
+        variables,
+      }))
+    }, 500),
+    [],
+  )
 
   if (!selectedNode) {
     return (
@@ -334,33 +415,43 @@ export function ReasoningPipelineConfig({
                 value={templateFormData.content}
                 onChange={(e) => {
                   const content = e.target.value
-                  // 변수 자동 추출
-                  const variables = Array.from(
-                    content.matchAll(/{{(\w+)}}/g),
-                  ).map((m) => m[1])
-                  setTemplateFormData({
-                    ...templateFormData,
+                  // 즉시 내용 업데이트
+                  setTemplateFormData((prev) => ({
+                    ...prev,
                     content,
-                    variables: Array.from(new Set(variables)),
-                  })
+                  }))
+                  // 디바운스된 유효성 검증 실행
+                  debouncedValidateTemplate(content)
                 }}
               />
 
-              <div className="space-y-2">
-                <h4 className="font-medium">추출된 변수</h4>
-                <div className="flex flex-wrap gap-2">
-                  {templateFormData.variables.map((variable) => (
-                    <span key={variable} className="badge badge-primary">
-                      {variable}
-                    </span>
-                  ))}
+              {!templateFormData.isValid &&
+                templateFormData.validationError && (
+                  <div className="text-red-500 text-sm mt-1">
+                    {templateFormData.validationError}
+                  </div>
+                )}
+
+              {templateFormData.variables.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="text-sm font-medium mb-2">추출된 변수</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {templateFormData.variables.map((variable) => (
+                      <span
+                        key={variable}
+                        className="px-2 py-1 bg-base-200 rounded-md text-sm"
+                      >
+                        {variable}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="modal-action">
               <button
-                className="btn btn-outline"
+                className="btn btn-ghost"
                 onClick={() => setIsTemplateModalOpen(false)}
               >
                 취소
@@ -370,11 +461,11 @@ export function ReasoningPipelineConfig({
                 onClick={handleCreateTemplate}
                 disabled={
                   !templateFormData.name ||
-                  !templateFormData.description ||
-                  !templateFormData.content
+                  !templateFormData.content ||
+                  !templateFormData.isValid
                 }
               >
-                등록
+                생성
               </button>
             </div>
           </div>
