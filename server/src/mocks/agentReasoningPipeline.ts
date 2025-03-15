@@ -25,15 +25,21 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-2',
-        type: 'plan',
+        type: 'prompt',
         position: { x: 200, y: 250 },
         connectorId: 'llm-gpt4',
         data: {
           name: '의도 파악 및 계획',
           description: '사용자 입력의 의도를 파악하고 응답 계획을 수립합니다',
-          config: {
-            prompt: '사용자의 의도를 파악하고 어떻게 응답할지 계획을 세우세요',
-            temperature: 0.7,
+          promptConfig: {
+            templateId: 'template-1',
+            variables: {
+              input: '{{node-1.output}}',
+            },
+            contextMapping: {
+              input: ['output'],
+              output: ['intent', 'requiredTools', 'plan'],
+            },
           },
         },
       },
@@ -96,15 +102,21 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-2',
-        type: 'plan',
+        type: 'prompt',
         position: { x: 100, y: 250 },
         connectorId: 'llm-claude',
         data: {
           name: '검색 키워드 추출',
           description: '질문에서 핵심 검색 키워드를 추출합니다',
-          config: {
-            prompt: '다음 질문에서 검색에 필요한 핵심 키워드를 추출하세요',
-            outputFormat: 'json',
+          promptConfig: {
+            templateId: 'template-2',
+            variables: {
+              question: '{{node-1.output}}',
+            },
+            contextMapping: {
+              input: ['output'],
+              output: ['keywords', 'filters', 'excludeTerms'],
+            },
           },
         },
       },
@@ -182,15 +194,28 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-2',
-        type: 'plan',
+        type: 'prompt',
         position: { x: 100, y: 250 },
         connectorId: 'vision-model',
         data: {
           name: '이미지 분석',
           description: '입력된 이미지를 분석하고 주요 특징을 추출합니다',
-          config: {
-            detectionLevel: 'high',
-            extractText: true,
+          promptConfig: {
+            templateId: 'template-3',
+            variables: {
+              imageUrl: '{{node-1.images[0]}}',
+              detailLevel: 'high',
+            },
+            contextMapping: {
+              input: ['images'],
+              output: [
+                'objects',
+                'sceneDescription',
+                'extractedText',
+                'mood',
+                'specialNotes',
+              ],
+            },
           },
         },
       },

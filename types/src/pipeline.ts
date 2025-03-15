@@ -1,3 +1,5 @@
+import { PromptNodeConfig } from './prompt'
+
 export interface PipelineNode {
   id: string
   type:
@@ -8,12 +10,14 @@ export interface PipelineNode {
     | 'process'
     | 'aggregator'
     | 'analysis'
+    | 'prompt'
   position: { x: number; y: number }
   connectorId?: string
   data: {
     name: string
     description?: string
     config?: Record<string, unknown>
+    promptConfig?: PromptNodeConfig
   }
 }
 
