@@ -41,48 +41,73 @@ describe('PromptService', () => {
   })
 
   describe('createTemplate', () => {
-    it('유효한 변수를 가진 템플릿을 생성해야 함', async () => {
+    it('템플릿에서 변수를 자동으로 추출하여 저장해야 함', async () => {
       const createDto = {
         name: '새 템플릿',
         description: '새 설명',
-        content: '{{greeting}}, {{name}}!',
-        variables: ['greeting', 'name'],
+        content: '{{greeting}}, {{name}}님!',
+        variables: [], // 빈 배열로 시작
       }
 
-      mockRepository.create.mockResolvedValue({
-        ...createDto,
-        id: 'new-id',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      mockRepository.create.mockImplementation((dto) => {
+        // 변수 추출 결과 검증
+        expect(dto.variables).toContain('greeting')
+        expect(dto.variables).toContain('name')
+        expect(dto.variables.length).toBe(2)
+
+        return Promise.resolve({
+          ...dto,
+          id: 'new-id',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
       })
 
-      const result = await service.createTemplate(createDto)
-      expect(result).toBeDefined()
-      expect(mockRepository.create).toHaveBeenCalledWith(createDto)
+      await service.createTemplate(createDto)
+      expect(mockRepository.create).toHaveBeenCalled()
     })
 
-    it('선언되지 않은 변수가 있는 경우 에러를 발생시켜야 함', async () => {
+    it('헬퍼 함수가 있는 템플릿을 처리해야 함', async () => {
+      const createDto = {
+        name: '헬퍼 템플릿',
+        description: '헬퍼 함수 테스트',
+        content:
+          '{{uppercase name}}님, {{lowercase greeting}}! {{trim message}}',
+        variables: [],
+      }
+
+      mockRepository.create.mockImplementation((dto) => {
+        // 변수 추출 결과 검증
+        expect(dto.variables).toContain('name')
+        expect(dto.variables).toContain('greeting')
+        expect(dto.variables).toContain('message')
+        expect(dto.variables).not.toContain('uppercase')
+        expect(dto.variables).not.toContain('lowercase')
+        expect(dto.variables).not.toContain('trim')
+        expect(dto.variables.length).toBe(3)
+
+        return Promise.resolve({
+          ...dto,
+          id: 'new-id',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+      })
+
+      await service.createTemplate(createDto)
+      expect(mockRepository.create).toHaveBeenCalled()
+    })
+
+    it('잘못된 Handlebars 문법이 있는 경우 에러를 발생시켜야 함', async () => {
       const invalidDto = {
         name: '잘못된 템플릿',
-        content: '{{greeting}}, {{name}}!',
-        variables: ['name'], // greeting 변수가 누락됨
+        description: '문법 오류 테스트',
+        content: '{{#if name}}이름: {{name}', // 닫는 if 태그 누락
+        variables: [],
       }
 
       await expect(service.createTemplate(invalidDto)).rejects.toThrow(
-        'Template uses undeclared variables: greeting',
-      )
-      expect(mockRepository.create).not.toHaveBeenCalled()
-    })
-
-    it('사용되지 않은 변수가 있는 경우 에러를 발생시켜야 함', async () => {
-      const invalidDto = {
-        name: '잘못된 템플릿',
-        content: '{{name}}님 안녕하세요!',
-        variables: ['name', 'unused'], // unused 변수는 사용되지 않음
-      }
-
-      await expect(service.createTemplate(invalidDto)).rejects.toThrow(
-        'Template declares unused variables: unused',
+        '템플릿 유효성 검사 실패',
       )
       expect(mockRepository.create).not.toHaveBeenCalled()
     })
@@ -99,6 +124,25 @@ describe('PromptService', () => {
 
       const result = await service.renderPrompt(mockTemplate.id, variables)
       expect(result).toBe('안녕하세요, 홍길동님! 오늘도 좋은 하루 되세요!')
+    })
+
+    it('헬퍼 함수가 적용된 프롬프트를 렌더링해야 함', async () => {
+      const template = {
+        ...mockTemplate,
+        content:
+          '{{uppercase name}}님, {{lowercase greeting}}! {{trim message}}',
+        variables: ['name', 'greeting', 'message'],
+      }
+      mockRepository.findById.mockResolvedValue(template)
+
+      const variables = {
+        name: 'hong',
+        greeting: 'HELLO',
+        message: '  좋은 하루!  ',
+      }
+
+      const result = await service.renderPrompt(template.id, variables)
+      expect(result).toBe('HONG님, hello! 좋은 하루!')
     })
 
     it('필수 변수가 누락된 경우 에러를 발생시켜야 함', async () => {
@@ -121,26 +165,55 @@ describe('PromptService', () => {
         'Template with id non-existent-id not found',
       )
     })
+
+    it('잘못된 변수 타입이 제공된 경우에도 렌더링을 시도해야 함', async () => {
+      const template = {
+        ...mockTemplate,
+        content: '숫자: {{number}}, 객체: {{object}}, 배열: {{array}}',
+        variables: ['number', 'object', 'array'],
+      }
+      mockRepository.findById.mockResolvedValue(template)
+
+      const variables = {
+        number: '42',
+        object: '[object Object]',
+        array: '1,2,3',
+      }
+
+      const result = await service.renderPrompt(template.id, variables)
+      expect(result).toBe('숫자: 42, 객체: [object Object], 배열: 1,2,3')
+    })
   })
 
   describe('updateTemplate', () => {
-    it('유효한 변수로 템플릿을 수정해야 함', async () => {
+    it('템플릿 내용 수정 시 변수를 자동으로 추출해야 함', async () => {
       const updateDto = {
-        content: '{{greeting}}님, 환영합니다!',
-        variables: ['greeting'],
+        content: '{{greeting}}님, {{uppercase name}}!',
       }
 
-      mockRepository.update.mockResolvedValue({
-        ...mockTemplate,
-        ...updateDto,
-        updatedAt: new Date().toISOString(),
+      mockRepository.update.mockImplementation((id, dto) => {
+        // 변수 추출 결과 검증
+        expect(dto.variables).toBeDefined()
+        const variables = dto.variables as string[]
+        expect(variables).toContain('greeting')
+        expect(variables).toContain('name')
+        expect(variables).not.toContain('uppercase')
+        expect(variables.length).toBe(2)
+
+        return Promise.resolve({
+          ...mockTemplate,
+          ...dto,
+          variables: variables,
+          updatedAt: new Date().toISOString(),
+        })
       })
 
-      const result = await service.updateTemplate(mockTemplate.id, updateDto)
-      expect(result).toBeDefined()
+      await service.updateTemplate(mockTemplate.id, updateDto)
       expect(mockRepository.update).toHaveBeenCalledWith(
         mockTemplate.id,
-        updateDto,
+        expect.objectContaining({
+          content: updateDto.content,
+        }),
       )
     })
   })

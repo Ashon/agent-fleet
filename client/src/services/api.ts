@@ -6,6 +6,7 @@ import {
   PipelineExecutionRecord,
   PipelineTestRequest,
   PipelineTestResponse,
+  PromptTemplate,
 } from '@agentfleet/types'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -332,6 +333,85 @@ export const api = {
       throw new Error('Failed to fetch pipeline jobs')
     }
 
+    return response.json()
+  },
+
+  // Prompt Templates API
+  async getPromptTemplates(): Promise<PromptTemplate[]> {
+    const response = await fetch(`${API_URL}/api/prompts/templates`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch prompt templates')
+    }
+    return response.json()
+  },
+
+  async getPromptTemplate(id: string): Promise<PromptTemplate> {
+    const response = await fetch(`${API_URL}/api/prompts/templates/${id}`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch prompt template')
+    }
+    return response.json()
+  },
+
+  async createPromptTemplate(
+    data: Omit<PromptTemplate, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<PromptTemplate> {
+    const response = await fetch(`${API_URL}/api/prompts/templates`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) {
+      throw new Error('Failed to create prompt template')
+    }
+    return response.json()
+  },
+
+  async updatePromptTemplate(
+    id: string,
+    data: Partial<PromptTemplate>,
+  ): Promise<PromptTemplate> {
+    const response = await fetch(`${API_URL}/api/prompts/templates/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) {
+      throw new Error('Failed to update prompt template')
+    }
+    return response.json()
+  },
+
+  async deletePromptTemplate(id: string): Promise<void> {
+    const response = await fetch(`${API_URL}/api/prompts/templates/${id}`, {
+      method: 'DELETE',
+    })
+    if (!response.ok) {
+      throw new Error('Failed to delete prompt template')
+    }
+  },
+
+  async renderPromptTemplate(
+    id: string,
+    variables: Record<string, string>,
+  ): Promise<{ rendered: string }> {
+    const response = await fetch(
+      `${API_URL}/api/prompts/templates/${id}/render`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ variables }),
+      },
+    )
+    if (!response.ok) {
+      throw new Error('Failed to render prompt template')
+    }
     return response.json()
   },
 }

@@ -21,7 +21,7 @@ interface OllamaCompletionResponse {
 export class OllamaProvider implements LLMProvider {
   constructor(
     private readonly baseUrl: string = 'http://localhost:11434',
-    private readonly model: string = 'llama2',
+    private readonly model: string = 'deepseek-r1',
   ) {}
 
   async complete(
@@ -29,6 +29,7 @@ export class OllamaProvider implements LLMProvider {
     options: LLMCompletionOptions,
   ): Promise<LLMCompletionResult> {
     try {
+      console.log('OllamaProvider complete', prompt, options)
       const response = await fetch(`${this.baseUrl}/api/generate`, {
         method: 'POST',
         headers: {

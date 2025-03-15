@@ -138,7 +138,10 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
               />
             )}
             {subTab === 'config' && (
-              <ReasoningPipelineConfig selectedNode={selectedNode} />
+              <ReasoningPipelineConfig
+                selectedNode={selectedNode}
+                pipelineId={pipeline?.id || ''}
+              />
             )}
           </div>
         </div>

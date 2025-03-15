@@ -32,6 +32,7 @@ export class PromptNodeExecutor implements NodeExecutor {
     }
 
     const variables = this.extractVariables(input, config)
+    console.log('PromptNodeExecutor execute', variables)
     try {
       // 노드 실행 시작을 클라이언트에 알림
       response.write(
@@ -49,6 +50,7 @@ export class PromptNodeExecutor implements NodeExecutor {
         config.templateId,
         variables,
       )
+      console.log('PromptNodeExecutor execute', renderedPrompt)
 
       // LLM 호출
       const completion = await this.llmProvider.complete(renderedPrompt, {

@@ -49,26 +49,30 @@ function ChatMessagePanel({
           </span>
         </div>
         {message.extra && (
-          <div className="my-2 flex flex-col gap-1">
+          <div className="my-2 flex flex-col gap-1 text-gray-500">
             {Array.isArray(message.extra) ? (
               message.extra.map((item) => (
                 <div
                   key={item.nodeId}
-                  className="text-xs flex gap-1 items-center line-clamp-2 no-wrap"
+                  className="text-xs items-center line-clamp-2 no-wrap"
                 >
-                  {item.status === 'success' ? (
-                    <span className="font-bold text-success">
-                      <CheckCircleIcon className="w-4 h-4" />
-                    </span>
-                  ) : item.status === 'error' ? (
-                    <span className="font-bold text-error">
-                      <ExclamationCircleIcon className="w-4 h-4" />
-                    </span>
-                  ) : (
-                    <span className="loading loading-spinner loading-xs w-4 h-4"></span>
-                  )}
-                  <span className="font-bold">{item.nodeId}</span>
-                  <span>{item.output}</span>
+                  <div className="flex gap-1 items-center">
+                    {item.status === 'success' ? (
+                      <div className="font-bold text-success">
+                        <CheckCircleIcon className="w-4 h-4" />
+                      </div>
+                    ) : item.status === 'error' ? (
+                      <div className="font-bold text-error">
+                        <ExclamationCircleIcon className="w-4 h-4" />
+                      </div>
+                    ) : (
+                      <div>
+                        <span className="loading loading-spinner loading-xs w-4 h-4"></span>
+                      </div>
+                    )}
+                    <div className="font-bold">{item.nodeId}</div>
+                  </div>
+                  <div className="text-xs mt-1">{item.output}</div>
                 </div>
               ))
             ) : (
