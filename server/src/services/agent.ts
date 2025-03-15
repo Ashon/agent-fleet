@@ -3,6 +3,7 @@ import {
   AgentStatus,
   ChatMessage,
   ChatMessageRole,
+  CreateAgentData,
 } from '@agentfleet/types'
 import { v4 } from 'uuid'
 import { AgentRepository } from '../repositories/agentRepository'
@@ -23,45 +24,40 @@ export class AgentService {
     return agent ?? undefined
   }
 
-  async createAgent(
-    agentData: Omit<Agent, 'id' | 'status' | 'chatHistory' | 'workflow'>,
-  ): Promise<Agent> {
+  async createAgent(agentData: CreateAgentData): Promise<Agent> {
     // 필수 필드 검증
     if (!agentData.name) {
       throw new Error('필수 필드가 누락되었습니다.')
     }
 
-    const id = v4()
-    const newAgent: Agent = {
-      id,
+    const newAgent = {
       ...agentData,
-      status: 'active',
+      status: 'active' as AgentStatus,
       chatHistory: [],
+      capabilities: {},
+      connectors: [],
     }
 
-    return this.repository.save(newAgent)
+    return this.repository.create(newAgent)
   }
 
   async updateAgent(
     id: string,
     agentData: Partial<Agent>,
   ): Promise<Agent | undefined> {
-    const agent = await this.repository.findById(id)
-    if (!agent) return undefined
-
-    return this.repository.save({
-      ...agent,
-      ...agentData,
-      id, // ID는 변경 불가
-    })
+    return this.repository.update(id, agentData)
   }
 
   async deleteAgent(id: string): Promise<boolean> {
-    const agent = await this.repository.findById(id)
-    if (!agent) return false
-
-    await this.repository.delete(id)
-    return true
+    try {
+      await this.repository.delete(id)
+      return true
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return false
+      }
+      throw error
+    }
   }
 
   async updateAgentStatus(
@@ -76,10 +72,7 @@ export class AgentService {
     const agent = await this.repository.findById(id)
     if (!agent) return undefined
 
-    return this.repository.save({
-      ...agent,
-      status,
-    })
+    return this.repository.update(id, { status })
   }
 
   async addChatMessage(
@@ -103,8 +96,7 @@ export class AgentService {
       { ...message, timestamp: new Date().toISOString() },
     ]
 
-    return this.repository.save({
-      ...agent,
+    return this.repository.update(id, {
       chatHistory: chatHistory as ChatMessage[],
     })
   }

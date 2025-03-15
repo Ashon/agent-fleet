@@ -26,6 +26,8 @@ describe('PipelineJobsRepository', () => {
       },
     ],
     finalOutput: '테스트 출력',
+    createdAt: new Date('2024-03-15T09:00:00.000Z'),
+    updatedAt: new Date('2024-03-15T09:02:00.000Z'),
   }
 
   beforeEach(() => {
@@ -35,6 +37,7 @@ describe('PipelineJobsRepository', () => {
       save: jest.fn(),
       delete: jest.fn(),
       clear: jest.fn(),
+      exists: jest.fn(),
     }
     repository = new PipelineJobsRepository(mockDriver)
   })

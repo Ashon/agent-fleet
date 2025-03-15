@@ -27,10 +27,7 @@ export interface PaginatedResponse<T> {
   hasMore: boolean
 }
 
-export interface User {
-  id: string
+export interface User extends BaseEntity {
   email: string
   name: string
-  createdAt: Date
-  updatedAt: Date
 }

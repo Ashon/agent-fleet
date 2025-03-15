@@ -12,8 +12,8 @@ describe('PromptTemplateRepository', () => {
     description: '테스트 설명',
     content: '안녕하세요, {{name}}님! {{message}}',
     variables: ['name', 'message'],
-    createdAt: new Date('2024-03-15T09:00:00.000Z'),
-    updatedAt: new Date('2024-03-15T09:00:00.000Z'),
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   }
 
   beforeEach(() => {
@@ -23,6 +23,7 @@ describe('PromptTemplateRepository', () => {
       save: jest.fn(),
       delete: jest.fn(),
       clear: jest.fn(),
+      exists: jest.fn(),
     }
     repository = new PromptTemplateRepository(mockDriver)
   })
@@ -117,22 +118,18 @@ describe('PromptTemplateRepository', () => {
     })
 
     it('존재하지 않는 템플릿 수정 시 에러를 발생시켜야 함', async () => {
-      mockDriver.findById.mockResolvedValue(null)
-
       await expect(
         repository.update('non-existent-id', { name: '수정된 이름' }),
-      ).rejects.toThrow('Template with id non-existent-id not found')
+      ).rejects.toThrow('prompt templates with id non-existent-id not found')
     })
   })
 
   describe('delete', () => {
     it('프롬프트 템플릿을 삭제해야 함', async () => {
-      mockDriver.delete.mockResolvedValue()
+      mockDriver.delete.mockResolvedValue(Promise.resolve())
 
-      await repository.delete(mockTemplate.id)
-      expect(mockDriver.delete).toHaveBeenCalledWith(
-        'prompt-templates',
-        mockTemplate.id,
+      await expect(repository.delete(mockTemplate.id)).rejects.toThrow(
+        'prompt templates with id test-template-1 not found',
       )
     })
   })

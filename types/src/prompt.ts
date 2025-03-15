@@ -1,11 +1,10 @@
-export interface PromptTemplate {
-  id: string
+import { BaseEntity } from './common'
+
+export interface PromptTemplate extends BaseEntity {
   name: string
   description?: string
   content: string
   variables: string[]
-  createdAt: Date
-  updatedAt: Date
 }
 
 export interface CreatePromptTemplateDto {

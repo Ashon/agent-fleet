@@ -21,6 +21,12 @@ export class MockRepositoryDriver implements RepositoryDriver {
     }
   }
 
+  async exists(id: string): Promise<boolean> {
+    return Object.values(this.data).some((entities) =>
+      entities.some((entity) => entity.id === id),
+    )
+  }
+
   async findAll<T extends Entity>(entityName: string): Promise<T[]> {
     return (this.data[entityName] || []) as T[]
   }

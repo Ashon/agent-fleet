@@ -24,6 +24,7 @@ describe('FleetService', () => {
     mockRepository = {
       findAll: jest.fn(),
       findById: jest.fn(),
+      create: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
       driver: {} as S3RepositoryDriver,
@@ -86,10 +87,10 @@ describe('FleetService', () => {
         updatedAt: mockDate,
       }
 
-      mockRepository.save.mockResolvedValue(expectedFleet)
+      mockRepository.create.mockResolvedValue(expectedFleet)
       const result = await fleetService.createFleet(newFleetData)
       expect(result).toEqual(expectedFleet)
-      expect(mockRepository.save).toHaveBeenCalled()
+      expect(mockRepository.create).toHaveBeenCalled()
     })
   })
 
@@ -122,8 +123,7 @@ describe('FleetService', () => {
 
   describe('deleteFleet', () => {
     it('존재하는 플릿을 삭제해야 함', async () => {
-      mockRepository.findById.mockResolvedValue(testFleet)
-      mockRepository.delete.mockResolvedValue()
+      mockRepository.delete.mockResolvedValue(undefined)
 
       const result = await fleetService.deleteFleet('1')
       expect(result).toBe(true)
@@ -131,10 +131,11 @@ describe('FleetService', () => {
     })
 
     it('존재하지 않는 플릿 삭제 시 false를 반환해야 함', async () => {
-      mockRepository.findById.mockResolvedValue(null)
+      mockRepository.delete.mockRejectedValue(new Error('Entity not found'))
+
       const result = await fleetService.deleteFleet('999')
       expect(result).toBe(false)
-      expect(mockRepository.delete).not.toHaveBeenCalled()
+      expect(mockRepository.delete).toHaveBeenCalledWith('999')
     })
   })
 })

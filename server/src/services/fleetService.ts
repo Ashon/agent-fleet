@@ -1,5 +1,4 @@
-import { CreateFleetData, Fleet } from '@agentfleet/types'
-import { v4 } from 'uuid'
+import { CreateFleetData, Fleet, FleetStatus } from '@agentfleet/types'
 import { FleetRepository } from '../repositories/fleetRepository'
 
 export class FleetService {
@@ -15,44 +14,41 @@ export class FleetService {
   }
 
   async createFleet(data: CreateFleetData): Promise<Fleet> {
-    const fleet: Fleet = {
-      id: v4(),
+    const fleet = {
       name: data.name,
       description: data.description,
-      status: 'active',
+      status: 'active' as FleetStatus,
       agents: data.agents || [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     }
 
-    return await this.fleetRepository.save(fleet)
+    return await this.fleetRepository.create(fleet)
   }
 
   async updateFleet(
     id: string,
     data: Partial<CreateFleetData>,
   ): Promise<Fleet | undefined> {
-    const existingFleet = await this.fleetRepository.findById(id)
-    if (!existingFleet) {
-      return undefined
-    }
+    const fleet = await this.fleetRepository.findById(id)
+    if (!fleet) return undefined
 
-    const updatedFleet: Fleet = {
-      ...existingFleet,
+    const updatedFleet = {
+      ...fleet,
       ...data,
-      updatedAt: new Date().toISOString(),
+      id, // ID는 변경 불가
     }
 
-    return await this.fleetRepository.save(updatedFleet)
+    return this.fleetRepository.save(updatedFleet)
   }
 
   async deleteFleet(id: string): Promise<boolean> {
-    const existingFleet = await this.fleetRepository.findById(id)
-    if (!existingFleet) {
-      return false
+    try {
+      await this.fleetRepository.delete(id)
+      return true
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return false
+      }
+      throw error
     }
-
-    await this.fleetRepository.delete(id)
-    return true
   }
 }

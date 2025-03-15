@@ -39,6 +39,8 @@ export const mockPipelineJobs: PipelineExecutionRecord[] = [
       },
     ],
     finalOutput: '행동 실행: 계획에 따른 작업 수행',
+    createdAt: new Date('2024-03-15T09:00:00.000Z'),
+    updatedAt: new Date('2024-03-15T09:02:00.000Z'),
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440001',
@@ -69,6 +71,8 @@ export const mockPipelineJobs: PipelineExecutionRecord[] = [
       },
     ],
     error: '데이터 분석 중 예외가 발생했습니다.',
+    createdAt: new Date('2024-03-15T10:00:00.000Z'),
+    updatedAt: new Date('2024-03-15T10:01:30.000Z'),
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440002',
@@ -88,5 +92,7 @@ export const mockPipelineJobs: PipelineExecutionRecord[] = [
         status: 'success',
       },
     ],
+    createdAt: new Date('2024-03-15T11:00:00.000Z'),
+    updatedAt: new Date('2024-03-15T11:00:00.000Z'),
   },
 ]

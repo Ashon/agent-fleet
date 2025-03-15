@@ -7,8 +7,8 @@ export const mockPipelines: Pipeline[] = [
     name: '기본 추론 파이프라인',
     description:
       '사용자 입력을 분석하고 적절한 응답을 생성하는 기본 추론 파이프라인',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     nodes: [
       {
         id: 'node-1',
@@ -84,8 +84,8 @@ export const mockPipelines: Pipeline[] = [
     name: '검색 강화 추론 파이프라인',
     description:
       '웹 검색을 활용하여 최신 정보로 응답을 생성하는 추론 파이프라인',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     nodes: [
       {
         id: 'node-1',
@@ -176,8 +176,8 @@ export const mockPipelines: Pipeline[] = [
     name: '멀티모달 추론 파이프라인',
     description:
       '이미지와 텍스트를 함께 처리할 수 있는 멀티모달 추론 파이프라인',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     nodes: [
       {
         id: 'node-1',
@@ -279,8 +279,8 @@ export const mockPipelines: Pipeline[] = [
     agentId: '4',
     name: '병렬 처리 추론 파이프라인',
     description: '여러 작업을 동시에 처리할 수 있는 병렬 처리 파이프라인',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     nodes: [
       {
         id: 'node-1',

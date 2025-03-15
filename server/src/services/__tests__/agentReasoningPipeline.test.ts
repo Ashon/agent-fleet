@@ -25,7 +25,7 @@ describe('PipelineService', () => {
       .mockImplementation((id) =>
         Promise.resolve(mockPipelines.find((p) => p.id === id) || null),
       )
-    mockRepository.save = jest
+    mockRepository.create = jest
       .fn()
       .mockImplementation((pipeline) => Promise.resolve(pipeline))
     mockRepository.delete = jest.fn().mockResolvedValue(undefined)
@@ -78,12 +78,12 @@ describe('PipelineService', () => {
         edges: [],
       }
 
-      mockRepository.save.mockImplementationOnce((pipeline) =>
+      mockRepository.create.mockImplementationOnce((pipeline) =>
         Promise.resolve({
           ...pipeline,
           id: 'new-pipeline-id',
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: '2024-03-15T09:00:00.000Z',
+          updatedAt: '2024-03-15T09:00:00.000Z',
         }),
       )
 
@@ -91,10 +91,10 @@ describe('PipelineService', () => {
       expect(result).toMatchObject({
         ...newPipeline,
         id: expect.any(String),
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
       })
-      expect(mockRepository.save).toHaveBeenCalled()
+      expect(mockRepository.create).toHaveBeenCalled()
     })
 
     it('필수 필드가 누락된 경우 에러를 발생시켜야 합니다', async () => {
@@ -121,7 +121,8 @@ describe('PipelineService', () => {
         Promise.resolve({
           ...pipeline,
           ...updateData,
-          updatedAt: new Date(),
+          id: testPipeline.id,
+          updatedAt: '2024-03-15T09:02:00.000Z',
         }),
       )
 
@@ -132,7 +133,8 @@ describe('PipelineService', () => {
       expect(result).toMatchObject({
         ...testPipeline,
         ...updateData,
-        updatedAt: expect.any(Date),
+        id: testPipeline.id,
+        updatedAt: expect.any(String),
       })
       expect(mockRepository.save).toHaveBeenCalled()
     })
@@ -152,6 +154,14 @@ describe('PipelineService', () => {
         id: 'new-workflow-id',
       }
 
+      mockRepository.findById.mockResolvedValueOnce(testPipeline)
+      mockRepository.save.mockImplementationOnce((pipeline) =>
+        Promise.resolve({
+          ...pipeline,
+          id: testPipeline.id,
+        }),
+      )
+
       const updatedPipeline = await pipelineService.updatePipeline(
         testPipeline.id,
         updateData,
@@ -163,6 +173,7 @@ describe('PipelineService', () => {
   describe('deletePipeline', () => {
     it('파이프라인을 삭제해야 합니다', async () => {
       mockRepository.findById.mockResolvedValueOnce(testPipeline)
+      mockRepository.delete.mockResolvedValue()
 
       const result = await pipelineService.deletePipeline(testPipeline.id)
       expect(result).toBe(true)
@@ -171,10 +182,20 @@ describe('PipelineService', () => {
 
     it('존재하지 않는 파이프라인 삭제 시 false를 반환해야 합니다', async () => {
       mockRepository.findById.mockResolvedValueOnce(null)
+      mockRepository.delete.mockRejectedValue(new Error('Entity not found'))
 
       const result = await pipelineService.deletePipeline('non-existent')
       expect(result).toBe(false)
-      expect(mockRepository.delete).not.toHaveBeenCalled()
+      expect(mockRepository.delete).toHaveBeenCalledWith('non-existent')
+    })
+
+    it('이미 삭제된 파이프라인을 다시 삭제하려고 할 때 false를 반환해야 합니다', async () => {
+      mockRepository.findById.mockResolvedValueOnce(null)
+      mockRepository.delete.mockRejectedValue(new Error('Entity not found'))
+
+      const result = await pipelineService.deletePipeline(testPipeline.id)
+      expect(result).toBe(false)
+      expect(mockRepository.delete).toHaveBeenCalledWith(testPipeline.id)
     })
   })
 
@@ -194,7 +215,7 @@ describe('PipelineService', () => {
         Promise.resolve({
           ...pipeline,
           nodes: newNodes,
-          updatedAt: new Date(),
+          updatedAt: new Date().toISOString(),
         }),
       )
 
@@ -205,7 +226,7 @@ describe('PipelineService', () => {
       expect(result).toMatchObject({
         ...testPipeline,
         nodes: newNodes,
-        updatedAt: expect.any(Date),
+        updatedAt: expect.any(String),
       })
       expect(mockRepository.save).toHaveBeenCalled()
     })
@@ -225,13 +246,24 @@ describe('PipelineService', () => {
   describe('updatePipelineEdges', () => {
     it('파이프라인 엣지를 업데이트해야 합니다', async () => {
       const newEdges = [...testPipeline.edges]
-      newEdges[0].type = 'success'
+      newEdges[0] = { ...newEdges[0], type: 'success' }
+
+      mockRepository.findById.mockResolvedValueOnce(testPipeline)
+      mockRepository.save.mockImplementationOnce((pipeline) =>
+        Promise.resolve({
+          ...pipeline,
+          edges: newEdges,
+          updatedAt: '2024-03-15T09:03:00.000Z',
+        }),
+      )
 
       const updatedPipeline = await pipelineService.updatePipelineEdges(
         testPipeline.id,
         newEdges,
       )
+      expect(updatedPipeline).toBeDefined()
       expect(updatedPipeline?.edges[0].type).toBe('success')
+      expect(updatedPipeline?.id).toBe(testPipeline.id)
     })
 
     it('존재하지 않는 파이프라인은 undefined를 반환해야 합니다', async () => {

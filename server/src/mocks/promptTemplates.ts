@@ -21,8 +21,8 @@ export const mockPromptTemplates: PromptTemplate[] = [
   "plan": ["단계별 계획"]
 }`,
     variables: ['input'],
-    createdAt: new Date('2024-03-15T09:00:00.000Z'),
-    updatedAt: new Date('2024-03-15T09:00:00.000Z'),
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
   {
     id: 'template-2',
@@ -40,8 +40,8 @@ export const mockPromptTemplates: PromptTemplate[] = [
   "excludeTerms": ["제외어1", "제외어2", ...]
 }`,
     variables: ['question'],
-    createdAt: new Date('2024-03-15T09:00:00.000Z'),
-    updatedAt: new Date('2024-03-15T09:00:00.000Z'),
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
   {
     id: 'template-3',
@@ -68,8 +68,8 @@ export const mockPromptTemplates: PromptTemplate[] = [
   "specialNotes": ["특이사항1", "특이사항2", ...]
 }`,
     variables: ['imageUrl', 'detailLevel'],
-    createdAt: new Date('2024-03-15T09:00:00.000Z'),
-    updatedAt: new Date('2024-03-15T09:00:00.000Z'),
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
   {
     id: 'template-4',
@@ -95,8 +95,8 @@ export const mockPromptTemplates: PromptTemplate[] = [
   "confidence": 0.95
 }`,
     variables: ['searchResults', 'analysisResults', 'context'],
-    createdAt: new Date('2024-03-15T09:00:00.000Z'),
-    updatedAt: new Date('2024-03-15T09:00:00.000Z'),
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
   {
     id: 'template-5',
@@ -123,7 +123,7 @@ export const mockPromptTemplates: PromptTemplate[] = [
   "references": ["참조1", "참조2", ...]
 }`,
     variables: ['integratedResults', 'responseFormat', 'tone'],
-    createdAt: new Date('2024-03-15T09:00:00.000Z'),
-    updatedAt: new Date('2024-03-15T09:00:00.000Z'),
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
 ]

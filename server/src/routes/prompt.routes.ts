@@ -1,7 +1,7 @@
 import {
   CreatePromptTemplateDto,
   UpdatePromptTemplateDto,
-} from '@agent-fleet/types'
+} from '@agentfleet/types'
 import { Router } from 'express'
 import { PromptService } from '../services/prompt.service'
 

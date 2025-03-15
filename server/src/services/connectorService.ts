@@ -33,15 +33,12 @@ export class ConnectorService {
       throw new Error('필수 필드가 누락되었습니다.')
     }
 
-    const newConnector: Connector = {
-      id: v4(),
+    const newConnector = {
       ...connectorData,
-      status: 'active',
+      status: 'active' as ConnectorStatus,
       lastSync: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     }
-    return this.repository.save(newConnector)
+    return this.repository.create(newConnector)
   }
 
   async updateConnector(
@@ -51,19 +48,25 @@ export class ConnectorService {
     const connector = await this.repository.findById(id)
     if (!connector) return undefined
 
-    return this.repository.save({
+    const updatedConnector = {
       ...connector,
       ...connectorData,
       id, // ID는 변경 불가
-    })
+    }
+
+    return this.repository.save(updatedConnector)
   }
 
   async deleteConnector(id: string): Promise<boolean> {
-    const connector = await this.repository.findById(id)
-    if (!connector) return false
-
-    await this.repository.delete(id)
-    return true
+    try {
+      await this.repository.delete(id)
+      return true
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return false
+      }
+      throw error
+    }
   }
 
   async updateConnectorStatus(
@@ -75,23 +78,11 @@ export class ConnectorService {
       throw new Error('유효하지 않은 상태입니다.')
     }
 
-    const connector = await this.repository.findById(id)
-    if (!connector) return undefined
-
-    return this.repository.save({
-      ...connector,
-      status,
-    })
+    return this.updateConnector(id, { status })
   }
 
   async updateLastSync(id: string): Promise<Connector | undefined> {
-    const connector = await this.repository.findById(id)
-    if (!connector) return undefined
-
-    return this.repository.save({
-      ...connector,
-      lastSync: new Date(),
-    })
+    return this.updateConnector(id, { lastSync: new Date() })
   }
 
   async testConnector(

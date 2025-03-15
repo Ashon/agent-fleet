@@ -2,6 +2,7 @@ import {
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
@@ -26,6 +27,15 @@ export class S3RepositoryDriver implements RepositoryDriver {
     } catch {
       throw new Error('S3 bucket is not accessible')
     }
+  }
+
+  // 엔티티 존재 여부 확인
+  async exists(entityName: string, id: string): Promise<boolean> {
+    const key = `${entityName}/${id}.json`
+    const response = await this.s3Client.send(
+      new HeadObjectCommand({ Bucket: this.bucketName, Key: key }),
+    )
+    return response.$metadata.httpStatusCode === 200
   }
 
   // 엔티티 저장

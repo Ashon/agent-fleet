@@ -9,6 +9,8 @@ export const mockModels: Model[] = [
     maxTokens: 8192,
     costPer1kTokens: 0.03,
     status: 'stable',
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
   {
     id: 'gpt-3.5-turbo',
@@ -18,6 +20,8 @@ export const mockModels: Model[] = [
     maxTokens: 4096,
     costPer1kTokens: 0.002,
     status: 'stable',
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
   {
     id: 'claude-3-opus',
@@ -27,6 +31,8 @@ export const mockModels: Model[] = [
     maxTokens: 200000,
     costPer1kTokens: 0.015,
     status: 'stable',
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
   {
     id: 'claude-3-sonnet',
@@ -36,13 +42,7 @@ export const mockModels: Model[] = [
     maxTokens: 200000,
     costPer1kTokens: 0.003,
     status: 'stable',
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
 ]
-
-export const getModelOptions = () =>
-  mockModels
-    .filter((model) => model.status !== 'deprecated')
-    .map((model) => ({
-      value: model.id,
-      label: `${model.name} (${model.provider})`,
-    }))

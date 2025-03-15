@@ -1,3 +1,4 @@
+import { BaseEntity } from './common'
 import { PromptNodeConfig } from './prompt'
 
 export interface PipelineNode {
@@ -28,15 +29,12 @@ export interface PipelineEdge {
   type: 'default' | 'success' | 'error' | 'parallel' | 'async'
 }
 
-export interface Pipeline {
-  id: string
+export interface Pipeline extends BaseEntity {
   agentId: string
   name: string
   description?: string
   nodes: PipelineNode[]
   edges: PipelineEdge[]
-  createdAt: Date
-  updatedAt: Date
 }
 
 export interface CreatePipelinePayload {

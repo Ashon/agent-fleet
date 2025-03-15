@@ -29,6 +29,8 @@ export interface PipelineExecutionRecord {
   error?: string
   nodeResults: NodeExecutionResult[]
   finalOutput?: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface NodeStartEvent {

@@ -15,8 +15,8 @@ describe('PromptService', () => {
     description: '테스트 설명',
     content: '안녕하세요, {{name}}님! {{message}}',
     variables: ['name', 'message'],
-    createdAt: new Date('2024-03-15T09:00:00.000Z'),
-    updatedAt: new Date('2024-03-15T09:00:00.000Z'),
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   }
 
   beforeEach(() => {
@@ -52,8 +52,8 @@ describe('PromptService', () => {
       mockRepository.create.mockResolvedValue({
         ...createDto,
         id: 'new-id',
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       })
 
       const result = await service.createTemplate(createDto)
@@ -133,7 +133,7 @@ describe('PromptService', () => {
       mockRepository.update.mockResolvedValue({
         ...mockTemplate,
         ...updateDto,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
 
       const result = await service.updateTemplate(mockTemplate.id, updateDto)

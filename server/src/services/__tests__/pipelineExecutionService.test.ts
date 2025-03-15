@@ -55,8 +55,8 @@ describe('PipelineExecutionService', () => {
       { id: 'edge-2', source: 'node-2', target: 'node-3', type: 'default' },
     ],
     agentId: 'test-agent-1',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   })
 
   describe('streamPipelineExecution', () => {
@@ -292,8 +292,8 @@ describe('PipelineExecutionService', () => {
             type: 'default',
           },
         ],
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }
 
       await pipelineExecutionService.executePipeline(
@@ -369,8 +369,8 @@ describe('PipelineExecutionService', () => {
             type: 'default',
           },
         ],
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }
 
       await pipelineExecutionService.executePipeline(

@@ -16,8 +16,8 @@ export const mockConnectors: Connector[] = [
       channels: ['general', 'announcements'],
       botToken: 'xoxb-****',
     },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '2',
@@ -32,8 +32,8 @@ export const mockConnectors: Connector[] = [
       accounts: ['support@agentfleet.com'],
       folders: ['inbox', 'processed'],
     },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '3',
@@ -48,8 +48,8 @@ export const mockConnectors: Connector[] = [
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
     },
     lastSync: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 
   // Data Source Connectors
@@ -68,8 +68,8 @@ export const mockConnectors: Connector[] = [
       port: 5432,
       database: 'agentfleet_db',
     },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '5',
@@ -84,8 +84,8 @@ export const mockConnectors: Connector[] = [
       baseUrl: 'https://api.example.com',
       endpoints: ['/users', '/products'],
     },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '6',
@@ -100,8 +100,8 @@ export const mockConnectors: Connector[] = [
       root: '/data',
       patterns: ['*.json', '*.csv'],
     },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 
   // Action Connectors
@@ -119,8 +119,8 @@ export const mockConnectors: Connector[] = [
       channels: ['general', 'announcements'],
       botToken: 'xoxb-****',
     },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '8',
@@ -137,8 +137,8 @@ export const mockConnectors: Connector[] = [
         port: 587,
       },
     },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '9',
@@ -153,7 +153,7 @@ export const mockConnectors: Connector[] = [
       provider: 'firebase',
       projectId: 'agentfleet-app',
     },
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ]

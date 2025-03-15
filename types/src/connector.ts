@@ -1,8 +1,9 @@
+import { BaseEntity } from './common'
+
 export type ConnectorStatus = 'active' | 'inactive'
 export type ConnectorType = 'input' | 'data-source' | 'action'
 
-export interface Connector {
-  id: string
+export interface Connector extends BaseEntity {
   name: string
   description: string
   type: ConnectorType
@@ -11,8 +12,6 @@ export interface Connector {
   config: Record<string, unknown>
   status: ConnectorStatus
   lastSync: Date | null
-  createdAt: Date
-  updatedAt: Date
 }
 
 export interface CreateConnectorData {

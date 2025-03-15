@@ -45,15 +45,7 @@ export class PipelineService {
       throw new Error('필수 필드가 누락되었습니다.')
     }
 
-    const id = v4()
-    const newPipeline: Pipeline = {
-      id,
-      ...payload,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    return this.repository.save(newPipeline)
+    return this.repository.create(payload)
   }
 
   async updatePipeline(
@@ -71,11 +63,15 @@ export class PipelineService {
   }
 
   async deletePipeline(id: string): Promise<boolean> {
-    const pipeline = await this.repository.findById(id)
-    if (!pipeline) return false
-
-    await this.repository.delete(id)
-    return true
+    try {
+      await this.repository.delete(id)
+      return true
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('not found')) {
+        return false
+      }
+      throw error
+    }
   }
 
   async updatePipelineNodes(

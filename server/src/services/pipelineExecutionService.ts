@@ -217,6 +217,8 @@ export class PipelineExecutionService {
       status: 'running',
       startTime: new Date(),
       nodeResults: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
     })
 
     const executionGraph = this.buildExecutionGraph(pipeline)
@@ -285,6 +287,8 @@ export class PipelineExecutionService {
       status: 'running',
       startTime,
       nodeResults: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
     })
 
     res.write(

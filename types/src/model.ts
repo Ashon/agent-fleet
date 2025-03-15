@@ -1,5 +1,6 @@
-export interface Model {
-  id: string
+import { BaseEntity } from './common'
+
+export interface Model extends BaseEntity {
   name: string
   provider: 'openai' | 'anthropic' | 'google'
   description: string

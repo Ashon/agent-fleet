@@ -1,4 +1,5 @@
 import { ChatMessage } from './chat'
+import { BaseEntity } from './common'
 
 export type AgentStatus = 'active' | 'inactive'
 
@@ -22,13 +23,10 @@ export interface AgentCapabilities {
   qualityControl?: boolean
 }
 
-export interface Agent {
-  id: string
+export interface Agent extends BaseEntity {
   name: string
   description: string
   status: AgentStatus
-  createdAt: Date
-  updatedAt: Date
   chatHistory: ChatMessage[]
   capabilities: AgentCapabilities
   connectors: string[]

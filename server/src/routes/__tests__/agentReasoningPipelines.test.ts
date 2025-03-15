@@ -16,7 +16,7 @@ jest.mock('../../services/pipelineExecutionService')
 
 describe('Pipeline Routes', () => {
   let app: express.Application
-  const mockDate = new Date('2024-01-01T00:00:00.000Z')
+  const mockDate = new Date('2024-01-01T00:00:00.000Z').toISOString()
 
   const mockPipelines: Pipeline[] = [
     {
@@ -123,7 +123,7 @@ describe('Pipeline Routes', () => {
           nodeId: 'node-1',
           status: 'success',
           output: '테스트 결과',
-          timestamp: mockDate,
+          timestamp: new Date(mockDate),
         },
       ],
     })

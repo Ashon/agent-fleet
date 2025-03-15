@@ -9,7 +9,7 @@ jest.mock('../../services/agent')
 
 describe('Agent Routes', () => {
   let app: express.Application
-  const mockDate = new Date('2024-01-01T00:00:00.000Z')
+  const mockDate = new Date('2024-01-01T00:00:00.000Z').toISOString()
 
   const mockAgents: Agent[] = [
     {

@@ -20,8 +20,8 @@ describe('AgentService', () => {
     name: '테스트 에이전트',
     description: '테스트를 위한 에이전트입니다.',
     status: 'active' as AgentStatus,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     chatHistory: [],
     capabilities: {
       reasoning: true,
@@ -38,6 +38,8 @@ describe('AgentService', () => {
       delete: jest.fn(),
       driver: {} as S3RepositoryDriver,
       entityName: 'agents',
+      create: jest.fn(),
+      update: jest.fn(),
     } as unknown as jest.Mocked<AgentRepository>
 
     agentService = new AgentService(mockRepository)
@@ -115,12 +117,16 @@ describe('AgentService', () => {
         ...agentData,
         status: 'active',
         chatHistory: [],
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        capabilities: {},
+        connectors: [],
       }
 
-      mockRepository.save.mockResolvedValue(expectedAgent)
+      mockRepository.create.mockResolvedValue(expectedAgent)
       const result = await agentService.createAgent(agentData)
       expect(result).toEqual(expectedAgent)
-      expect(mockRepository.save).toHaveBeenCalled()
+      expect(mockRepository.create).toHaveBeenCalled()
     })
 
     it('필수 필드가 누락된 경우 에러를 발생시켜야 합니다', async () => {
@@ -139,13 +145,6 @@ describe('AgentService', () => {
       const agentData = {
         name: longString,
         description: longString,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        capabilities: {
-          reasoning: true,
-          planning: true,
-        },
-        connectors: [],
       }
 
       const expectedAgent: Agent = {
@@ -153,9 +152,13 @@ describe('AgentService', () => {
         ...agentData,
         status: 'active',
         chatHistory: [],
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        capabilities: {},
+        connectors: [],
       }
 
-      mockRepository.save.mockResolvedValue(expectedAgent)
+      mockRepository.create.mockResolvedValue(expectedAgent)
       const result = await agentService.createAgent(agentData)
       expect(result.name).toBe(longString)
       expect(result.description).toBe(longString)
@@ -170,11 +173,11 @@ describe('AgentService', () => {
       }
       const updatedAgent = { ...testAgent, ...updateData }
       mockRepository.findById.mockResolvedValue(testAgent)
-      mockRepository.save.mockResolvedValue(updatedAgent)
+      mockRepository.update.mockResolvedValue(updatedAgent)
 
       const result = await agentService.updateAgent('1', updateData)
       expect(result).toEqual(updatedAgent)
-      expect(mockRepository.save).toHaveBeenCalled()
+      expect(mockRepository.update).toHaveBeenCalled()
     })
 
     it('should return undefined for non-existent agent', async () => {
@@ -191,7 +194,7 @@ describe('AgentService', () => {
         id: 'new-id',
       }
       const updatedAgent = { ...testAgent }
-      mockRepository.save.mockResolvedValue(updatedAgent)
+      mockRepository.update.mockResolvedValue(updatedAgent)
 
       const result = await agentService.updateAgent(testAgent.id, updateData)
       expect(result?.id).toBe(testAgent.id)
@@ -203,7 +206,7 @@ describe('AgentService', () => {
         name: 'Updated Name',
       }
       const updatedAgent = { ...testAgent, ...updateData }
-      mockRepository.save.mockResolvedValue(updatedAgent)
+      mockRepository.update.mockResolvedValue(updatedAgent)
 
       const result = await agentService.updateAgent(testAgent.id, updateData)
       expect(result?.name).toBe(updateData.name)
@@ -223,15 +226,20 @@ describe('AgentService', () => {
 
     it('should return false for non-existent agent', async () => {
       mockRepository.findById.mockResolvedValue(null)
+      mockRepository.delete.mockRejectedValue(new Error('Entity not found'))
+
       const result = await agentService.deleteAgent('non-existent')
       expect(result).toBe(false)
-      expect(mockRepository.delete).not.toHaveBeenCalled()
+      expect(mockRepository.delete).toHaveBeenCalledWith('non-existent')
     })
 
     it('이미 삭제된 에이전트를 다시 삭제하려고 할 때 false를 반환해야 합니다', async () => {
       mockRepository.findById.mockResolvedValue(null)
+      mockRepository.delete.mockRejectedValue(new Error('Entity not found'))
+
       const result = await agentService.deleteAgent(testAgent.id)
       expect(result).toBe(false)
+      expect(mockRepository.delete).toHaveBeenCalledWith(testAgent.id)
     })
   })
 
@@ -239,7 +247,7 @@ describe('AgentService', () => {
     it('에이전트 상태를 업데이트해야 합니다', async () => {
       mockRepository.findById.mockResolvedValue(testAgent)
       const updatedAgent = { ...testAgent, status: 'inactive' as AgentStatus }
-      mockRepository.save.mockResolvedValue(updatedAgent)
+      mockRepository.update.mockResolvedValue(updatedAgent)
 
       const result = await agentService.updateAgentStatus(
         testAgent.id,
@@ -268,7 +276,7 @@ describe('AgentService', () => {
         ...testAgent,
         chatHistory: [...testAgent.chatHistory, message],
       }
-      mockRepository.save.mockResolvedValue(updatedAgent)
+      mockRepository.update.mockResolvedValue(updatedAgent)
 
       const result = await agentService.addChatMessage(testAgent.id, {
         role: 'user',
