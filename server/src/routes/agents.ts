@@ -5,106 +5,109 @@ import { ApiError } from '../middleware/errorHandler'
 import { AgentRepository } from '../repositories/agentRepository'
 import { AgentService } from '../services/agent.service'
 
-const router = Router()
 export const agentService = new AgentService(
   new AgentRepository(new MockRepositoryDriver()),
 )
 
-// GET /api/agents
-router.get(
-  '/',
-  asyncHandler(async (req, res) => {
-    const agents = await agentService.getAllAgents()
-    res.json(agents)
-  }),
-)
+export const createAgentsRouter = (service: AgentService) => {
+  const router = Router()
 
-// GET /api/agents/:id
-router.get(
-  '/:id',
-  asyncHandler(async (req, res) => {
-    const { id } = req.params
-    const agent = await agentService.getAgentById(id)
+  // GET /api/agents
+  router.get(
+    '/',
+    asyncHandler(async (req, res) => {
+      const agents = await service.getAllAgents()
+      res.json(agents)
+    }),
+  )
 
-    if (!agent) {
-      throw new ApiError(404, 'Agent not found')
-    }
+  // GET /api/agents/:id
+  router.get(
+    '/:id',
+    asyncHandler(async (req, res) => {
+      const { id } = req.params
+      const agent = await service.getAgentById(id)
 
-    res.json(agent)
-  }),
-)
+      if (!agent) {
+        throw new ApiError(404, 'Agent not found')
+      }
 
-// POST /api/agents
-router.post(
-  '/',
-  asyncHandler(async (req, res) => {
-    const agent = req.body
+      res.json(agent)
+    }),
+  )
 
-    if (!agent.name || !agent.description) {
-      throw new ApiError(400, 'Name and description are required fields')
-    }
+  // POST /api/agents
+  router.post(
+    '/',
+    asyncHandler(async (req, res) => {
+      const agent = req.body
 
-    const newAgent = await agentService.createAgent(agent)
-    res.status(201).json(newAgent)
-  }),
-)
+      if (!agent.name || !agent.description) {
+        throw new ApiError(400, 'Name and description are required fields')
+      }
 
-// PUT /api/agents/:id
-router.put(
-  '/:id',
-  asyncHandler(async (req, res) => {
-    const { id } = req.params
-    const agent = req.body
+      const newAgent = await service.createAgent(agent)
+      res.status(201).json(newAgent)
+    }),
+  )
 
-    if (!agent.name || !agent.description) {
-      throw new ApiError(400, 'Name and description are required fields')
-    }
+  // PUT /api/agents/:id
+  router.put(
+    '/:id',
+    asyncHandler(async (req, res) => {
+      const { id } = req.params
+      const agent = req.body
 
-    const updatedAgent = await agentService.updateAgent(id, agent)
-    if (!updatedAgent) {
-      throw new ApiError(404, 'Agent not found')
-    }
+      if (!agent.name || !agent.description) {
+        throw new ApiError(400, 'Name and description are required fields')
+      }
 
-    res.json(updatedAgent)
-  }),
-)
+      const updatedAgent = await service.updateAgent(id, agent)
+      if (!updatedAgent) {
+        throw new ApiError(404, 'Agent not found')
+      }
 
-// DELETE /api/agents/:id
-router.delete(
-  '/:id',
-  asyncHandler(async (req, res) => {
-    const { id } = req.params
-    const deleted = await agentService.deleteAgent(id)
+      res.json(updatedAgent)
+    }),
+  )
 
-    if (!deleted) {
-      throw new ApiError(404, 'Agent not found')
-    }
+  // DELETE /api/agents/:id
+  router.delete(
+    '/:id',
+    asyncHandler(async (req, res) => {
+      const { id } = req.params
+      const deleted = await service.deleteAgent(id)
 
-    res.status(204).send()
-  }),
-)
+      if (!deleted) {
+        throw new ApiError(404, 'Agent not found')
+      }
 
-// PATCH /api/agents/:id/status
-router.patch(
-  '/:id/status',
-  asyncHandler(async (req, res) => {
-    const { id } = req.params
-    const { status } = req.body
+      res.status(204).send()
+    }),
+  )
 
-    if (!status || !['active', 'inactive'].includes(status)) {
-      throw new ApiError(
-        400,
-        'Valid status value (active/inactive) is required',
-      )
-    }
+  // PATCH /api/agents/:id/status
+  router.patch(
+    '/:id/status',
+    asyncHandler(async (req, res) => {
+      const { id } = req.params
+      const { status } = req.body
 
-    const updatedAgent = await agentService.updateAgentStatus(id, status)
-    if (!updatedAgent) {
-      throw new ApiError(404, 'Agent not found')
-    }
+      if (!status || !['active', 'inactive'].includes(status)) {
+        throw new ApiError(
+          400,
+          'Valid status value (active/inactive) is required',
+        )
+      }
 
-    res.json(updatedAgent)
-  }),
-)
+      const updatedAgent = await service.updateAgentStatus(id, status)
+      if (!updatedAgent) {
+        throw new ApiError(404, 'Agent not found')
+      }
 
-export default router
+      res.json(updatedAgent)
+    }),
+  )
+
+  return router
+}

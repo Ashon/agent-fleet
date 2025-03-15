@@ -2,13 +2,15 @@ import express from 'express'
 import request from 'supertest'
 import { errorHandler } from '../../middleware/errorHandler'
 import { mockPipelineJobs } from '../../mocks/pipelineJobs'
-import pipelineJobs, { pipelineExecutionService } from '../pipelineJobs'
+import { pipelineExecutionService } from '../index'
+import { createPipelineJobsRouter } from '../pipelineJobs.routes'
 
 jest.mock('../../services/pipelineExecution.service')
 
 const app = express()
+const router = createPipelineJobsRouter(pipelineExecutionService)
 app.use(express.json())
-app.use('/api/pipeline-execution', pipelineJobs)
+app.use('/api/pipeline-execution', router)
 app.use(errorHandler)
 
 // 날짜를 문자열로 변환하는 헬퍼 함수

@@ -6,10 +6,11 @@ import {
 } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
+import { pipelineExecutionService, pipelineService } from '..'
 import { errorHandler } from '../../middleware/errorHandler'
 import { PipelineService } from '../../services/agentReasoningPipeline.service'
 import { PipelineExecutionService } from '../../services/pipelineExecution.service'
-import pipelineRoutes from '../agentReasoningPipelines'
+import { createAgentReasoningPipelinesRouter } from '../agentReasoningPipelines.routes'
 
 jest.mock('../../services/agentReasoningPipeline.service')
 jest.mock('../../services/pipelineExecution.service')
@@ -44,7 +45,13 @@ describe('Pipeline Routes', () => {
   beforeEach(() => {
     app = express()
     app.use(express.json())
-    app.use('/api/reasoning-pipelines', pipelineRoutes)
+    app.use(
+      '/api/reasoning-pipelines',
+      createAgentReasoningPipelinesRouter(
+        pipelineService,
+        pipelineExecutionService,
+      ),
+    )
     app.use(errorHandler)
 
     const mockPipelineService = PipelineService as jest.MockedClass<

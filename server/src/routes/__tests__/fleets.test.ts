@@ -1,9 +1,10 @@
 import { CreateFleetData, Fleet } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
+import { fleetService } from '..'
 import { errorHandler } from '../../middleware/errorHandler'
 import { FleetService } from '../../services/fleet.service'
-import fleetRoutes from '../fleets'
+import { createFleetsRouter } from '../fleets.routes'
 
 // FleetService 모킹
 jest.mock('../../services/fleet.service')
@@ -38,7 +39,7 @@ describe('Fleet Routes', () => {
     // Express 앱 설정
     app = express()
     app.use(express.json())
-    app.use('/api/fleets', fleetRoutes)
+    app.use('/api/fleets', createFleetsRouter(fleetService))
     app.use(errorHandler)
 
     // FleetService 메서드 모킹

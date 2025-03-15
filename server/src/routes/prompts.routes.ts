@@ -5,7 +5,7 @@ import {
 import { Router } from 'express'
 import { PromptService } from '../services/prompt.service'
 
-export function createPromptRouter(promptService: PromptService): Router {
+export function createPromptsRouter(promptService: PromptService): Router {
   const router = Router()
 
   // 프롬프트 템플릿 생성

@@ -1,9 +1,10 @@
 import { Connector, CreateConnectorData } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
+import { connectorService } from '..'
 import { errorHandler } from '../../middleware/errorHandler'
 import { ConnectorService } from '../../services/connector.service'
-import connectorRoutes from '../connectors'
+import { createConnectorsRouter } from '../connectors'
 
 jest.mock('../../services/connector.service')
 
@@ -47,7 +48,7 @@ describe('Connector Routes', () => {
   beforeEach(() => {
     app = express()
     app.use(express.json())
-    app.use('/api/connectors', connectorRoutes)
+    app.use('/api/connectors', createConnectorsRouter(connectorService))
     app.use(errorHandler)
 
     const mockConnectorService = ConnectorService as jest.MockedClass<

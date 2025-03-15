@@ -1,9 +1,10 @@
 import { Agent, CreateAgentData } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
+import { agentService } from '..'
 import { errorHandler } from '../../middleware/errorHandler'
 import { AgentService } from '../../services/agent.service'
-import agentRoutes from '../agents'
+import { createAgentsRouter } from '../agents'
 
 jest.mock('../../services/agent.service')
 
@@ -39,7 +40,7 @@ describe('Agent Routes', () => {
   beforeEach(() => {
     app = express()
     app.use(express.json())
-    app.use('/api/agents', agentRoutes)
+    app.use('/api/agents', createAgentsRouter(agentService))
     app.use(errorHandler)
 
     const mockAgentService = AgentService as jest.MockedClass<
