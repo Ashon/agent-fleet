@@ -234,7 +234,13 @@ describe('PipelineExecutionService', () => {
 
       const nodeOutputs = writtenData
         .filter((data) => data.includes('node-complete'))
-        .map((data) => JSON.parse(data.replace('data: ', '')))
+        .map((data) => {
+          const parsed = JSON.parse(data.replace('data: ', ''))
+          return {
+            ...parsed,
+            output: JSON.parse(parsed.output),
+          }
+        })
 
       // 상태 검증 추가
       nodeOutputs.forEach((output) => {

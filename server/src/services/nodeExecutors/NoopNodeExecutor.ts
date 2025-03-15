@@ -14,23 +14,12 @@ export class MockNodeExecutor implements NodeExecutor {
   async execute(
     node: PipelineNode,
     input: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     context: NodeExecutionContext,
   ): Promise<NodeExecutionResult> {
     const startTime = new Date()
-    const { jobId, response } = context
 
     try {
-      // 노드 실행 시작을 클라이언트에 알림
-      response.write(
-        `data: ${JSON.stringify({
-          type: 'node-start',
-          nodeId: node.id,
-          nodeName: node.data.name,
-          nodeType: node.type,
-          jobId,
-        })}\n\n`,
-      )
-
       // 실제 실행을 시뮬레이션하기 위한 지연
       await new Promise((resolve) =>
         setTimeout(resolve, Math.random() * this.nodeExecutionDelay),
@@ -76,17 +65,6 @@ export class MockNodeExecutor implements NodeExecutor {
           executionTime: endTime.getTime() - startTime.getTime(),
         },
       }
-
-      // 노드 실행 완료를 클라이언트에 알림
-      response.write(
-        `data: ${JSON.stringify({
-          type: 'node-complete',
-          ...result,
-          status: 'success',
-          jobId,
-        })}\n\n`,
-      )
-
       return result
     } catch (error) {
       const endTime = new Date()
@@ -105,15 +83,6 @@ export class MockNodeExecutor implements NodeExecutor {
             error instanceof Error ? error.message : '알 수 없는 오류',
         },
       }
-
-      // 노드 실행 오류를 클라이언트에 알림
-      response.write(
-        `data: ${JSON.stringify({
-          type: 'node-error',
-          ...result,
-          jobId,
-        })}\n\n`,
-      )
 
       return result
     }

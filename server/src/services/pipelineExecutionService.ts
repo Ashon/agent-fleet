@@ -141,17 +141,18 @@ export class PipelineExecutionService {
       input: input,
     })
 
-    sendStreamMessage(res, {
-      type: 'node-start',
-      nodeId: node.id,
-      nodeName: node.data.name,
-      nodeType: node.type,
-      status: 'running',
-      timestamp: startTime,
-    })
-
     try {
       const executor = this.nodeExecutorFactory.getExecutor(node)
+
+      sendStreamMessage(res, {
+        type: 'node-start',
+        nodeId: node.id,
+        nodeName: node.data.name,
+        nodeType: node.type,
+        status: 'running',
+        timestamp: startTime,
+      })
+
       const result = await executor.execute(node, input, {
         jobId,
         response: res,
