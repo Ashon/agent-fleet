@@ -2,10 +2,10 @@ import { Connector, CreateConnectorData } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
 import { errorHandler } from '../../middleware/errorHandler'
-import { ConnectorService } from '../../services/connectorService'
+import { ConnectorService } from '../../services/connector.service'
 import connectorRoutes from '../connectors'
 
-jest.mock('../../services/connectorService')
+jest.mock('../../services/connector.service')
 
 describe('Connector Routes', () => {
   let app: express.Application

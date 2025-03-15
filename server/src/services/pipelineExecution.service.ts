@@ -7,10 +7,8 @@ import {
 } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
-import { LLMProvider } from '../clients/llm/LLMProvider'
 import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
 import { NodeExecutorFactory } from './nodeExecutors/NodeExecutorFactory'
-import { PromptService } from './prompt.service'
 
 interface StreamMessage {
   type: 'start' | 'node-start' | 'node-complete' | 'complete' | 'error'
@@ -33,8 +31,6 @@ const sendStreamMessage = (res: Response, message: StreamMessage) => {
 export class PipelineExecutionService {
   constructor(
     private readonly repository: PipelineJobsRepository,
-    private readonly promptService: PromptService,
-    private readonly llmProvider: LLMProvider,
     private readonly nodeExecutorFactory: NodeExecutorFactory,
   ) {}
 

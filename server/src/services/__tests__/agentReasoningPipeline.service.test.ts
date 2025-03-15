@@ -6,7 +6,7 @@ import {
 import { S3RepositoryDriver } from '../../drivers/s3RepositoryDriver'
 import { mockPipelines } from '../../mocks/agentReasoningPipeline'
 import { PipelineRepository } from '../../repositories/pipelineRepository'
-import { PipelineService } from '../agentReasoningPipeline'
+import { PipelineService } from '../agentReasoningPipeline.service'
 
 jest.mock('../../repositories/pipelineRepository')
 

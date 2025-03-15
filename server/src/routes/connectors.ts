@@ -3,7 +3,7 @@ import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
 import { ConnectorRepository } from '../repositories/connectorRepository'
-import { ConnectorService } from '../services/connectorService'
+import { ConnectorService } from '../services/connector.service'
 
 const router = Router()
 const connectorService = new ConnectorService(

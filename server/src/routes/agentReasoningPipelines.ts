@@ -1,16 +1,13 @@
 import { Router } from 'express'
-import { NoopProvider } from '../clients/llm/NoopProvider'
 import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
 import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
 import { PipelineRepository } from '../repositories/pipelineRepository'
-import { PromptTemplateRepository } from '../repositories/promptTemplateRepository'
-import { PipelineService } from '../services/agentReasoningPipeline'
+import { PipelineService } from '../services/agentReasoningPipeline.service'
 import { NodeExecutorFactory } from '../services/nodeExecutors/NodeExecutorFactory'
 import { MockNodeExecutor } from '../services/nodeExecutors/NoopNodeExecutor'
-import { PipelineExecutionService } from '../services/pipelineExecutionService'
-import { PromptService } from '../services/prompt.service'
+import { PipelineExecutionService } from '../services/pipelineExecution.service'
 
 const router = Router()
 const mockRepositoryDriver = new MockRepositoryDriver()
@@ -34,15 +31,8 @@ const nodeExecutorFactory = new NodeExecutorFactory()
 })
 
 // PromptService 설정
-const promptTemplateRepository = new PromptTemplateRepository(
-  mockRepositoryDriver,
-)
-const promptService = new PromptService(promptTemplateRepository)
-
 export const pipelineExecutionService = new PipelineExecutionService(
   new PipelineJobsRepository(mockRepositoryDriver),
-  promptService,
-  new NoopProvider(),
   nodeExecutorFactory,
 )
 

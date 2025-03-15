@@ -7,12 +7,12 @@ import {
 import express from 'express'
 import request from 'supertest'
 import { errorHandler } from '../../middleware/errorHandler'
-import { PipelineService } from '../../services/agentReasoningPipeline'
-import { PipelineExecutionService } from '../../services/pipelineExecutionService'
+import { PipelineService } from '../../services/agentReasoningPipeline.service'
+import { PipelineExecutionService } from '../../services/pipelineExecution.service'
 import pipelineRoutes from '../agentReasoningPipelines'
 
-jest.mock('../../services/agentReasoningPipeline')
-jest.mock('../../services/pipelineExecutionService')
+jest.mock('../../services/agentReasoningPipeline.service')
+jest.mock('../../services/pipelineExecution.service')
 
 describe('Pipeline Routes', () => {
   let app: express.Application

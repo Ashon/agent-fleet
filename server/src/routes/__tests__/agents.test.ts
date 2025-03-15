@@ -2,10 +2,10 @@ import { Agent, CreateAgentData } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
 import { errorHandler } from '../../middleware/errorHandler'
-import { AgentService } from '../../services/agent'
+import { AgentService } from '../../services/agent.service'
 import agentRoutes from '../agents'
 
-jest.mock('../../services/agent')
+jest.mock('../../services/agent.service')
 
 describe('Agent Routes', () => {
   let app: express.Application

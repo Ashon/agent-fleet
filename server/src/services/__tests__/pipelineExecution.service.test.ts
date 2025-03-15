@@ -1,13 +1,12 @@
 import { Pipeline } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
-import { NoopProvider } from '../../clients/llm/NoopProvider'
 import { MockRepositoryDriver } from '../../drivers/mockRepositoryDriver'
 import { PipelineJobsRepository } from '../../repositories/pipelineJobsRepository'
 import { PromptTemplateRepository } from '../../repositories/promptTemplateRepository'
 import { NodeExecutorFactory } from '../nodeExecutors/NodeExecutorFactory'
 import { MockNodeExecutor } from '../nodeExecutors/NoopNodeExecutor'
-import { PipelineExecutionService } from '../pipelineExecutionService'
+import { PipelineExecutionService } from '../pipelineExecution.service'
 import { PromptService } from '../prompt.service'
 
 // 테스트 환경 설정
@@ -55,8 +54,6 @@ describe('PipelineExecutionService', () => {
 
     pipelineExecutionService = new PipelineExecutionService(
       new PipelineJobsRepository(mockRepositoryDriver),
-      promptService,
-      new NoopProvider(),
       nodeExecutorFactory,
     )
   })
@@ -281,8 +278,6 @@ describe('PipelineExecutionService', () => {
 
       pipelineExecutionService = new PipelineExecutionService(
         mockRepository,
-        promptService,
-        new NoopProvider(),
         nodeExecutorFactory,
       )
     })

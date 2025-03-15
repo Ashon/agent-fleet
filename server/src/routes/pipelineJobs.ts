@@ -1,20 +1,15 @@
 import { Router } from 'express'
-import { NoopProvider } from '../clients/llm/NoopProvider'
 import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
 import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
-import { PromptTemplateRepository } from '../repositories/promptTemplateRepository'
 import { NodeExecutorFactory } from '../services/nodeExecutors/NodeExecutorFactory'
-import { PipelineExecutionService } from '../services/pipelineExecutionService'
-import { PromptService } from '../services/prompt.service'
+import { PipelineExecutionService } from '../services/pipelineExecution.service'
 
 const router = Router()
 
 export const pipelineExecutionService = new PipelineExecutionService(
   new PipelineJobsRepository(new MockRepositoryDriver()),
-  new PromptService(new PromptTemplateRepository(new MockRepositoryDriver())),
-  new NoopProvider(),
   new NodeExecutorFactory(),
 )
 

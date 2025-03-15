@@ -4,7 +4,7 @@ import { MockRepositoryDriver } from '../drivers/mockRepositoryDriver'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
 import { FleetRepository } from '../repositories/fleetRepository'
-import { FleetService } from '../services/fleetService'
+import { FleetService } from '../services/fleet.service'
 
 const router = Router()
 export const fleetService = new FleetService(

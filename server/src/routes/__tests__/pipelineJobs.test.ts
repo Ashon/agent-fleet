@@ -4,7 +4,7 @@ import { errorHandler } from '../../middleware/errorHandler'
 import { mockPipelineJobs } from '../../mocks/pipelineJobs'
 import pipelineJobs, { pipelineExecutionService } from '../pipelineJobs'
 
-jest.mock('../../services/pipelineExecutionService')
+jest.mock('../../services/pipelineExecution.service')
 
 const app = express()
 app.use(express.json())

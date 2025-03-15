@@ -2,11 +2,11 @@ import { CreateFleetData, Fleet } from '@agentfleet/types'
 import express from 'express'
 import request from 'supertest'
 import { errorHandler } from '../../middleware/errorHandler'
-import { FleetService } from '../../services/fleetService'
+import { FleetService } from '../../services/fleet.service'
 import fleetRoutes from '../fleets'
 
 // FleetService 모킹
-jest.mock('../../services/fleetService')
+jest.mock('../../services/fleet.service')
 
 describe('Fleet Routes', () => {
   let app: express.Application

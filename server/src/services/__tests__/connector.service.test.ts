@@ -2,7 +2,7 @@ import { Connector, ConnectorStatus } from '@agentfleet/types'
 import { S3RepositoryDriver } from '../../drivers/s3RepositoryDriver'
 import { mockConnectors } from '../../mocks/connectors'
 import { ConnectorRepository } from '../../repositories/connectorRepository'
-import { ConnectorService } from '../connectorService'
+import { ConnectorService } from '../connector.service'
 
 jest.mock('../../repositories/connectorRepository')
 

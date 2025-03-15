@@ -7,7 +7,7 @@ import {
 import { v4 } from 'uuid'
 import { S3RepositoryDriver } from '../../drivers/s3RepositoryDriver'
 import { AgentRepository } from '../../repositories/agentRepository'
-import { AgentService } from '../agent'
+import { AgentService } from '../agent.service'
 
 jest.mock('../../repositories/agentRepository')
 
