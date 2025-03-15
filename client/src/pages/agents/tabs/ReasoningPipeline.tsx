@@ -91,7 +91,7 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
 
   // 노드 시작 처리
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleNodeStart = useCallback((data: any) => {
+  const handleNodeStart = useCallback((completionId: string, data: any) => {
     const result: NodeExecutionResult = {
       nodeId: data.nodeId,
       nodeName: data.nodeName,
@@ -111,14 +111,14 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
       next.set(data.nodeId, result)
 
       // 진행 중인 노드 정보를 포함한 메시지 생성
-      setProgressingMessage((prevMsg) => ({
-        id: prevMsg?.id || `progress-${Date.now()}`,
+      setProgressingMessage({
+        id: completionId,
         role: 'assistant',
         content: `${data.nodeName} 노드 실행 중...`,
         createdAt: new Date(),
         isLoading: true,
         extra: Array.from(next.values()),
-      }))
+      })
 
       return next
     })
@@ -126,7 +126,7 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
 
   // 노드 완료 처리
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleNodeComplete = useCallback((data: any) => {
+  const handleNodeComplete = useCallback((completionId: string, data: any) => {
     const result: NodeExecutionResult = {
       nodeId: data.nodeId,
       nodeName: data.nodeName,
@@ -152,8 +152,8 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
       )
 
       // 진행 중인 메시지 업데이트
-      setProgressingMessage((prevMsg) => ({
-        id: prevMsg?.id || `progress-${Date.now()}`,
+      setProgressingMessage({
+        id: completionId,
         role: 'assistant',
         content: nextActiveNode
           ? `${nextActiveNode.nodeName} 노드 실행 중...`
@@ -161,7 +161,7 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
         createdAt: new Date(),
         isLoading: true,
         extra: Array.from(next.values()),
-      }))
+      })
 
       return next
     })
@@ -170,8 +170,10 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
   // 실행 완료 처리
   const handleComplete = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (data: any) => {
+    (completionId: string, data: any) => {
       setNodeResults((prev) => {
+        console.log('handleComplete', data)
+
         const next = new Map(prev)
         // 모든 노드를 success 상태로 업데이트
         for (const [nodeId, result] of next.entries()) {
@@ -181,37 +183,36 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
             output: result.output || data.output,
           })
         }
+
+        // 최종 메시지에 완료된 노드 결과 포함
+        setMessages((prevMessages) => [
+          ...prevMessages.filter((m) => m.id !== completionId),
+          {
+            id: completionId,
+            role: 'assistant',
+            content: data.message,
+            createdAt: new Date(),
+            extra: Array.from(next.values()).map((result) => ({
+              ...result,
+              status: NODE_STATUS.SUCCESS,
+            })),
+          },
+        ])
+
         return next
       })
 
-      // 진행 중 메시지를 먼저 초기화
       setProgressingMessage(undefined)
-
-      // 최종 메시지에 완료된 노드 결과 포함
-      setMessages((prevMessages) => [
-        ...prevMessages.filter((m) => !m.isLoading),
-        {
-          id: `completion-${Date.now()}`,
-          role: 'assistant',
-          content: data.message,
-          createdAt: new Date(),
-          extra: Array.from(nodeResults.values()).map((result) => ({
-            ...result,
-            status: NODE_STATUS.SUCCESS,
-          })),
-        },
-      ])
-
       setIsWaitingForResponse(false)
       setActiveNodeIds(new Set())
     },
-    [nodeResults],
+    [],
   )
 
   // 에러 처리
   const handleError = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (data: any) => {
+    (completionId: string, data: any) => {
       // 현재 실행 중인 노드가 있다면 에러 상태로 변경
       if (activeNodeIds.size > 0) {
         setNodeResults((prev) => {
@@ -231,9 +232,9 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
       }
 
       setMessages((prev) => {
-        const filtered = prev.filter((m) => !m.isLoading)
+        const filtered = prev.filter((m) => m.id !== completionId)
         filtered.push({
-          id: `error-${Date.now()}`,
+          id: completionId,
           role: 'assistant',
           content: data.message,
           createdAt: new Date(),
@@ -270,36 +271,36 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
       `${import.meta.env.VITE_API_URL}/api/reasoning-pipelines/test/stream?pipelineId=${pipeline.id}&input=${encodeURIComponent(input)}`,
     )
 
+    const completionId = `completion-${Date.now()}`
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data)
-
       switch (data.type) {
         case 'start':
           console.log('파이프라인 실행 시작:', data.message)
           break
 
         case 'node-start':
-          handleNodeStart(data)
+          handleNodeStart(completionId, data)
           break
 
         case 'node-complete':
-          handleNodeComplete(data)
+          handleNodeComplete(completionId, data)
           break
 
         case 'complete':
-          handleComplete(data)
+          handleComplete(completionId, data)
           eventSource.close()
           break
 
         case 'error':
-          handleError(data)
+          handleError(completionId, data)
           eventSource.close()
           break
       }
     }
 
     eventSource.onerror = () => {
-      handleError({
+      handleError(completionId, {
         message: '파이프라인 실행 중 오류가 발생했습니다.',
       })
       eventSource.close()

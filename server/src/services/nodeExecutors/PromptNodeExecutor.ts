@@ -138,7 +138,9 @@ export class PromptNodeExecutor implements NodeExecutor {
   private processOutput(
     completionText: string,
     config: PromptNodeConfig,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Record<string, any> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const output: Record<string, any> = {
       completion: completionText,
     }

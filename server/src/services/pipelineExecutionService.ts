@@ -4,7 +4,6 @@ import {
   Pipeline,
   PipelineExecutionRecord,
   PipelineNode,
-  PromptNodeConfig,
 } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
@@ -19,6 +18,7 @@ interface StreamMessage {
   nodeName?: string
   nodeType?: string
   status?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   output?: any
   message?: string
   timestamp: Date
@@ -38,6 +38,7 @@ export class PipelineExecutionService {
     private readonly nodeExecutorFactory: NodeExecutorFactory,
   ) {}
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private logExecutionStep(message: string, data?: any) {
     console.log(
       `[파이프라인 실행] ${message}`,
@@ -202,68 +203,6 @@ export class PipelineExecutionService {
       })
       throw error
     }
-  }
-
-  // 프롬프트 노드 실행
-  private async executePromptNode(
-    node: PipelineNode,
-    input: string,
-  ): Promise<string> {
-    const config = node.data.config as PromptNodeConfig
-    if (!config) {
-      throw new Error('프롬프트 노드 설정이 없습니다.')
-    }
-
-    // 입력 데이터에서 변수 추출
-    const variables: Record<string, string> = {}
-    try {
-      const inputData = JSON.parse(input)
-      config.contextMapping.input.forEach((field) => {
-        if (field in inputData) {
-          variables[field] = inputData[field]
-        }
-      })
-    } catch (error) {
-      // JSON 파싱 실패 시 전체 입력을 'input' 변수로 사용
-      variables['input'] = input
-    }
-
-    // 추가 변수 병합
-    Object.assign(variables, config.variables)
-
-    // 프롬프트 실행
-    const result = await this.promptService.renderPrompt(
-      config.templateId,
-      variables,
-    )
-
-    // LLM 호출
-    const completion = await this.llmProvider.complete(result, {
-      maxTokens: 1000,
-      temperature: 0.7,
-    })
-
-    // 출력 데이터 구성
-    const output: Record<string, any> = {
-      completion: completion.text,
-    }
-
-    // 지정된 출력 필드만 선택
-    if (config.contextMapping.output.length > 0) {
-      try {
-        const parsedCompletion = JSON.parse(completion.text)
-        config.contextMapping.output.forEach((field) => {
-          if (field in parsedCompletion) {
-            output[field] = parsedCompletion[field]
-          }
-        })
-      } catch {
-        // JSON 파싱 실패 시 전체 응답을 반환
-        output.result = completion.text
-      }
-    }
-
-    return JSON.stringify(output)
   }
 
   // 파이프라인 실행
