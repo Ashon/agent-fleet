@@ -6,7 +6,7 @@ import {
 
 export class NoopProvider implements LLMProvider {
   private readonly nodeExecutionDelay =
-    process.env.NODE_ENV === 'test' ? 100 : 2000
+    process.env.NODE_ENV === 'test' ? 100 : 5000
 
   async complete(
     prompt: string,

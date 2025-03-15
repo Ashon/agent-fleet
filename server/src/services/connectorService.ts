@@ -1,5 +1,4 @@
 import { Connector, ConnectorStatus } from '@agentfleet/types'
-import { v4 } from 'uuid'
 import { ConnectorRepository } from '../repositories/connectorRepository'
 
 export class ConnectorService {

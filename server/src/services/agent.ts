@@ -5,7 +5,6 @@ import {
   ChatMessageRole,
   CreateAgentData,
 } from '@agentfleet/types'
-import { v4 } from 'uuid'
 import { AgentRepository } from '../repositories/agentRepository'
 
 export class AgentService {

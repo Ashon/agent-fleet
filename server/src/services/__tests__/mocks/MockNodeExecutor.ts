@@ -5,7 +5,8 @@ import {
 } from '../../nodeExecutors/NodeExecutor'
 
 export class MockNodeExecutor implements NodeExecutor {
-  private readonly nodeExecutionDelay = 100 // 테스트 환경에서는 짧은 지연 사용
+  private readonly nodeExecutionDelay =
+    process.env.NODE_ENV === 'test' ? 100 : 2000
 
   constructor(private readonly nodeType: string) {}
 

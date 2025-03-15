@@ -5,7 +5,6 @@ import {
   PipelineTestRequest,
   PipelineTestResponse,
 } from '@agentfleet/types'
-import { v4 } from 'uuid'
 import { PipelineRepository } from '../repositories/pipelineRepository'
 
 export class PipelineService {

@@ -13,6 +13,23 @@ import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
 import { NodeExecutorFactory } from './nodeExecutors/NodeExecutorFactory'
 import { PromptService } from './prompt.service'
 
+interface StreamMessage {
+  type: 'start' | 'node-start' | 'node-complete' | 'complete' | 'error'
+  nodeId?: string
+  nodeName?: string
+  nodeType?: string
+  status?: string
+  output?: any
+  message?: string
+  timestamp: Date
+  pipelineId?: string
+  pipelineName?: string
+}
+
+const sendStreamMessage = (res: Response, message: StreamMessage) => {
+  res.write(`data: ${JSON.stringify(message)}\n\n`)
+}
+
 export class PipelineExecutionService {
   constructor(
     private readonly repository: PipelineJobsRepository,
@@ -20,6 +37,13 @@ export class PipelineExecutionService {
     private readonly llmProvider: LLMProvider,
     private readonly nodeExecutorFactory: NodeExecutorFactory,
   ) {}
+
+  private logExecutionStep(message: string, data?: any) {
+    console.log(
+      `[파이프라인 실행] ${message}`,
+      data ? JSON.stringify(data, null, 2) : '',
+    )
+  }
 
   // 실행 기록 조회
   async getExecutionRecord(
@@ -110,17 +134,73 @@ export class PipelineExecutionService {
     res: Response,
     jobId: string,
   ): Promise<NodeExecutionResult> {
-    const executor = this.nodeExecutorFactory.getExecutor(node)
-    const result = await executor.execute(node, input, { jobId, response: res })
+    const startTime = new Date()
+    this.logExecutionStep(`노드 실행 시작 - ${node.data.name}`, {
+      nodeId: node.id,
+      nodeType: node.type,
+      input: input,
+    })
 
-    // 실행 결과를 실행 기록에 저장
-    const record = await this.repository.findById(jobId)
-    if (record) {
-      record.nodeResults = [...(record.nodeResults || []), result]
-      await this.repository.save(record)
+    sendStreamMessage(res, {
+      type: 'node-start',
+      nodeId: node.id,
+      nodeName: node.data.name,
+      nodeType: node.type,
+      status: 'running',
+      timestamp: startTime,
+    })
+
+    try {
+      const executor = this.nodeExecutorFactory.getExecutor(node)
+      const result = await executor.execute(node, input, {
+        jobId,
+        response: res,
+      })
+
+      this.logExecutionStep(`노드 실행 완료 - ${node.data.name}`, {
+        executor: executor.constructor.name,
+        nodeId: node.id,
+        output: result.output,
+      })
+
+      sendStreamMessage(res, {
+        type: 'node-complete',
+        nodeId: node.id,
+        nodeName: node.data.name,
+        nodeType: node.type,
+        status: 'completed',
+        output:
+          typeof result.output === 'string'
+            ? result.output
+            : JSON.stringify(result.output),
+        timestamp: new Date(),
+      })
+
+      // 실행 결과를 실행 기록에 저장
+      const record = await this.repository.findById(jobId)
+      if (record) {
+        record.nodeResults = [...(record.nodeResults || []), result]
+        await this.repository.save(record)
+      }
+
+      return result
+    } catch (error) {
+      this.logExecutionStep(`노드 실행 실패 - ${node.data.name}`, {
+        nodeId: node.id,
+        error: error instanceof Error ? error.message : '알 수 없는 오류',
+      })
+
+      sendStreamMessage(res, {
+        type: 'node-complete',
+        nodeId: node.id,
+        nodeName: node.data.name,
+        nodeType: node.type,
+        status: 'error',
+        message: error instanceof Error ? error.message : '알 수 없는 오류',
+        timestamp: new Date(),
+      })
+      throw error
     }
-
-    return result
   }
 
   // 프롬프트 노드 실행
@@ -211,6 +291,7 @@ export class PipelineExecutionService {
       }
 
       const executionGraph = this.buildExecutionGraph(pipeline)
+      let finalOutput = ''
 
       while (true) {
         const executableNodes = this.findExecutableNodes(executionGraph)
@@ -230,7 +311,13 @@ export class PipelineExecutionService {
             const result = await this.executeNode(node, input, res, jobId)
             const state = executionGraph.get(node.id)
             if (state) {
-              state.output = JSON.stringify(result.output)
+              state.output =
+                typeof result.output === 'string'
+                  ? result.output
+                  : JSON.stringify(result.output)
+              if (this.isFinalNode(node.id, pipeline)) {
+                finalOutput = state.output
+              }
             }
             this.updateExecutionState(node.id, executionGraph, pipeline)
           }),
@@ -242,6 +329,7 @@ export class PipelineExecutionService {
       if (record) {
         record.status = 'completed'
         record.endTime = new Date()
+        record.finalOutput = finalOutput
         await this.repository.save(record)
       }
 
@@ -283,6 +371,12 @@ export class PipelineExecutionService {
     const id = uuidv4()
     const startTime = new Date()
 
+    this.logExecutionStep('파이프라인 실행 시작', {
+      pipelineId: pipeline.id,
+      pipelineName: pipeline.name,
+      input: input,
+    })
+
     // 실행 기록 생성
     await this.repository.save({
       id,
@@ -296,55 +390,115 @@ export class PipelineExecutionService {
       updatedAt: new Date(),
     })
 
-    res.write(
-      `data: ${JSON.stringify({
-        type: 'start',
-        message: '파이프라인 실행을 시작합니다.',
-        pipelineId: pipeline.id,
-        pipelineName: pipeline.name,
-        id,
-      })}\n\n`,
-    )
+    sendStreamMessage(res, {
+      type: 'start',
+      message: '파이프라인 실행을 시작합니다.',
+      pipelineId: pipeline.id,
+      pipelineName: pipeline.name,
+      timestamp: startTime,
+    })
 
     try {
-      await this.executePipeline(pipeline, input, id, res)
+      const executionGraph = this.buildExecutionGraph(pipeline)
+      this.logExecutionStep('실행 그래프 생성 완료', {
+        nodes: Array.from(executionGraph.keys()),
+      })
+
+      let finalOutput = ''
+
+      while (true) {
+        const executableNodes = this.findExecutableNodes(executionGraph)
+        this.logExecutionStep('실행 가능한 노드 발견', {
+          count: executableNodes.length,
+          nodes: executableNodes.map((n) => ({ id: n.id, name: n.data.name })),
+        })
+
+        if (executableNodes.length === 0) {
+          const allExecuted = Array.from(executionGraph.values()).every(
+            (state) => state.executed,
+          )
+          if (allExecuted) {
+            this.logExecutionStep('모든 노드 실행 완료')
+            break
+          }
+
+          throw new Error(
+            '파이프라인 실행 오류: 실행할 수 없는 노드가 있습니다',
+          )
+        }
+
+        await Promise.all(
+          executableNodes.map(async (node) => {
+            const result = await this.executeNode(node, input, res, id)
+            const state = executionGraph.get(node.id)
+            if (state) {
+              state.output =
+                typeof result.output === 'string'
+                  ? result.output
+                  : JSON.stringify(result.output)
+              if (this.isFinalNode(node.id, pipeline)) {
+                finalOutput = state.output
+                this.logExecutionStep('최종 노드 실행 완료', {
+                  nodeId: node.id,
+                  output: finalOutput,
+                })
+              }
+            }
+            this.updateExecutionState(node.id, executionGraph, pipeline)
+          }),
+        )
+      }
 
       // 실행 완료 기록
       const record = await this.repository.findById(id)
-      if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
-      record.status = 'completed'
-      record.endTime = new Date()
+      if (record) {
+        record.status = 'completed'
+        record.endTime = new Date()
+        record.finalOutput = finalOutput
+        await this.repository.save(record)
+        this.logExecutionStep('파이프라인 실행 기록 저장 완료', {
+          recordId: record.id,
+          status: record.status,
+        })
+      }
 
-      res.write(
-        `data: ${JSON.stringify({
-          type: 'complete',
-          message: '파이프라인 실행이 완료되었습니다.',
-          pipelineId: pipeline.id,
-          id,
-          finalOutput: record.finalOutput,
-        })}\n\n`,
-      )
+      sendStreamMessage(res, {
+        type: 'complete',
+        message: '파이프라인 실행이 완료되었습니다.',
+        output: finalOutput,
+        timestamp: new Date(),
+      })
     } catch (error) {
+      this.logExecutionStep('파이프라인 실행 실패', {
+        error: error instanceof Error ? error.message : '알 수 없는 오류',
+      })
+
       // 실행 실패 기록
       const record = await this.repository.findById(id)
-      if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
-      record.status = 'failed'
-      record.endTime = new Date()
-      record.error = error instanceof Error ? error.message : '알 수 없는 오류'
+      if (record) {
+        record.status = 'failed'
+        record.endTime = new Date()
+        record.error =
+          error instanceof Error ? error.message : '알 수 없는 오류'
+        await this.repository.save(record)
+      }
 
-      res.write(
-        `data: ${JSON.stringify({
-          type: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : '파이프라인 실행 중 오류가 발생했습니다.',
-          pipelineId: pipeline.id,
-          id,
-        })}\n\n`,
-      )
+      sendStreamMessage(res, {
+        type: 'error',
+        message:
+          error instanceof Error
+            ? error.message
+            : '파이프라인 실행 중 오류가 발생했습니다.',
+        timestamp: new Date(),
+      })
+
+      throw error
     }
 
     return id
+  }
+
+  private isFinalNode(nodeId: string, pipeline: Pipeline): boolean {
+    return !pipeline.edges.some((edge) => edge.source === nodeId)
   }
 }
