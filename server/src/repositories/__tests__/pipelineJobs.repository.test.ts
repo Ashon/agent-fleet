@@ -1,6 +1,6 @@
 import { PipelineExecutionRecord } from '@agentfleet/types'
 import { RepositoryDriver } from '../../drivers/repositoryDriver'
-import { PipelineExecutionsRepository } from '../pipelineExecutionsRepository'
+import { PipelineExecutionsRepository } from '../pipelineExecution.repository'
 
 describe('PipelineJobsRepository', () => {
   let mockDriver: jest.Mocked<RepositoryDriver>

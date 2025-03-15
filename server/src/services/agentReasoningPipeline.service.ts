@@ -5,7 +5,7 @@ import {
   PipelineTestRequest,
   PipelineTestResponse,
 } from '@agentfleet/types'
-import { PipelineRepository } from '../repositories/pipelineRepository'
+import { PipelineRepository } from '../repositories/pipeline.repository'
 
 export class PipelineService {
   private readonly repository: PipelineRepository

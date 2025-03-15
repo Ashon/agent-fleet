@@ -5,7 +5,7 @@ import {
   ChatMessageRole,
   CreateAgentData,
 } from '@agentfleet/types'
-import { AgentRepository } from '../repositories/agentRepository'
+import { AgentRepository } from '../repositories/agent.repository'
 
 export class AgentService {
   protected readonly repository: AgentRepository

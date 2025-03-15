@@ -1,5 +1,5 @@
 import { CreateFleetData, Fleet, FleetStatus } from '@agentfleet/types'
-import { FleetRepository } from '../repositories/fleetRepository'
+import { FleetRepository } from '../repositories/fleet.repository'
 
 export class FleetService {
   constructor(private readonly fleetRepository: FleetRepository) {}

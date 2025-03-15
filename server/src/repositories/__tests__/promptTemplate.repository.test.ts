@@ -1,6 +1,6 @@
 import { PromptTemplate } from '@agentfleet/types'
 import { RepositoryDriver } from '../../drivers/repositoryDriver'
-import { PromptTemplateRepository } from '../promptTemplateRepository'
+import { PromptTemplateRepository } from '../promptTemplate.repository'
 
 describe('PromptTemplateRepository', () => {
   let mockDriver: jest.Mocked<RepositoryDriver>

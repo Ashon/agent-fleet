@@ -5,10 +5,10 @@ import {
 } from '@agentfleet/types'
 import { S3RepositoryDriver } from '../../drivers/s3RepositoryDriver'
 import { mockPipelines } from '../../mocks/agentReasoningPipeline'
-import { PipelineRepository } from '../../repositories/pipelineRepository'
+import { PipelineRepository } from '../../repositories/pipeline.repository'
 import { PipelineService } from '../agentReasoningPipeline.service'
 
-jest.mock('../../repositories/pipelineRepository')
+jest.mock('../../repositories/pipeline.repository')
 
 describe('PipelineService', () => {
   let pipelineService: PipelineService

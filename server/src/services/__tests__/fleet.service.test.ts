@@ -1,9 +1,9 @@
 import { CreateFleetData, Fleet } from '@agentfleet/types'
 import { S3RepositoryDriver } from '../../drivers/s3RepositoryDriver'
-import { FleetRepository } from '../../repositories/fleetRepository'
+import { FleetRepository } from '../../repositories/fleet.repository'
 import { FleetService } from '../fleet.service'
 
-jest.mock('../../repositories/fleetRepository')
+jest.mock('../../repositories/fleet.repository')
 
 describe('FleetService', () => {
   let fleetService: FleetService

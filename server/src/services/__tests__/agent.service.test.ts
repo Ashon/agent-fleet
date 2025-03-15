@@ -6,10 +6,10 @@ import {
 } from '@agentfleet/types'
 import { v4 } from 'uuid'
 import { S3RepositoryDriver } from '../../drivers/s3RepositoryDriver'
-import { AgentRepository } from '../../repositories/agentRepository'
+import { AgentRepository } from '../../repositories/agent.repository'
 import { AgentService } from '../agent.service'
 
-jest.mock('../../repositories/agentRepository')
+jest.mock('../../repositories/agent.repository')
 
 describe('AgentService', () => {
   let agentService: AgentService

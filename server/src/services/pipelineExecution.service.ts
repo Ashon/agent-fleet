@@ -7,7 +7,7 @@ import {
 } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
-import { PipelineExecutionsRepository } from '../repositories/pipelineExecutionsRepository'
+import { PipelineExecutionsRepository } from '../repositories/pipelineExecution.repository'
 import { NodeExecutorFactory } from './nodeExecutors/NodeExecutorFactory'
 
 interface StreamMessage {

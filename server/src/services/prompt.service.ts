@@ -3,7 +3,7 @@ import {
   PromptTemplate,
   UpdatePromptTemplateDto,
 } from '@agentfleet/types'
-import { PromptTemplateRepository } from '../repositories/promptTemplateRepository'
+import { PromptTemplateRepository } from '../repositories/promptTemplate.repository'
 
 export class PromptService {
   constructor(

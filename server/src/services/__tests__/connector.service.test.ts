@@ -1,10 +1,10 @@
 import { Connector, ConnectorStatus } from '@agentfleet/types'
 import { S3RepositoryDriver } from '../../drivers/s3RepositoryDriver'
 import { mockConnectors } from '../../mocks/connectors'
-import { ConnectorRepository } from '../../repositories/connectorRepository'
+import { ConnectorRepository } from '../../repositories/connector.repository'
 import { ConnectorService } from '../connector.service'
 
-jest.mock('../../repositories/connectorRepository')
+jest.mock('../../repositories/connector.repository')
 
 describe('ConnectorService', () => {
   let connectorService: ConnectorService

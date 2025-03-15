@@ -1,5 +1,5 @@
 import { Connector, ConnectorStatus } from '@agentfleet/types'
-import { ConnectorRepository } from '../repositories/connectorRepository'
+import { ConnectorRepository } from '../repositories/connector.repository'
 
 export class ConnectorService {
   private readonly repository: ConnectorRepository
