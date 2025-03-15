@@ -26,7 +26,41 @@ export interface PromptNodeConfig {
   templateId: string
   variables: Record<string, string>
   contextMapping: {
-    input: string[] // 입력 데이터에서 변수로 매핑할 필드
-    output: string[] // 출력 데이터에서 다음 노드로 전달할 필드
+    input: string[]
+    output: string[]
   }
+  maxTokens?: number
+  temperature?: number
+  stopSequences?: string[]
+}
+
+export interface PromptExecutionResult {
+  templateId: string
+  renderedPrompt: string
+  completion: string
+  tokenUsage: {
+    prompt: number
+    completion: number
+    total: number
+  }
+  metadata: {
+    model?: string
+    executionTime?: number
+    error?: string
+    timestamp: string
+  }
+  status: 'success' | 'error'
+}
+
+export interface NodeExecutionResult {
+  nodeId: string
+  nodeName: string
+  nodeType: string
+  input: Record<string, any>
+  output: Record<string, any>
+  startTime: Date
+  endTime: Date
+  status: 'success' | 'failed'
+  error?: string
+  metadata?: Record<string, any>
 }

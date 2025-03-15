@@ -12,10 +12,12 @@ export interface NodeExecutionResult {
   nodeId: string
   nodeName: string
   nodeType: string
-  output: string
+  input: Record<string, any>
+  output: Record<string, any>
   startTime: Date
   endTime: Date
   status: 'success' | 'failed'
+  metadata?: Record<string, any>
 }
 
 export interface PipelineExecutionRecord {

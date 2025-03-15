@@ -1,23 +1,25 @@
 import {
+  NodeExecutionResult,
   NodeExecutionState,
   Pipeline,
   PipelineExecutionRecord,
   PipelineNode,
+  PromptNodeConfig,
 } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
+import { LLMProvider } from '../clients/llm/LLMProvider'
 import { PipelineJobsRepository } from '../repositories/pipelineJobsRepository'
+import { NodeExecutorFactory } from './nodeExecutors/NodeExecutorFactory'
+import { PromptService } from './prompt.service'
 
 export class PipelineExecutionService {
-  // 테스트 환경에서 사용할 지연 시간 (ms)
-  private nodeExecutionDelay = process.env.NODE_ENV === 'test' ? 100 : 5000
-  private nodeCompletionDelay = process.env.NODE_ENV === 'test' ? 50 : 500
-
-  // 실행 기록 저장소
-  private repository: PipelineJobsRepository
-  constructor(repository: PipelineJobsRepository) {
-    this.repository = repository
-  }
+  constructor(
+    private readonly repository: PipelineJobsRepository,
+    private readonly promptService: PromptService,
+    private readonly llmProvider: LLMProvider,
+    private readonly nodeExecutorFactory: NodeExecutorFactory,
+  ) {}
 
   // 실행 기록 조회
   async getExecutionRecord(
@@ -106,102 +108,82 @@ export class PipelineExecutionService {
     node: PipelineNode,
     input: string,
     res: Response,
-    id: string,
+    jobId: string,
   ): Promise<string> {
-    const startTime = new Date()
-    const record = await this.repository.findById(id)
-    if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
+    const executor = this.nodeExecutorFactory.getExecutor(node)
+    const result = await executor.execute(node, input, { jobId, response: res })
 
-    console.log('node-start', node.id, node.data.name, node.type)
-    res.write(
-      `data: ${JSON.stringify({
-        type: 'node-start',
-        nodeId: node.id,
-        nodeName: node.data.name,
-        nodeType: node.type,
-        id,
-      })}\n\n`,
-    )
+    // 실행 결과를 문자열로 변환
+    return JSON.stringify(result.output)
+  }
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, Math.random() * this.nodeExecutionDelay),
-    )
-
-    let output = ''
-    try {
-      switch (node.type) {
-        case 'input':
-          output = `입력 처리: "${input}"`
-          break
-        case 'plan':
-          output = `계획 수립: ${node.data.description || ''}`
-          break
-        case 'decision':
-          output = `결정: ${node.data.description || ''}`
-          break
-        case 'action':
-          output = `행동 실행: ${node.data.description || ''}`
-          break
-        case 'process':
-          output = `데이터 처리: ${node.data.description || ''}`
-          break
-        case 'aggregator':
-          output = `결과 통합: ${node.data.description || ''}`
-          break
-        case 'analysis':
-          output = `분석 수행: ${node.data.description || ''}`
-          break
-        default:
-          output = `알 수 없는 노드 타입: ${node.type}`
-      }
-
-      const endTime = new Date()
-      record.nodeResults.push({
-        nodeId: node.id,
-        nodeName: node.data.name,
-        nodeType: node.type,
-        output,
-        startTime,
-        endTime,
-        status: 'success',
-      })
-
-      res.write(
-        `data: ${JSON.stringify({
-          type: 'node-complete',
-          nodeId: node.id,
-          output,
-          status: 'success',
-          id,
-        })}\n\n`,
-      )
-
-      await new Promise((resolve) =>
-        setTimeout(resolve, Math.random() * this.nodeCompletionDelay),
-      )
-
-      return output
-    } catch (error) {
-      const endTime = new Date()
-      record.nodeResults.push({
-        nodeId: node.id,
-        nodeName: node.data.name,
-        nodeType: node.type,
-        output: error instanceof Error ? error.message : '알 수 없는 오류',
-        startTime,
-        endTime,
-        status: 'failed',
-      })
-
-      throw error
+  // 프롬프트 노드 실행
+  private async executePromptNode(
+    node: PipelineNode,
+    input: string,
+  ): Promise<string> {
+    const config = node.data.config as PromptNodeConfig
+    if (!config) {
+      throw new Error('프롬프트 노드 설정이 없습니다.')
     }
+
+    // 입력 데이터에서 변수 추출
+    const variables: Record<string, string> = {}
+    try {
+      const inputData = JSON.parse(input)
+      config.contextMapping.input.forEach((field) => {
+        if (field in inputData) {
+          variables[field] = inputData[field]
+        }
+      })
+    } catch (error) {
+      // JSON 파싱 실패 시 전체 입력을 'input' 변수로 사용
+      variables['input'] = input
+    }
+
+    // 추가 변수 병합
+    Object.assign(variables, config.variables)
+
+    // 프롬프트 실행
+    const result = await this.promptService.renderPrompt(
+      config.templateId,
+      variables,
+    )
+
+    // LLM 호출
+    const completion = await this.llmProvider.complete(result, {
+      maxTokens: 1000,
+      temperature: 0.7,
+    })
+
+    // 출력 데이터 구성
+    const output: Record<string, any> = {
+      completion: completion.text,
+    }
+
+    // 지정된 출력 필드만 선택
+    if (config.contextMapping.output.length > 0) {
+      try {
+        const parsedCompletion = JSON.parse(completion.text)
+        config.contextMapping.output.forEach((field) => {
+          if (field in parsedCompletion) {
+            output[field] = parsedCompletion[field]
+          }
+        })
+      } catch {
+        // JSON 파싱 실패 시 전체 응답을 반환
+        output.result = completion.text
+      }
+    }
+
+    return JSON.stringify(output)
   }
 
   // 파이프라인 실행
   async executePipeline(
     pipeline: Pipeline,
     input: string,
-    id: string,
+    jobId: string,
     res: Response,
   ) {
     if (!pipeline.nodes.length) {
@@ -210,7 +192,7 @@ export class PipelineExecutionService {
 
     // 실행 기록 초기화
     await this.repository.save({
-      id,
+      id: jobId,
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,
       input,
@@ -239,7 +221,7 @@ export class PipelineExecutionService {
 
         await Promise.all(
           executableNodes.map(async (node) => {
-            const output = await this.executeNode(node, input, res, id)
+            const output = await this.executeNode(node, input, res, jobId)
             const state = executionGraph.get(node.id)
             if (state) {
               state.output = output
@@ -249,24 +231,41 @@ export class PipelineExecutionService {
         )
       }
 
-      // 마지막 노드의 출력을 최종 결과로 저장
-      const record = await this.repository.findById(id)
-      if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
-      const lastNodeResult = record.nodeResults.slice(-1)[0]
-      if (lastNodeResult) {
-        record.finalOutput = lastNodeResult.output
+      // 실행 완료 처리
+      const record = await this.repository.findById(jobId)
+      if (record) {
+        record.status = 'completed'
+        record.endTime = new Date()
+        await this.repository.save(record)
       }
-      record.status = 'completed'
-      record.endTime = new Date()
+
+      // 최종 노드의 출력을 반환
+      const finalNodeId = this.findFinalNodeId(pipeline)
+      if (finalNodeId) {
+        const finalState = executionGraph.get(finalNodeId)
+        return finalState?.output || ''
+      }
+
+      return ''
     } catch (error) {
-      // 실행 실패 기록
-      const record = await this.repository.findById(id)
-      if (!record) throw new Error('실행 기록을 찾을 수 없습니다.')
-      record.status = 'failed'
-      record.endTime = new Date()
-      record.error = error instanceof Error ? error.message : '알 수 없는 오류'
+      // 실행 실패 처리
+      const record = await this.repository.findById(jobId)
+      if (record) {
+        record.status = 'failed'
+        record.endTime = new Date()
+        record.error =
+          error instanceof Error ? error.message : '알 수 없는 오류'
+        await this.repository.save(record)
+      }
+
       throw error
     }
+  }
+
+  private findFinalNodeId(pipeline: Pipeline): string | undefined {
+    // 나가는 엣지가 없는 노드를 찾음
+    const outgoingEdges = new Set(pipeline.edges.map((edge) => edge.source))
+    return pipeline.nodes.find((node) => !outgoingEdges.has(node.id))?.id
   }
 
   // 파이프라인 실행 스트리밍

@@ -28,6 +28,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "morgan": "^1.10.0",
+    "openai": "^4.87.3",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.2"
   },

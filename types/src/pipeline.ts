@@ -1,25 +1,28 @@
 import { BaseEntity } from './common'
 import { PromptNodeConfig } from './prompt'
 
+export type PipelineNodeType =
+  | 'input'
+  | 'plan'
+  | 'decision'
+  | 'action'
+  | 'process'
+  | 'aggregator'
+  | 'analysis'
+  | 'prompt'
+
+export interface PipelineNodeData {
+  name: string
+  description?: string
+  config?: PromptNodeConfig
+}
+
 export interface PipelineNode {
   id: string
-  type:
-    | 'input'
-    | 'plan'
-    | 'decision'
-    | 'action'
-    | 'process'
-    | 'aggregator'
-    | 'analysis'
-    | 'prompt'
+  type: PipelineNodeType
   position: { x: number; y: number }
   connectorId?: string
-  data: {
-    name: string
-    description?: string
-    config?: Record<string, unknown>
-    promptConfig?: PromptNodeConfig
-  }
+  data: PipelineNodeData
 }
 
 export interface PipelineEdge {
