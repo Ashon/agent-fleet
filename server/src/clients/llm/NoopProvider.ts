@@ -10,6 +10,7 @@ export class NoopProvider implements LLMProvider {
 
   async complete(
     prompt: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options: LLMCompletionOptions,
   ): Promise<LLMCompletionResult> {
     // 실제 실행을 시뮬레이션하기 위한 지연

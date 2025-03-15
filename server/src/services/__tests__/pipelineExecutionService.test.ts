@@ -6,9 +6,9 @@ import { MockRepositoryDriver } from '../../drivers/mockRepositoryDriver'
 import { PipelineJobsRepository } from '../../repositories/pipelineJobsRepository'
 import { PromptTemplateRepository } from '../../repositories/promptTemplateRepository'
 import { NodeExecutorFactory } from '../nodeExecutors/NodeExecutorFactory'
+import { MockNodeExecutor } from '../nodeExecutors/NoopNodeExecutor'
 import { PipelineExecutionService } from '../pipelineExecutionService'
 import { PromptService } from '../prompt.service'
-import { MockNodeExecutor } from './mocks/MockNodeExecutor'
 
 // 테스트 환경 설정
 process.env.NODE_ENV = 'test'
@@ -235,6 +235,11 @@ describe('PipelineExecutionService', () => {
       const nodeOutputs = writtenData
         .filter((data) => data.includes('node-complete'))
         .map((data) => JSON.parse(data.replace('data: ', '')))
+
+      // 상태 검증 추가
+      nodeOutputs.forEach((output) => {
+        expect(output.status).toBe('success')
+      })
 
       expect(nodeOutputs[0].output.value).toBe(`입력 처리: "${testInput}"`)
       expect(nodeOutputs[1].output.value).toBe('계획 수립: 계획 수립')

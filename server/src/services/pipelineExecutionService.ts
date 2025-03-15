@@ -168,7 +168,7 @@ export class PipelineExecutionService {
         nodeId: node.id,
         nodeName: node.data.name,
         nodeType: node.type,
-        status: 'completed',
+        status: 'success',
         output:
           typeof result.output === 'string'
             ? result.output

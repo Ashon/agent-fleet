@@ -1,5 +1,5 @@
 import { PipelineExecutionRecord } from '@agentfleet/types'
-import { Entity, RepositoryDriver } from '../drivers/repositoryDriver'
+import { RepositoryDriver } from '../drivers/repositoryDriver'
 import { BaseEntity, BaseRepository } from './baseRepository'
 
 type PipelineJobEntity = PipelineExecutionRecord & BaseEntity

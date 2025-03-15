@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 // ChatMessageWithExtra 타입 확장
 interface ProgressMessage extends ChatMessageWithExtra {
   isLoading?: boolean
-  extra?: any[]
+  extra?: NodeExecutionResult[]
 }
 
 interface NodeExecutionResult {
@@ -16,6 +16,7 @@ interface NodeExecutionResult {
   nodeName: string
   nodeType: string
   status: 'running' | 'success' | 'error'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   output?: any
   message?: string
   timestamp: Date
@@ -88,19 +89,8 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
     })
   }, [agent])
 
-  // 노드 결과 업데이트 함수
-  const updateNodeResult = useCallback(
-    (nodeId: string, result: NodeExecutionResult) => {
-      setNodeResults((prev) => {
-        const next = new Map(prev)
-        next.set(nodeId, result)
-        return next
-      })
-    },
-    [],
-  )
-
   // 노드 시작 처리
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleNodeStart = useCallback((data: any) => {
     const result: NodeExecutionResult = {
       nodeId: data.nodeId,
@@ -135,6 +125,7 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
   }, [])
 
   // 노드 완료 처리
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleNodeComplete = useCallback((data: any) => {
     const result: NodeExecutionResult = {
       nodeId: data.nodeId,
@@ -178,6 +169,7 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
 
   // 실행 완료 처리
   const handleComplete = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (data: any) => {
       setNodeResults((prev) => {
         const next = new Map(prev)
@@ -218,6 +210,7 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
 
   // 에러 처리
   const handleError = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (data: any) => {
       // 현재 실행 중인 노드가 있다면 에러 상태로 변경
       if (activeNodeIds.size > 0) {

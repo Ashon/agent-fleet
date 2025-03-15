@@ -12,11 +12,14 @@ export interface NodeExecutionResult {
   nodeId: string
   nodeName: string
   nodeType: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   input: Record<string, any> | string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   output: Record<string, any> | string
   startTime: Date
   endTime: Date
   status: 'success' | 'failed'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>
 }
 

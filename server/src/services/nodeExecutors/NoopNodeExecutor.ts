@@ -1,8 +1,5 @@
 import { NodeExecutionResult, PipelineNode } from '@agentfleet/types'
-import {
-  NodeExecutionContext,
-  NodeExecutor,
-} from '../../nodeExecutors/NodeExecutor'
+import { NodeExecutionContext, NodeExecutor } from './NodeExecutor'
 
 export class MockNodeExecutor implements NodeExecutor {
   private readonly nodeExecutionDelay =
@@ -40,6 +37,7 @@ export class MockNodeExecutor implements NodeExecutor {
       )
 
       // 노드 타입에 따른 출력 생성
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let output: Record<string, any>
       switch (node.type) {
         case 'input':
@@ -84,6 +82,7 @@ export class MockNodeExecutor implements NodeExecutor {
         `data: ${JSON.stringify({
           type: 'node-complete',
           ...result,
+          status: 'success',
           jobId,
         })}\n\n`,
       )
