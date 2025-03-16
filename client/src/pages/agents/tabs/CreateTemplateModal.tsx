@@ -15,7 +15,7 @@ export interface TemplateFormData {
 interface CreateTemplateModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: () => void
+  onSubmit: (formData: TemplateFormData) => void
 }
 
 export function CreateTemplateModal({
@@ -106,7 +106,7 @@ export function CreateTemplateModal({
       return // 유효하지 않은 템플릿은 생성하지 않음
     }
 
-    onSubmit()
+    onSubmit(templateFormData)
   }
 
   return (

@@ -48,7 +48,7 @@ export default function NewFleet() {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container-2xl mx-auto">
       <div className="flex flex-col gap-4">
         <Breadcrumb
           items={[{ label: 'Fleets', path: '/fleets' }, { label: 'New Fleet' }]}

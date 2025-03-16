@@ -7,6 +7,11 @@ type Theme = 'light' | 'dark'
 const LIGHT_THEME = 'light'
 const DARK_THEME = 'dark'
 
+const MENUS = [
+  { label: 'Fleets', path: '/fleets' },
+  { label: 'Agents', path: '/agents' },
+  { label: 'Connectors', path: '/connectors' },
+]
 export default function MainLayout() {
   const [theme, setTheme] = useState<Theme>(LIGHT_THEME)
 
@@ -28,7 +33,7 @@ export default function MainLayout() {
 
   return (
     <div>
-      <div className="p-2 flex justify-between items-center  backdrop-blur-xl fixed top-0 left-0 right-0 z-50">
+      <div className="p-2 flex justify-between items-center backdrop-blur-xl fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center gap-2">
           <div className="dropdown dropdown-start sm:hidden">
             <div
@@ -42,15 +47,11 @@ export default function MainLayout() {
               tabIndex={0}
               className="menu menu-md dropdown-content mt-3 z-[1] gap-2 shadow bg-base-100 rounded-box w-52"
             >
-              <li>
-                <Link to="/fleets">Fleets</Link>
-              </li>
-              <li>
-                <Link to="/agents">Agents</Link>
-              </li>
-              <li>
-                <Link to="/connectors">Connectors</Link>
-              </li>
+              {MENUS.map((menu) => (
+                <li key={menu.path}>
+                  <Link to={menu.path}>{menu.label}</Link>
+                </li>
+              ))}
             </ul>
           </div>
           <Link
@@ -61,15 +62,11 @@ export default function MainLayout() {
             AgentFleet
           </Link>
           <ul className="menu menu-horizontal gap-1 hidden sm:flex p-0">
-            <li>
-              <Link to="/fleets">Fleets</Link>
-            </li>
-            <li>
-              <Link to="/agents">Agents</Link>
-            </li>
-            <li>
-              <Link to="/connectors">Connectors</Link>
-            </li>
+            {MENUS.map((menu) => (
+              <li key={menu.path}>
+                <Link to={menu.path}>{menu.label}</Link>
+              </li>
+            ))}
           </ul>
         </div>
         <div className="flex items-center gap-2">

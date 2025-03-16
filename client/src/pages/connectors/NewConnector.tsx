@@ -31,7 +31,7 @@ export default function NewConnector() {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container-2xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <Breadcrumb

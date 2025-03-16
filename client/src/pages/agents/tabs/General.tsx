@@ -2,7 +2,7 @@ import { Agent } from '@agentfleet/types'
 
 export default function General({ agent }: { agent: Agent }) {
   return (
-    <div className="container mx-auto px-4">
+    <div className="px-4">
       <div className="flex items-center mb-4 gap-2">
         <div className="text-2xl">{agent.name}</div>
         <div

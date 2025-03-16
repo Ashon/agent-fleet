@@ -99,25 +99,27 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
   }
 
   return (
-    <div className="px-4 flex flex-col h-full">
+    <div className="px-4 flex flex-col ">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-lg overflow-hidden col-span-2 shadow-lg">
+        <div className="overflow-hidden col-span-2 ">
           {pipeline ? (
-            <PipelineCanvas
-              pipeline={pipeline}
-              onNodeClick={setSelectedNode}
-              onUpdate={onUpdate}
-              activeNodeIds={activeNodeIds}
-              nodeResults={Object.fromEntries(
-                Object.entries(nodeResults).map(([key, value]) => [
-                  key,
-                  {
-                    status: value.status,
-                    output: JSON.stringify(value.output),
-                  },
-                ]),
-              )}
-            />
+            <div className="h-full rounded-lg shadow-lg">
+              <PipelineCanvas
+                pipeline={pipeline}
+                onNodeClick={setSelectedNode}
+                onUpdate={onUpdate}
+                activeNodeIds={activeNodeIds}
+                nodeResults={Object.fromEntries(
+                  Object.entries(nodeResults).map(([key, value]) => [
+                    key,
+                    {
+                      status: value.status,
+                      output: JSON.stringify(value.output),
+                    },
+                  ]),
+                )}
+              />
+            </div>
           ) : (
             <div className="flex items-center justify-center h-full">
               <button
@@ -145,7 +147,7 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
               Test
             </Link>
           </div>
-          <div className="flex-1 min-h-[calc(100vh-16rem)] max-h-[calc(100vh-16rem)] overflow-y-auto">
+          <div className="flex-1 p-2 min-h-[calc(100vh-16rem)] max-h-[calc(100vh-16rem)] overflow-y-auto">
             {subTab === 'config' && (
               <ReasoningPipelineConfig
                 selectedNode={selectedNode}

@@ -68,7 +68,7 @@ export default function PipelineJobs({ agent }: { agent: Agent }) {
 
   if (loading) {
     return (
-      <div className="container mx-auto">
+      <div className="mx-auto">
         <div className="flex items-center justify-center h-64">
           <div className="loading loading-spinner loading-lg"></div>
         </div>
@@ -78,7 +78,7 @@ export default function PipelineJobs({ agent }: { agent: Agent }) {
 
   if (error) {
     return (
-      <div className="container mx-auto">
+      <div className="mx-auto">
         <div className="alert alert-error">
           <XCircleIcon className="stroke-current shrink-0 h-6 w-6" />
           <span>{error}</span>
@@ -88,7 +88,7 @@ export default function PipelineJobs({ agent }: { agent: Agent }) {
   }
 
   return (
-    <div className="container mx-auto px-4">
+    <div className="mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {jobs.map((job) => (
           <Card key={job.id} hover>

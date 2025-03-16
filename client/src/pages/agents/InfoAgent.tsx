@@ -45,7 +45,7 @@ export default function InfoAgent() {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container-2xl mx-auto">
       <div className="flex flex-col gap-2">
         <Breadcrumb
           items={[

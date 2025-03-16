@@ -56,7 +56,7 @@ export default function Agents() {
 
   if (loading) {
     return (
-      <div className="container mx-auto">
+      <div className="container-2xl mx-auto">
         <div className="flex items-center justify-center h-64">
           <div className="loading loading-spinner loading-lg"></div>
         </div>
@@ -66,7 +66,7 @@ export default function Agents() {
 
   if (error) {
     return (
-      <div className="container mx-auto">
+      <div className="container-2xl mx-auto">
         <div className="alert alert-error">
           <XCircleIcon className="stroke-current shrink-0 h-6 w-6" />
           <span>{error}</span>
@@ -76,7 +76,7 @@ export default function Agents() {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container-2xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <Breadcrumb items={[{ label: 'Agents' }]} />

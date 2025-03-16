@@ -29,7 +29,7 @@ export default function Fleets() {
 
   if (loading) {
     return (
-      <div className="container mx-auto">
+      <div className="container-2xl mx-auto">
         <div className="flex items-center justify-center h-64">
           <div className="loading loading-spinner loading-lg"></div>
         </div>
@@ -39,7 +39,7 @@ export default function Fleets() {
 
   if (error) {
     return (
-      <div className="container mx-auto">
+      <div className="container-2xl mx-auto">
         <div className="alert alert-error">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +61,7 @@ export default function Fleets() {
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="container-2xl mx-auto">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <Breadcrumb items={[{ label: 'Fleets' }]} />

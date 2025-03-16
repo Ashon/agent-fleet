@@ -25,14 +25,7 @@ export function ReasoningPipelineConfig({
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
-  const [templateFormData, setTemplateFormData] = useState<TemplateFormData>({
-    name: '',
-    description: '',
-    content: '',
-    variables: [],
-    isValid: true,
-    validationError: '',
-  })
+
   const [config, setConfig] = useState<PromptNodeConfig>(
     (selectedNode?.data.config as PromptNodeConfig) || {
       templateId: '',
@@ -106,17 +99,18 @@ export function ReasoningPipelineConfig({
     }
   }
 
-  const handleCreateTemplate = async () => {
-    if (!templateFormData.isValid) {
+  const handleCreateTemplate = async (formData: TemplateFormData) => {
+    if (!formData.isValid) {
       return // 유효하지 않은 템플릿은 생성하지 않음
     }
 
     try {
+      console.log('templateFormData', formData)
       const newTemplate = await api.createPromptTemplate({
-        name: templateFormData.name,
-        description: templateFormData.description,
-        content: templateFormData.content,
-        variables: templateFormData.variables,
+        name: formData.name,
+        description: formData.description,
+        content: formData.content,
+        variables: formData.variables,
       })
       setTemplates([...templates, newTemplate])
       setSelectedTemplate(newTemplate)
@@ -125,14 +119,6 @@ export function ReasoningPipelineConfig({
         templateId: newTemplate.id,
       })
       setIsTemplateModalOpen(false)
-      setTemplateFormData({
-        name: '',
-        description: '',
-        content: '',
-        variables: [],
-        isValid: true,
-        validationError: '',
-      })
     } catch (error) {
       console.error('Failed to create template:', error)
     }
@@ -151,19 +137,13 @@ export function ReasoningPipelineConfig({
   return (
     <div className="pt-2 space-y-2 overflow-y-auto">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-bold">프롬프트 노드 설정</h3>
+        <h3 className="text-lg font-bold">작업 노드 기본 설정</h3>
         <div className="flex items-center gap-2">
           {hasChanges && (
             <span className="text-sm text-warning">
               * 저장되지 않은 변경사항이 있습니다
             </span>
           )}
-          <button
-            className="btn btn-primary btn-sm"
-            onClick={() => setIsTemplateModalOpen(true)}
-          >
-            템플릿 추가
-          </button>
           <button
             className={`btn btn-primary btn-sm ${isSaving ? 'loading' : ''}`}
             onClick={handleSave}
@@ -175,27 +155,22 @@ export function ReasoningPipelineConfig({
       </div>
 
       <div className="space-y-4">
-        <TextField
-          label="작업 이름"
-          value={selectedNode.data.name}
-          onChange={(e) =>
-            handleConfigChange({
-              name: e.target.value,
-            })
-          }
-        />
-
+        <TextField label="작업 이름" defaultValue={selectedNode.data.name} />
         <TextField
           label="작업 설명"
-          value={selectedNode.data.description}
-          onChange={(e) =>
-            handleConfigChange({
-              description: e.target.value,
-            })
-          }
+          defaultValue={selectedNode.data.description}
         />
 
         <div className="divider"></div>
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-bold">프롬프트 템플릿 설정</h3>
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => setIsTemplateModalOpen(true)}
+          >
+            템플릿 추가
+          </button>
+        </div>
 
         <Select
           label="프롬프트 템플릿"
@@ -330,7 +305,9 @@ export function ReasoningPipelineConfig({
       <CreateTemplateModal
         isOpen={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
-        onSubmit={handleCreateTemplate}
+        onSubmit={(formData: TemplateFormData) =>
+          handleCreateTemplate(formData)
+        }
       />
     </div>
   )
