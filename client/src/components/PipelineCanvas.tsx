@@ -1,22 +1,13 @@
-import { getNodeStyle } from '@/utils/nodeUtils'
 import { Pipeline, PipelineNode } from '@agentfleet/types'
 import {
   BoltIcon,
   ChatBubbleLeftRightIcon,
+  CodeBracketIcon,
   DocumentTextIcon,
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import GraphCanvas from './graphCanvas/graph'
 import { GraphEdge, GraphNode } from './graphCanvas/types'
-
-const getNodeIcon = (type: PipelineNode['type']) => {
-  switch (type) {
-    case 'prompt':
-      return <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-500" />
-    default:
-      return null
-  }
-}
 
 interface PipelineCanvasProps {
   pipeline: Pipeline
@@ -46,8 +37,7 @@ export default function PipelineCanvas({
     render: () => (
       <div
         className={`
-          p-3 select-none shadow-lg border-2 rounded-lg bg-base-100 border-2 hover:shadow-xl
-          ${getNodeStyle(node)}
+          p-3 select-none shadow-lg border-2 rounded-lg bg-base-100 border-2 hover:shadow-xl border-primary
           ${
             selectedNode === node.id
               ? 'ring-2 ring-primary ring-offset-2 ring-offset-base-100 cursor-move'
@@ -62,7 +52,7 @@ export default function PipelineCanvas({
         <div className="flex flex-col gap-1">
           <div className="flex justify-between items-center gap-2">
             <div className="flex items-center gap-2">
-              {getNodeIcon(node.type)}
+              <CodeBracketIcon className="h-5 w-5 text-primary" />
               <div className="text-xs font-medium opacity-80">
                 {node.data.name}
               </div>
@@ -97,24 +87,28 @@ export default function PipelineCanvas({
 
           <div className="flex flex-col gap-1">
             {node.data.config?.contextSources?.map((source) => (
-              <div className="mt-1 flex flex-col gap-1 text-xs border-2 p-1 shadow-lg rounded-md border-yellow-500">
+              <div
+                key={source.connectorId}
+                className="mt-1 flex flex-col gap-1 text-xs border-2 p-1 shadow-lg rounded-md border-yellow-500"
+              >
                 <div className="flex items-center gap-1">
                   <BoltIcon className="w-4 h-4 text-yellow-500" />
-                  {source.connectorId}
+                  Context: {source.connectorId}
                 </div>
-                <pre>{source.config?.query}</pre>
               </div>
             ))}
           </div>
 
           <div className="mt-1 flex items-center gap-1 text-xs border-2 p-1 shadow-lg rounded-md border-blue-500">
             <ChatBubbleLeftRightIcon className="w-4 h-4 text-blue-500" />
-            Prompt
+            <div className="flex items-center gap-1">
+              Template: {node.data.config?.templateId}
+            </div>
           </div>
 
           <div className="mt-1 flex flex-col gap-1 text-xs border-2 p-1 shadow-lg rounded-md border-green-500">
             {node.data.config?.contextMapping?.output?.map((output) => (
-              <div className="flex items-center gap-1">
+              <div key={output} className="flex items-center gap-1">
                 <DocumentTextIcon className="w-4 h-4 text-green-500" />
                 {output}
               </div>

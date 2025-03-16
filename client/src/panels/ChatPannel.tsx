@@ -52,10 +52,7 @@ function ChatMessagePanel({
           <div className="my-2 flex flex-col gap-1 text-gray-500">
             {Array.isArray(message.extra) ? (
               message.extra.map((item) => (
-                <div
-                  key={item.nodeId}
-                  className="text-xs items-center line-clamp-2 no-wrap"
-                >
+                <div key={item.nodeId} className="text-xs items-center">
                   <div className="flex gap-1 items-center">
                     {item.status === 'success' ? (
                       <div className="font-bold text-success">
@@ -72,7 +69,9 @@ function ChatMessagePanel({
                     )}
                     <div className="font-bold">{item.nodeId}</div>
                   </div>
-                  <div className="text-xs mt-1">{item.output}</div>
+                  <div className="text-xs mt-1">
+                    <pre>{JSON.stringify(item, null, 2)}</pre>
+                  </div>
                 </div>
               ))
             ) : (

@@ -254,4 +254,57 @@ export const mockConnectors: Connector[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: 'weather-kb',
+    name: '날씨 데이터베이스',
+    type: 'data-source',
+    description: '현재 날씨와 일기 예보 정보를 제공하는 데이터 소스',
+    category: 'weather',
+    status: 'active',
+    icon: '🌤️',
+    config: {
+      type: 'weather-api',
+      cities: ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종'],
+      dataTypes: ['current', 'forecast'],
+      updateInterval: 1800, // 30분마다 업데이트
+      mockData: {
+        서울: {
+          current: {
+            temperature: 22,
+            humidity: 60,
+            precipitation: 0,
+            wind: {
+              speed: 2.5,
+              direction: '북동',
+            },
+            sky: '맑음',
+            updatedAt: new Date().toISOString(),
+          },
+          forecast: {
+            today: {
+              high: 24,
+              low: 16,
+              precipitation: 10,
+              sky: '구름조금',
+            },
+            tomorrow: {
+              high: 25,
+              low: 17,
+              precipitation: 30,
+              sky: '흐림',
+            },
+            dayAfterTomorrow: {
+              high: 23,
+              low: 15,
+              precipitation: 60,
+              sky: '비',
+            },
+          },
+        },
+      },
+    },
+    lastSync: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ]

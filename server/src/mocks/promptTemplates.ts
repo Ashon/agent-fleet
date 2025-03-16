@@ -205,4 +205,65 @@ export const mockPromptTemplates: PromptTemplate[] = [
     createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
     updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
+  {
+    id: 'weather-intent',
+    name: '날씨 의도 분석',
+    description: '사용자의 날씨 관련 질문 의도를 분석하는 프롬프트',
+    content: `당신은 사용자의 날씨 관련 질문을 분석하는 전문가입니다.
+
+입력: {{input}}
+
+다음 단계를 수행하세요:
+1. 사용자 질문에서 날씨 정보 요청의 유형 파악 (current/today/tomorrow/dayAfterTomorrow)
+2. 위치 정보 추출 (기본값: 서울)
+3. 필요한 날씨 정보 유형 식별 (기온/강수/습도/바람 등)
+
+응답은 반드시 다음과 같은 JSON 형식으로 작성하세요:
+{
+  "type": "current",  // current/today/tomorrow/dayAfterTomorrow 중 하나
+  "location": "서울", // 도시 이름, 명시되지 않은 경우 "서울"
+  "requiredInfo": ["temperature", "humidity", "precipitation", "wind"]  // 필요한 정보 목록
+}
+
+주의사항:
+- type은 반드시 current/today/tomorrow/dayAfterTomorrow 중 하나여야 합니다
+- location은 반드시 문자열 형태의 도시 이름이어야 합니다
+- 위치가 명시되지 않은 경우 "서울"을 기본값으로 사용하세요
+- 단순 인사만 있는 경우 current 타입과 서울 위치로 처리하세요`,
+    variables: ['input'],
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+  },
+  {
+    id: 'weather-response',
+    name: '날씨 정보 응답',
+    description: '날씨 정보를 사용자 친화적으로 설명하는 프롬프트',
+    content: `당신은 날씨 정보를 이해하기 쉽게 설명하는 전문가입니다.
+
+날씨 데이터: {{weatherData}}
+위치: {{location}}
+요청 유형: {{type}}
+
+다음 형식으로 응답을 생성하세요:
+1. 간단한 날씨 요약
+2. 상세 날씨 정보 (기온, 강수, 습도, 바람 등)
+3. 필요한 경우 주의사항이나 추천사항
+
+응답은 자연스러운 대화체로 작성하되, 정확한 수치 정보를 포함해야 합니다.
+
+응답 형식:
+{
+  "summary": "간단한 날씨 요약",
+  "details": {
+    "temperature": "기온 정보",
+    "precipitation": "강수 정보",
+    "humidity": "습도 정보",
+    "wind": "바람 정보"
+  },
+  "recommendations": ["추천사항1", "추천사항2"]
+}`,
+    variables: ['weatherData', 'location', 'type'],
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+  },
 ]

@@ -4,6 +4,7 @@ import {
   PromptNodeConfig,
 } from '@agentfleet/types'
 import { LLMProvider } from '../../clients/llm/LLMProvider'
+import { ConnectorFactory } from '../connectors/ConnectorFactory'
 import { PromptService } from '../prompt.service'
 import { NodeExecutionContext, NodeExecutor } from './NodeExecutor'
 
@@ -11,6 +12,7 @@ export class PromptNodeExecutor implements NodeExecutor {
   constructor(
     private readonly promptService: PromptService,
     private readonly llmProvider: LLMProvider,
+    private readonly connectorFactory: ConnectorFactory,
   ) {}
 
   canExecute(node: PipelineNode): boolean {
@@ -42,6 +44,7 @@ export class PromptNodeExecutor implements NodeExecutor {
           nodeId: node.id,
           nodeName: node.data.name,
           nodeType: node.type,
+          input,
           jobId,
         })}\n\n`,
       )
@@ -75,7 +78,7 @@ export class PromptNodeExecutor implements NodeExecutor {
         nodeId: node.id,
         nodeName: node.data.name,
         nodeType: node.type,
-        input: variables,
+        input,
         output,
         startTime,
         endTime,
@@ -103,7 +106,7 @@ export class PromptNodeExecutor implements NodeExecutor {
         nodeId: node.id,
         nodeName: node.data.name,
         nodeType: node.type,
-        input: variables,
+        input,
         output: {
           error: error instanceof Error ? error.message : '알 수 없는 오류',
         },
@@ -132,40 +135,9 @@ export class PromptNodeExecutor implements NodeExecutor {
       throw new Error('컨텍스트 소스 설정이 없습니다.')
     }
 
-    switch (source.type) {
-      case 'connector':
-        if (!source.connectorId) {
-          throw new Error('커넥터 ID가 지정되지 않았습니다.')
-        }
-        // TODO: 커넥터 서비스를 통해 외부 시스템과 연동
-        return {
-          result: `커넥터 ${source.connectorId}를 통해 데이터를 가져옵니다.
-            쿼리: ${source.config.query}
-            필터: ${JSON.stringify(source.config.filters)}
-            옵션: ${JSON.stringify(source.config.options)}`,
-        }
-
-      case 'memory':
-        // TODO: 메모리 스토어 서비스를 통해 데이터 조회
-        return {
-          result: `메모리에서 데이터를 조회합니다.
-            쿼리: ${source.config.query}`,
-        }
-
-      case 'knowledge-base':
-        // TODO: 지식 베이스 서비스를 통해 데이터 조회
-        return {
-          result: `지식 베이스에서 데이터를 조회합니다.
-            쿼리: ${source.config.query}
-            필터: ${JSON.stringify(source.config.filters)}
-            옵션: ${JSON.stringify(source.config.options)}`,
-        }
-
-      default:
-        throw new Error(
-          `지원하지 않는 컨텍스트 소스 타입입니다: ${source.type}`,
-        )
-    }
+    // 컨텍스트 소스 타입을 커넥터 ID의 접두어로 사용
+    const connectorId = source.connectorId || `${source.type}-default`
+    return this.connectorFactory.fetchData(connectorId, source.config)
   }
 
   private extractVariables(
@@ -193,9 +165,7 @@ export class PromptNodeExecutor implements NodeExecutor {
   private processOutput(
     completionText: string,
     config: PromptNodeConfig,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): Record<string, any> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const output: Record<string, any> = {
       completion: completionText,
     }

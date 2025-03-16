@@ -13,6 +13,10 @@ import { PromptTemplateRepository } from '../repositories/promptTemplate.reposit
 import { AgentService } from '../services/agent.service'
 import { PipelineService } from '../services/agentReasoningPipeline.service'
 import { ConnectorService } from '../services/connector.service'
+import { ConnectorFactory } from '../services/connectors/ConnectorFactory'
+import { KnowledgeBaseConnector } from '../services/connectors/KnowledgeBaseConnector'
+import { MemoryConnector } from '../services/connectors/MemoryConnector'
+import { WeatherConnector } from '../services/connectors/WeatherConnector'
 import { FleetService } from '../services/fleet.service'
 import { NodeExecutorFactory } from '../services/nodeExecutors/NodeExecutorFactory'
 import { PromptNodeExecutor } from '../services/nodeExecutors/PromptNodeExecutor'
@@ -56,10 +60,16 @@ export const promptService = new PromptService(promptTemplateRepository)
 
 const llmProvider = new OllamaProvider()
 
+// 커넥터 팩토리 설정
+const connectorFactory = new ConnectorFactory()
+connectorFactory.registerConnector(new WeatherConnector())
+connectorFactory.registerConnector(new MemoryConnector())
+connectorFactory.registerConnector(new KnowledgeBaseConnector())
+
 // 노드 실행기 팩토리 설정
 const nodeExecutorFactory = new NodeExecutorFactory()
 nodeExecutorFactory.registerExecutor(
-  new PromptNodeExecutor(promptService, llmProvider),
+  new PromptNodeExecutor(promptService, llmProvider, connectorFactory),
 )
 
 export const agentService = new AgentService(agentRepository)

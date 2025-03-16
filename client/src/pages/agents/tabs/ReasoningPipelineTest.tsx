@@ -7,6 +7,11 @@ import { useCallback, useEffect, useState } from 'react'
 interface ProgressMessage extends ChatMessageWithExtra {
   isLoading?: boolean
   extra?: NodeExecutionResult[]
+  nodeId?: string
+  nodeName?: string
+  nodeType?: string
+  input?: string | Record<string, any>
+  variables?: Record<string, any>
 }
 
 const NODE_STATUS = {
@@ -233,27 +238,27 @@ export function ReasoningPipelineTest({
           break
 
         case 'node-start':
-          handleNodeStart(completionId, data)
+          handleNodeStart(`${completionId}-node-start`, data)
           break
 
         case 'node-complete':
-          handleNodeComplete(completionId, data)
+          handleNodeComplete(`${completionId}-node-complete`, data)
           break
 
         case 'complete':
-          handleComplete(completionId, data)
+          handleComplete(`${completionId}-complete`, data)
           eventSource.close()
           break
 
         case 'error':
-          handleError(completionId, data)
+          handleError(`${completionId}-error`, data)
           eventSource.close()
           break
       }
     }
 
     eventSource.onerror = () => {
-      handleError(completionId, {
+      handleError(`${completionId}-error`, {
         message: '파이프라인 실행 중 오류가 발생했습니다.',
       })
       eventSource.close()

@@ -16,7 +16,7 @@ interface StreamMessage {
   nodeName?: string
   nodeType?: string
   status?: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  input?: string | Record<string, any>
   output?: any
   message?: string
   timestamp: Date
@@ -157,6 +157,7 @@ export class PipelineExecutionService {
         nodeName: node.data.name,
         nodeType: node.type,
         status: 'running',
+        input,
         timestamp: startTime,
       })
 
@@ -177,6 +178,7 @@ export class PipelineExecutionService {
         nodeName: node.data.name,
         nodeType: node.type,
         status: 'success',
+        input,
         output:
           typeof result.output === 'string'
             ? result.output

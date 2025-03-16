@@ -678,4 +678,67 @@ export const mockPipelines: Pipeline[] = [
       { id: 'edge-4b-5', source: 'node-4b', target: 'node-5', type: 'async' },
     ],
   },
+  {
+    id: 'weather-pipeline',
+    name: '날씨 정보 처리 파이프라인',
+    description: '사용자의 날씨 관련 질문을 처리하고 응답하는 파이프라인',
+    agentId: 'weather-agent',
+    nodes: [
+      {
+        id: 'node-1',
+        type: 'prompt',
+        position: { x: 0, y: 0 },
+        data: {
+          name: '의도 분석',
+          description: '사용자의 날씨 관련 질문 의도를 분석',
+          config: {
+            templateId: 'weather-intent',
+            variables: {},
+            contextMapping: {
+              input: ['text'],
+              output: ['type', 'location', 'time', 'requiredInfo'],
+            },
+          },
+        },
+      },
+      {
+        id: 'node-2',
+        type: 'prompt',
+        position: { x: 200, y: 0 },
+        data: {
+          name: '날씨 정보 검색',
+          description: '날씨 데이터베이스에서 정보 검색',
+          config: {
+            templateId: 'weather-response',
+            variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'weather-kb',
+                config: {
+                  query: '{{location}} {{time}}',
+                  filters: {
+                    type: '{{type}}',
+                    fields: '{{requiredInfo}}',
+                  },
+                  options: {
+                    limit: 1,
+                  },
+                },
+              },
+            ],
+            contextMapping: {
+              input: ['type', 'location', 'time', 'requiredInfo'],
+              output: ['response'],
+            },
+          },
+        },
+      },
+    ],
+    edges: [
+      { id: 'edge-1', source: 'node-1', target: 'node-2', type: 'default' },
+    ],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ]

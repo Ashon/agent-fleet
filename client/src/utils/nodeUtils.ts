@@ -1,14 +1,4 @@
-import { PipelineNode } from '@agentfleet/types'
 import { AnchorPoints, Point } from '../types/pipeline'
-
-export function getNodeStyle(node: PipelineNode): string {
-  switch (node.type) {
-    case 'prompt':
-      return `border-blue-500`
-    default:
-      return ''
-  }
-}
 
 // 두 점 사이의 거리 계산
 export const getDistance = (p1: Point, p2: Point) => {

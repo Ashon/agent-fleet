@@ -1,4 +1,4 @@
-import { Agent } from '@agentfleet/types'
+import { Agent, AgentStatus } from '@agentfleet/types'
 
 export const mockAgents: Agent[] = [
   {
@@ -86,5 +86,20 @@ export const mockAgents: Agent[] = [
       qualityControl: true,
     },
     connectors: ['llm-gpt4', 'llm-claude', 'consensus-engine'],
+  },
+  {
+    id: 'weather-agent',
+    name: '날씨 도우미',
+    description: '현재 날씨와 일기 예보를 알려주는 에이전트입니다.',
+    status: 'active',
+    chatHistory: [],
+    capabilities: {
+      reasoning: true,
+      informationSynthesis: true,
+      webSearch: true,
+    },
+    connectors: ['weather-kb'],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ]
