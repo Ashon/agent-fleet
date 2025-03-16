@@ -238,27 +238,27 @@ export function ReasoningPipelineTest({
           break
 
         case 'node-start':
-          handleNodeStart(`${completionId}-node-start`, data)
+          handleNodeStart(completionId, data)
           break
 
         case 'node-complete':
-          handleNodeComplete(`${completionId}-node-complete`, data)
+          handleNodeComplete(completionId, data)
           break
 
         case 'complete':
-          handleComplete(`${completionId}-complete`, data)
+          handleComplete(completionId, data)
           eventSource.close()
           break
 
         case 'error':
-          handleError(`${completionId}-error`, data)
+          handleError(completionId, data)
           eventSource.close()
           break
       }
     }
 
     eventSource.onerror = () => {
-      handleError(`${completionId}-error`, {
+      handleError(completionId, {
         message: '파이프라인 실행 중 오류가 발생했습니다.',
       })
       eventSource.close()
