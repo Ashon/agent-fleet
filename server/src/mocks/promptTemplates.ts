@@ -126,4 +126,83 @@ export const mockPromptTemplates: PromptTemplate[] = [
     createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
     updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
+  {
+    id: 'knowledge-base-search',
+    name: '지식 베이스 검색 프롬프트',
+    description: '지식 베이스에서 관련 정보를 검색하는 프롬프트',
+    content: `주어진 입력과 관련된 정보를 지식 베이스에서 검색하세요.
+
+입력: {{input}}
+
+검색 기준:
+1. 관련성 점수 계산
+2. 최신성 고려
+3. 신뢰도 평가
+
+응답 형식:
+{
+  "documents": ["문서1", "문서2", ...],
+  "relevanceScores": [0.95, 0.85, ...],
+  "metadata": {
+    "totalFound": 10,
+    "avgRelevance": 0.9
+  }
+}`,
+    variables: ['input'],
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+  },
+  {
+    id: 'intent-analysis',
+    name: '의도 분석 프롬프트',
+    description: '사용자 입력과 컨텍스트를 바탕으로 의도를 분석하는 프롬프트',
+    content: `사용자의 입력과 관련 문서를 분석하여 의도를 파악하세요.
+
+입력: {{text}}
+관련 문서: {{documents}}
+
+분석 기준:
+1. 주요 의도 파악
+2. 세부 의도 분류
+3. 신뢰도 평가
+
+응답 형식:
+{
+  "mainIntent": "주요 의도",
+  "subIntents": ["세부 의도1", "세부 의도2", ...],
+  "confidence": 0.95,
+  "supportingEvidence": ["근거1", "근거2", ...]
+}`,
+    variables: ['text', 'documents'],
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+  },
+  {
+    id: 'template-6',
+    name: '최종 응답 포맷팅 프롬프트',
+    description: '분석 결과를 최종 응답 형식으로 변환하는 프롬프트',
+    content: `분석 결과를 사용자 친화적인 최종 응답으로 변환하세요.
+
+분석 결과: {{conclusions}}
+신뢰도: {{confidence}}
+데이터 소스: {{dataSources}}
+
+응답 요구사항:
+1. 명확하고 간결한 표현
+2. 주요 포인트 강조
+3. 필요시 추가 설명 제공
+4. 출처 인용
+
+응답 형식:
+{
+  "title": "응답 제목",
+  "summary": "핵심 요약",
+  "details": ["상세 내용1", "상세 내용2", ...],
+  "references": ["참조1", "참조2", ...],
+  "nextSteps": ["추천 행동1", "추천 행동2", ...]
+}`,
+    variables: ['conclusions', 'confidence', 'dataSources'],
+    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+  },
 ]

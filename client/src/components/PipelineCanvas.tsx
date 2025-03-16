@@ -13,8 +13,6 @@ const getNodeIcon = (type: PipelineNodeType['type']) => {
   switch (type) {
     case 'prompt':
       return <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-500" />
-    case 'connector':
-      return <BoltIcon className="h-5 w-5 text-purple-500" />
     default:
       return null
   }
@@ -65,7 +63,9 @@ export default function PipelineCanvas({
           <div className="flex justify-between items-center gap-2">
             <div className="flex items-center gap-2">
               {getNodeIcon(node.type)}
-              <div className="text-xs font-medium opacity-80">{node.type}</div>
+              <div className="text-xs font-medium opacity-80">
+                {node.data.name}
+              </div>
             </div>
             <div className="flex items-center gap-1 w-3">
               {activeNodeIds.has(node.id) ? (
@@ -91,10 +91,25 @@ export default function PipelineCanvas({
             </div>
           </div>
 
-          <div className="text-sm font-medium truncate">{node.data.name}</div>
           <div className="text-xs opacity-60 line-clamp-2">
             {node.data.description}
           </div>
+
+          {node.data.config?.contextSources?.map((source) => (
+            <pre className="text-xs">{JSON.stringify(source, null, 2)}</pre>
+          ))}
+
+          <div className="divider"></div>
+
+          {node.data.config?.contextMapping?.input?.map((input) => (
+            <pre className="text-xs">{JSON.stringify(input, null, 2)}</pre>
+          ))}
+
+          <div className="divider"></div>
+
+          {node.data.config?.contextMapping?.output?.map((output) => (
+            <pre className="text-xs">{JSON.stringify(output, null, 2)}</pre>
+          ))}
 
           {/* <pre className="text-xs">
             {JSON.stringify(node.data.config, null, 2)}

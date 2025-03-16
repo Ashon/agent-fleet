@@ -13,7 +13,7 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
       {
         nodeId: 'node-1',
         nodeName: '입력 처리',
-        nodeType: 'input',
+        nodeType: 'prompt',
         input: '사용자 입력 데이터',
         output: '입력 처리: "사용자 입력 데이터"',
         startTime: new Date('2024-03-15T09:00:00.000Z'),
@@ -23,7 +23,7 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
       {
         nodeId: 'node-2',
         nodeName: '계획 수립',
-        nodeType: 'plan',
+        nodeType: 'prompt',
         input: '사용자 입력 데이터',
         output: '계획 수립: 사용자 요청 분석 및 실행 계획 수립',
         startTime: new Date('2024-03-15T09:00:31.000Z'),
@@ -33,7 +33,7 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
       {
         nodeId: 'node-3',
         nodeName: '실행',
-        nodeType: 'action',
+        nodeType: 'prompt',
         input: '계획 수립: 사용자 요청 분석 및 실행 계획 수립',
         output: '행동 실행: 계획에 따른 작업 수행',
         startTime: new Date('2024-03-15T09:01:01.000Z'),
@@ -57,7 +57,7 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
       {
         nodeId: 'node-1',
         nodeName: '데이터 전처리',
-        nodeType: 'process',
+        nodeType: 'prompt',
         input: '분석 요청 데이터',
         output: '데이터 처리: 입력 데이터 정규화',
         startTime: new Date('2024-03-15T10:00:00.000Z'),
@@ -67,7 +67,7 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
       {
         nodeId: 'node-2',
         nodeName: '분석 수행',
-        nodeType: 'analysis',
+        nodeType: 'prompt',
         input: '분석 요청 데이터',
         output: '오류: 데이터 분석 중 예외 발생',
         startTime: new Date('2024-03-15T10:00:31.000Z'),
@@ -90,7 +90,7 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
       {
         nodeId: 'node-1',
         nodeName: '입력 처리',
-        nodeType: 'input',
+        nodeType: 'prompt',
         input: '두 번째 테스트 입력',
         output: '입력 처리: "두 번째 테스트 입력"',
         startTime: new Date('2024-03-15T11:00:00.000Z'),
