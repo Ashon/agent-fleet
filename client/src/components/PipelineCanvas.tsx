@@ -4,38 +4,17 @@ import {
   PipelineNode,
   PipelineNode as PipelineNodeType,
 } from '@agentfleet/types'
-import {
-  ArchiveBoxIcon,
-  ArrowDownTrayIcon,
-  ArrowPathRoundedSquareIcon,
-  BeakerIcon,
-  BoltIcon,
-  ChartBarIcon,
-  ChatBubbleLeftRightIcon,
-  DocumentTextIcon,
-} from '@heroicons/react/24/outline'
+import { BoltIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import GraphCanvas from './graphCanvas/graph'
 import { GraphEdge, GraphNode } from './graphCanvas/types'
 
 const getNodeIcon = (type: PipelineNodeType['type']) => {
   switch (type) {
-    case 'input':
-      return <ArrowDownTrayIcon className="h-5 w-5 text-blue-500" />
-    case 'plan':
-      return <DocumentTextIcon className="h-5 w-5 text-green-500" />
-    case 'decision':
-      return <ArrowPathRoundedSquareIcon className="h-5 w-5 text-yellow-500" />
-    case 'action':
-      return <BoltIcon className="h-5 w-5 text-red-500" />
-    case 'process':
-      return <BeakerIcon className="h-5 w-5 text-purple-500" />
-    case 'aggregator':
-      return <ArchiveBoxIcon className="h-5 w-5 text-orange-500" />
-    case 'analysis':
-      return <ChartBarIcon className="h-5 w-5 text-indigo-500" />
     case 'prompt':
       return <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-500" />
+    case 'connector':
+      return <BoltIcon className="h-5 w-5 text-purple-500" />
     default:
       return null
   }

@@ -31,17 +31,7 @@ describe('PipelineExecutionService', () => {
 
     // 노드 실행기 팩토리 설정
     nodeExecutorFactory = new NodeExecutorFactory()
-    ;[
-      'input',
-      'process',
-      'plan',
-      'action',
-      'decision',
-      'aggregator',
-      'analysis',
-    ].forEach((nodeType) => {
-      nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
-    })
+    nodeExecutorFactory.registerExecutor(new MockNodeExecutor('prompt'))
 
     pipelineExecutionService = new PipelineExecutionService(
       new PipelineExecutionsRepository(mockRepositoryDriver),
@@ -56,20 +46,51 @@ describe('PipelineExecutionService', () => {
     nodes: [
       {
         id: 'node-1',
-        type: 'input',
-        data: { name: '입력 노드' },
+        type: 'prompt',
+        data: {
+          name: '입력 노드',
+          config: {
+            templateId: 'template-1',
+            variables: {},
+            contextMapping: {
+              input: ['text'],
+              output: ['intent'],
+            },
+          },
+        },
         position: { x: 0, y: 0 },
       },
       {
         id: 'node-2',
-        type: 'process',
-        data: { name: '처리 노드', description: '데이터 처리' },
+        type: 'prompt',
+        data: {
+          name: '처리 노드',
+          description: '데이터 처리',
+          config: {
+            templateId: 'template-2',
+            variables: {},
+            contextMapping: {
+              input: ['intent'],
+              output: ['response'],
+            },
+          },
+        },
         position: { x: 100, y: 0 },
       },
       {
         id: 'node-3',
-        type: 'process',
-        data: { name: '출력 노드' },
+        type: 'prompt',
+        data: {
+          name: '출력 노드',
+          config: {
+            templateId: 'template-3',
+            variables: {},
+            contextMapping: {
+              input: ['response'],
+              output: ['final'],
+            },
+          },
+        },
         position: { x: 200, y: 0 },
       },
     ],
@@ -179,19 +200,19 @@ describe('PipelineExecutionService', () => {
         nodes: [
           {
             id: 'input-node',
-            type: 'input',
+            type: 'prompt',
             data: { name: '입력 노드' },
             position: { x: 0, y: 0 },
           },
           {
             id: 'plan-node',
-            type: 'plan',
+            type: 'prompt',
             data: { name: '계획 노드', description: '계획 수립' },
             position: { x: 100, y: 0 },
           },
           {
             id: 'action-node',
-            type: 'action',
+            type: 'prompt',
             data: { name: '행동 노드', description: '작업 실행' },
             position: { x: 200, y: 0 },
           },
@@ -235,9 +256,9 @@ describe('PipelineExecutionService', () => {
         expect(output.status).toBe('success')
       })
 
-      expect(nodeOutputs[0].output.value).toBe(`입력 처리: "${testInput}"`)
-      expect(nodeOutputs[1].output.value).toBe('계획 수립: 계획 수립')
-      expect(nodeOutputs[2].output.value).toBe('행동 실행: 작업 실행')
+      expect(nodeOutputs[0].output.value).toBe(`프롬프트 처리: "${testInput}"`)
+      expect(nodeOutputs[1].output.value).toBe('프롬프트 처리: "테스트 입력"')
+      expect(nodeOutputs[2].output.value).toBe('프롬프트 처리: "테스트 입력"')
 
       // 실행 기록 확인
       const record = await pipelineExecutionService.getExecutionRecord(jobId)
@@ -256,9 +277,7 @@ describe('PipelineExecutionService', () => {
       mockRepositoryDriver = new MockRepositoryDriver()
       mockRepository = new PipelineExecutionsRepository(mockRepositoryDriver)
       nodeExecutorFactory = new NodeExecutorFactory()
-      ;['input', 'process', 'plan', 'action'].forEach((nodeType) => {
-        nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
-      })
+      nodeExecutorFactory.registerExecutor(new MockNodeExecutor('prompt'))
 
       pipelineExecutionService = new PipelineExecutionService(
         mockRepository,

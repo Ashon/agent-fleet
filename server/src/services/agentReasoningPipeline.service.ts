@@ -181,9 +181,9 @@ export class PipelineService {
     const executionPath: PipelineTestResponse['executionPath'] = []
 
     // 입력 노드 찾기
-    const inputNode = pipeline.nodes.find((node) => node.type === 'input')
+    const inputNode = pipeline.nodes[0] // 첫 번째 노드를 입력 노드로 사용
     if (!inputNode) {
-      throw new Error('입력 노드를 찾을 수 없습니다.')
+      throw new Error('파이프라인에 노드가 없습니다.')
     }
 
     // 입력 노드 실행
@@ -213,14 +213,8 @@ export class PipelineService {
       // 노드 타입에 따른 처리
       let output = ''
       switch (nextNode.type) {
-        case 'plan':
-          output = `계획: ${input}에 대한 작업 계획을 수립합니다.`
-          break
-        case 'decision':
-          output = `결정: ${input}에 대한 다음 단계를 결정합니다.`
-          break
-        case 'action':
-          output = `행동: ${input}에 대한 최종 행동을 실행합니다.`
+        case 'prompt':
+          output = `프롬프트 처리: ${input}`
           break
         default:
           output = `처리: ${input}`
@@ -239,11 +233,7 @@ export class PipelineService {
     }
 
     // 최종 출력 생성
-    const finalNode = pipeline.nodes.find((node) => node.id === currentNodeId)
-    const finalOutput =
-      finalNode?.type === 'action'
-        ? `"${input}"에 대한 처리가 완료되었습니다.`
-        : '파이프라인 실행이 완료되지 않았습니다.'
+    const finalOutput = `"${input}"에 대한 처리가 완료되었습니다.`
 
     return {
       output: finalOutput,

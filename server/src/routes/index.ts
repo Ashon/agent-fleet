@@ -15,7 +15,6 @@ import { PipelineService } from '../services/agentReasoningPipeline.service'
 import { ConnectorService } from '../services/connector.service'
 import { FleetService } from '../services/fleet.service'
 import { NodeExecutorFactory } from '../services/nodeExecutors/NodeExecutorFactory'
-import { MockNodeExecutor } from '../services/nodeExecutors/NoopNodeExecutor'
 import { PromptNodeExecutor } from '../services/nodeExecutors/PromptNodeExecutor'
 import { PipelineExecutionService } from '../services/pipelineExecution.service'
 import { PromptService } from '../services/prompt.service'
@@ -59,18 +58,6 @@ const llmProvider = new OllamaProvider()
 
 // 노드 실행기 팩토리 설정
 const nodeExecutorFactory = new NodeExecutorFactory()
-;[
-  'input',
-  'process',
-  'plan',
-  'action',
-  'decision',
-  'aggregator',
-  'analysis',
-].forEach((nodeType) => {
-  nodeExecutorFactory.registerExecutor(new MockNodeExecutor(nodeType))
-})
-
 nodeExecutorFactory.registerExecutor(
   new PromptNodeExecutor(promptService, llmProvider),
 )

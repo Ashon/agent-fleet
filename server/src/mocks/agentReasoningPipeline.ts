@@ -9,69 +9,86 @@ export const mockPipelines: Pipeline[] = [
     nodes: [
       {
         id: 'node-1',
-        type: 'input',
+        type: 'prompt',
         position: { x: 0, y: 0 },
         data: {
-          name: '사용자 입력',
-          description: '사용자로부터 입력을 받는 노드',
+          name: '지식 베이스 검색',
           config: {
-            templateId: 'template-1',
+            templateId: 'knowledge-base-search',
             variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'kb-1',
+                config: {
+                  query: '{{input.text}}',
+                  filters: {},
+                  options: {
+                    limit: 5,
+                    threshold: 0.7,
+                  },
+                },
+              },
+            ],
             contextMapping: {
               input: ['text'],
-              output: ['intent', 'entities'],
+              output: ['documents'],
             },
-            maxTokens: 1000,
-            temperature: 0.7,
           },
         },
       },
       {
         id: 'node-2',
-        type: 'plan',
+        type: 'prompt',
         position: { x: 100, y: 0 },
         data: {
-          name: '계획 수립',
-          description: '입력을 바탕으로 응답 계획을 수립하는 노드',
+          name: '의도 분석',
           config: {
-            templateId: 'template-2',
-            variables: {
-              systemRole: '계획 수립 전문가',
-            },
+            templateId: 'intent-analysis',
+            variables: {},
             contextMapping: {
-              input: ['intent', 'entities'],
-              output: ['plan', 'steps'],
+              input: ['text', 'documents'],
+              output: ['intent'],
             },
-            maxTokens: 1500,
-            temperature: 0.5,
           },
         },
       },
       {
         id: 'node-3',
-        type: 'process',
+        type: 'prompt',
         position: { x: 200, y: 0 },
         data: {
           name: '정보 수집',
           description: '필요한 정보를 수집하는 노드',
           config: {
             templateId: 'template-3',
-            variables: {
-              searchDepth: '3',
-              maxResults: '5',
-            },
+            variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'kb-1',
+                config: {
+                  query: '{{plan}}',
+                  filters: {
+                    searchDepth: '3',
+                    maxResults: '5',
+                  },
+                  options: {
+                    threshold: 0.7,
+                  },
+                },
+              },
+            ],
             contextMapping: {
               input: ['plan', 'entities'],
               output: ['searchResults', 'relevantInfo'],
             },
-            maxTokens: 2000,
-            temperature: 0.3,
           },
         },
       },
       {
         id: 'node-4',
-        type: 'decision',
+        type: 'prompt',
         position: { x: 300, y: 0 },
         data: {
           name: '응답 결정',
@@ -93,7 +110,7 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-5',
-        type: 'action',
+        type: 'prompt',
         position: { x: 400, y: 0 },
         data: {
           name: '응답 생성',
@@ -115,13 +132,13 @@ export const mockPipelines: Pipeline[] = [
       },
     ],
     edges: [
-      { id: 'edge-1-2', source: 'node-1', target: 'node-2', type: 'default' },
-      { id: 'edge-2-3', source: 'node-2', target: 'node-3', type: 'default' },
-      { id: 'edge-3-4', source: 'node-3', target: 'node-4', type: 'default' },
-      { id: 'edge-4-5', source: 'node-4', target: 'node-5', type: 'default' },
+      { id: 'edge-1', source: 'node-1', target: 'node-2', type: 'default' },
+      { id: 'edge-2', source: 'node-2', target: 'node-3', type: 'default' },
+      { id: 'edge-3', source: 'node-3', target: 'node-4', type: 'default' },
+      { id: 'edge-4', source: 'node-4', target: 'node-5', type: 'default' },
     ],
-    createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
-    updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
     id: 'pipeline-2',
@@ -131,7 +148,7 @@ export const mockPipelines: Pipeline[] = [
     nodes: [
       {
         id: 'node-1',
-        type: 'input',
+        type: 'prompt',
         position: { x: 0, y: 0 },
         data: {
           name: '사용자 입력',
@@ -150,7 +167,7 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-2',
-        type: 'plan',
+        type: 'prompt',
         position: { x: 100, y: 0 },
         data: {
           name: '분석 계획',
@@ -171,51 +188,73 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-3',
-        type: 'process',
+        type: 'prompt',
         position: { x: 200, y: 0 },
         data: {
           name: '데이터 수집',
           description: '필요한 데이터를 다양한 소스에서 수집',
           config: {
             templateId: 'template-3',
-            variables: {
-              searchDepth: '5',
-              maxResults: '10',
-            },
+            variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'data-1',
+                config: {
+                  query: '{{analysisSteps}}',
+                  filters: {
+                    searchDepth: '5',
+                    maxResults: '10',
+                  },
+                  options: {
+                    threshold: 0.7,
+                  },
+                },
+              },
+            ],
             contextMapping: {
               input: ['analysisSteps', 'requiredData'],
               output: ['collectedData', 'dataSources'],
             },
-            maxTokens: 3000,
-            temperature: 0.3,
           },
         },
       },
       {
         id: 'node-4',
-        type: 'process',
+        type: 'prompt',
         position: { x: 300, y: 0 },
         data: {
           name: '데이터 분석',
           description: '수집된 데이터의 심층 분석 수행',
           config: {
             templateId: 'template-4',
-            variables: {
-              analysisDepth: 'deep',
-              method: 'comprehensive',
-            },
+            variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'analysis-1',
+                config: {
+                  query: '{{collectedData}}',
+                  filters: {
+                    analysisDepth: 'deep',
+                    method: 'comprehensive',
+                  },
+                  options: {
+                    threshold: 0.7,
+                  },
+                },
+              },
+            ],
             contextMapping: {
               input: ['collectedData', 'dataSources'],
               output: ['analysisResults', 'insights'],
             },
-            maxTokens: 4000,
-            temperature: 0.6,
           },
         },
       },
       {
         id: 'node-5',
-        type: 'decision',
+        type: 'prompt',
         position: { x: 400, y: 0 },
         data: {
           name: '결론 도출',
@@ -237,7 +276,7 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-6',
-        type: 'action',
+        type: 'prompt',
         position: { x: 500, y: 0 },
         data: {
           name: '응답 생성',
@@ -279,7 +318,7 @@ export const mockPipelines: Pipeline[] = [
     nodes: [
       {
         id: 'node-1',
-        type: 'input',
+        type: 'prompt',
         position: { x: 200, y: 100 },
         data: {
           name: '멀티모달 입력',
@@ -323,7 +362,7 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-3',
-        type: 'plan',
+        type: 'prompt',
         position: { x: 300, y: 250 },
         connectorId: 'llm-gpt4',
         data: {
@@ -341,9 +380,8 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-4',
-        type: 'decision',
+        type: 'prompt',
         position: { x: 200, y: 400 },
-        connectorId: 'llm-gpt4',
         data: {
           name: '통합 분석 및 결정',
           description:
@@ -360,9 +398,8 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-5',
-        type: 'action',
+        type: 'prompt',
         position: { x: 200, y: 550 },
-        connectorId: 'llm-gpt4',
         data: {
           name: '멀티모달 응답 생성',
           description:
@@ -396,7 +433,7 @@ export const mockPipelines: Pipeline[] = [
     nodes: [
       {
         id: 'node-1',
-        type: 'input',
+        type: 'prompt',
         position: { x: 200, y: 100 },
         data: {
           name: '복합 입력',
@@ -413,15 +450,25 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-2a',
-        type: 'process',
+        type: 'prompt',
         position: { x: 100, y: 250 },
-        connectorId: 'text-processor',
         data: {
           name: '텍스트 처리',
           description: '텍스트 입력을 병렬로 처리',
           config: {
             templateId: 'template-2',
             variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'text-processor-1',
+                config: {
+                  query: '{{text}}',
+                  filters: {},
+                  options: {},
+                },
+              },
+            ],
             contextMapping: {
               input: ['text'],
               output: ['intent', 'entities'],
@@ -431,15 +478,25 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-2b',
-        type: 'process',
+        type: 'prompt',
         position: { x: 300, y: 250 },
-        connectorId: 'image-processor',
         data: {
           name: '이미지 처리',
           description: '이미지 입력을 병렬로 처리',
           config: {
             templateId: 'template-2',
             variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'image-processor-1',
+                config: {
+                  query: '{{image}}',
+                  filters: {},
+                  options: {},
+                },
+              },
+            ],
             contextMapping: {
               input: ['image'],
               output: ['intent', 'entities'],
@@ -449,15 +506,25 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-2c',
-        type: 'process',
+        type: 'prompt',
         position: { x: 500, y: 250 },
-        connectorId: 'audio-processor',
         data: {
           name: '오디오 처리',
           description: '오디오 입력을 병렬로 처리',
           config: {
             templateId: 'template-2',
             variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'audio-processor-1',
+                config: {
+                  query: '{{audio}}',
+                  filters: {},
+                  options: {},
+                },
+              },
+            ],
             contextMapping: {
               input: ['audio'],
               output: ['intent', 'entities'],
@@ -467,15 +534,25 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-3',
-        type: 'aggregator',
+        type: 'prompt',
         position: { x: 200, y: 400 },
-        connectorId: 'result-aggregator',
         data: {
           name: '결과 통합',
           description: '병렬 처리된 결과를 통합',
           config: {
             templateId: 'template-3',
             variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'aggregator-1',
+                config: {
+                  query: '{{intent}}',
+                  filters: {},
+                  options: {},
+                },
+              },
+            ],
             contextMapping: {
               input: ['intent', 'entities'],
               output: ['intent', 'entities'],
@@ -485,45 +562,70 @@ export const mockPipelines: Pipeline[] = [
       },
       {
         id: 'node-4a',
-        type: 'analysis',
+        type: 'prompt',
         position: { x: 100, y: 550 },
-        connectorId: 'llm-gpt4',
         data: {
           name: '심층 분석 A',
           description: '첫 번째 분석 경로',
           config: {
             templateId: 'template-3',
             variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'gpt4',
+                config: {
+                  query: '{{intent}}',
+                  filters: {},
+                  options: {
+                    temperature: 0.7,
+                    maxTokens: 2000,
+                  },
+                },
+              },
+            ],
             contextMapping: {
               input: ['intent', 'entities'],
-              output: ['intent', 'entities'],
+              output: ['analysis_a'],
             },
           },
         },
       },
       {
         id: 'node-4b',
-        type: 'analysis',
+        type: 'prompt',
         position: { x: 300, y: 550 },
-        connectorId: 'llm-claude',
         data: {
           name: '심층 분석 B',
           description: '두 번째 분석 경로',
           config: {
             templateId: 'template-4',
             variables: {},
+            contextSources: [
+              {
+                type: 'connector',
+                connectorId: 'claude',
+                config: {
+                  query: '{{intent}}',
+                  filters: {},
+                  options: {
+                    temperature: 0.7,
+                    maxTokens: 2000,
+                  },
+                },
+              },
+            ],
             contextMapping: {
               input: ['intent', 'entities'],
-              output: ['intent', 'entities'],
+              output: ['analysis_b'],
             },
           },
         },
       },
       {
         id: 'node-5',
-        type: 'decision',
+        type: 'prompt',
         position: { x: 200, y: 700 },
-        connectorId: 'consensus-engine',
         data: {
           name: '분석 결과 통합',
           description: '병렬 분석 결과를 비교하고 최적의 결과 선택',

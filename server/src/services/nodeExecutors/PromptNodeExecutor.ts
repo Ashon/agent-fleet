@@ -31,8 +31,9 @@ export class PromptNodeExecutor implements NodeExecutor {
       throw new Error('프롬프트 노드 설정이 없습니다.')
     }
 
+    // 기본 변수 추출
     const variables = this.extractVariables(input, config)
-    console.log('PromptNodeExecutor execute', variables)
+
     try {
       // 노드 실행 시작을 클라이언트에 알림
       response.write(
@@ -45,17 +46,25 @@ export class PromptNodeExecutor implements NodeExecutor {
         })}\n\n`,
       )
 
+      // 컨텍스트 소스에서 추가 데이터 수집
+      if (config.contextSources) {
+        for (const source of config.contextSources) {
+          const contextData = await this.fetchContextData(source)
+          Object.assign(variables, contextData)
+        }
+      }
+
       // 프롬프트 렌더링
       const renderedPrompt = await this.promptService.renderPrompt(
         config.templateId,
         variables,
       )
-      console.log('PromptNodeExecutor execute', renderedPrompt)
 
       // LLM 호출
       const completion = await this.llmProvider.complete(renderedPrompt, {
         maxTokens: config.maxTokens ?? 1000,
         temperature: config.temperature ?? 0.7,
+        stopSequences: config.stopSequences,
       })
 
       // 출력 데이터 구성
@@ -74,6 +83,7 @@ export class PromptNodeExecutor implements NodeExecutor {
         metadata: {
           model: completion.model,
           tokenUsage: completion.tokenUsage,
+          contextSources: config.contextSources?.map((source) => source.type),
         },
       }
 
@@ -112,6 +122,49 @@ export class PromptNodeExecutor implements NodeExecutor {
       )
 
       return result
+    }
+  }
+
+  private async fetchContextData(
+    source: NonNullable<PromptNodeConfig['contextSources']>[0],
+  ): Promise<Record<string, string>> {
+    if (!source.config) {
+      throw new Error('컨텍스트 소스 설정이 없습니다.')
+    }
+
+    switch (source.type) {
+      case 'connector':
+        if (!source.connectorId) {
+          throw new Error('커넥터 ID가 지정되지 않았습니다.')
+        }
+        // TODO: 커넥터 서비스를 통해 외부 시스템과 연동
+        return {
+          result: `커넥터 ${source.connectorId}를 통해 데이터를 가져옵니다.
+            쿼리: ${source.config.query}
+            필터: ${JSON.stringify(source.config.filters)}
+            옵션: ${JSON.stringify(source.config.options)}`,
+        }
+
+      case 'memory':
+        // TODO: 메모리 스토어 서비스를 통해 데이터 조회
+        return {
+          result: `메모리에서 데이터를 조회합니다.
+            쿼리: ${source.config.query}`,
+        }
+
+      case 'knowledge-base':
+        // TODO: 지식 베이스 서비스를 통해 데이터 조회
+        return {
+          result: `지식 베이스에서 데이터를 조회합니다.
+            쿼리: ${source.config.query}
+            필터: ${JSON.stringify(source.config.filters)}
+            옵션: ${JSON.stringify(source.config.options)}`,
+        }
+
+      default:
+        throw new Error(
+          `지원하지 않는 컨텍스트 소스 타입입니다: ${source.type}`,
+        )
     }
   }
 

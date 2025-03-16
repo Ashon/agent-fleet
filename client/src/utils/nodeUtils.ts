@@ -3,20 +3,6 @@ import { AnchorPoints, Point } from '../types/pipeline'
 
 export function getNodeStyle(node: PipelineNode): string {
   switch (node.type) {
-    case 'input':
-      return `border-blue-300`
-    case 'plan':
-      return `border-green-300`
-    case 'decision':
-      return `border-yellow-300`
-    case 'action':
-      return `border-red-300`
-    case 'process':
-      return `border-purple-300`
-    case 'aggregator':
-      return `border-orange-300`
-    case 'analysis':
-      return `border-indigo-300`
     case 'prompt':
       return `border-blue-500`
     default:

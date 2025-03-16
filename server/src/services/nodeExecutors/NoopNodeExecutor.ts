@@ -8,13 +8,12 @@ export class MockNodeExecutor implements NodeExecutor {
   constructor(private readonly nodeType: string) {}
 
   canExecute(node: PipelineNode): boolean {
-    return node.type === this.nodeType
+    return node.type === 'prompt'
   }
 
   async execute(
     node: PipelineNode,
     input: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     context: NodeExecutionContext,
   ): Promise<NodeExecutionResult> {
     const startTime = new Date()
@@ -25,31 +24,8 @@ export class MockNodeExecutor implements NodeExecutor {
         setTimeout(resolve, Math.random() * this.nodeExecutionDelay),
       )
 
-      // 노드 타입에 따른 출력 생성
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let output: Record<string, any>
-      switch (node.type) {
-        case 'input':
-          output = { value: `입력 처리: "${input}"` }
-          break
-        case 'plan':
-          output = { value: '계획 수립: ' + node.data.description }
-          break
-        case 'action':
-          output = { value: '행동 실행: ' + node.data.description }
-          break
-        case 'decision':
-          output = { value: '결정: ' + node.data.description }
-          break
-        case 'aggregator':
-          output = { value: '결과 통합: ' + node.data.description }
-          break
-        case 'analysis':
-          output = { value: '분석: ' + node.data.description }
-          break
-        default:
-          output = { value: '처리: ' + node.data.description }
-      }
+      // 출력 생성
+      const output = { value: `프롬프트 처리: "${input}"` }
 
       const endTime = new Date()
       const result: NodeExecutionResult = {

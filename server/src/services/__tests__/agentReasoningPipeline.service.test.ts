@@ -204,7 +204,7 @@ describe('PipelineService', () => {
       const newNodes: PipelineNode[] = [
         {
           id: 'new-node-1',
-          type: 'input',
+          type: 'prompt',
           data: { name: '새 입력 노드' },
           position: { x: 0, y: 0 },
         },

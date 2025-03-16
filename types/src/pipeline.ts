@@ -1,15 +1,7 @@
 import { BaseEntity } from './common'
 import { PromptNodeConfig } from './prompt'
 
-export type PipelineNodeType =
-  | 'input'
-  | 'plan'
-  | 'decision'
-  | 'action'
-  | 'process'
-  | 'aggregator'
-  | 'analysis'
-  | 'prompt'
+export type PipelineNodeType = 'prompt'
 
 export interface PipelineNodeData {
   name: string

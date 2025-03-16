@@ -24,6 +24,15 @@ export interface UpdatePromptTemplateDto {
 // Pipeline 노드에서 사용할 프롬프트 설정
 export interface PromptNodeConfig {
   templateId: string
+  contextSources?: {
+    type: 'connector' | 'memory' | 'knowledge-base'
+    connectorId?: string // 외부 시스템 연동을 위한 커넥터 ID
+    config?: {
+      query?: string // 데이터 조회를 위한 쿼리
+      filters?: Record<string, unknown> // 데이터 필터링 조건
+      options?: Record<string, unknown> // 기타 설정
+    }
+  }[]
   variables: Record<string, string>
   contextMapping: {
     input: string[]

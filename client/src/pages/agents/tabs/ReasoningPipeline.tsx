@@ -86,6 +86,14 @@ export default function ReasoningPipeline({ agent }: ReasoningPipelineProps) {
             data: {
               name: '입력',
               description: '사용자 입력',
+              config: {
+                templateId: '',
+                variables: {},
+                contextMapping: {
+                  input: ['text'],
+                  output: ['intent', 'entities'],
+                },
+              },
             },
           },
         ],
