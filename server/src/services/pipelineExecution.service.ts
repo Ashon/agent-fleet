@@ -4,6 +4,7 @@ import {
   Pipeline,
   PipelineExecutionRecord,
   PipelineNode,
+  PromptNodeConfig,
 } from '@agentfleet/types'
 import { Response } from 'express'
 import { v4 as uuidv4 } from 'uuid'
@@ -151,6 +152,42 @@ export class PipelineExecutionService {
       })
   }
 
+  private extractVariables(
+    args: { [key: string]: any },
+    config: PromptNodeConfig,
+  ): Record<string, string> {
+    const variables: Record<string, string> = {}
+    const __input__ = args.__input__ || ''
+
+    try {
+      // args 객체 전체를 파싱 대상으로 사용
+      config.contextMapping.input.forEach((field) => {
+        variables[field] = args[field] || '__undefined__'
+      })
+
+      // __input__이 JSON 형태인 경우 추가 파싱
+      try {
+        const inputData = JSON.parse(__input__)
+        config.contextMapping.input.forEach((field) => {
+          if (field in inputData && !(field in variables)) {
+            variables[field] = inputData[field]
+          }
+        })
+      } catch {
+        // JSON 파싱 실패 시 전체 입력을 '__input__' 변수로 사용
+        if (!('__input__' in variables)) {
+          variables['__input__'] = __input__
+        }
+      }
+    } catch (error) {
+      // 예외 발생 시 기본적으로 __input__ 값은 보존
+      variables['__input__'] = __input__
+    }
+
+    // 추가 변수 병합
+    return { ...variables, ...config.variables }
+  }
+
   // 노드 실행
   private async executeNode(
     node: PipelineNode,
@@ -170,7 +207,7 @@ export class PipelineExecutionService {
         executionContext.nodeResults.set('__input__', initialInput)
         args.__input__ = initialInput
 
-        this.logExecutionStep(`노드 실행 시작 - ${node.data.name}`, {
+        this.logExecutionStep(`Node Execution Start - ${node.data.name}`, {
           nodeId: node.id,
           nodeType: node.type,
           args,
@@ -178,27 +215,30 @@ export class PipelineExecutionService {
 
         try {
           const executor = this.nodeExecutorFactory.getExecutor(node)
-
+          const variables = this.extractVariables(
+            args,
+            node.data.config as PromptNodeConfig,
+          )
           sendStreamMessage(executionContext.response, {
             type: 'node-start',
             nodeId: node.id,
             nodeName: node.data.name,
             nodeType: node.type,
             status: 'running',
-            args,
+            args: variables,
             timestamp: startTime,
           })
 
           const result = await executor.execute(node, args, {
             jobId: executionContext.jobId,
             response: executionContext.response,
-            args,
+            args: variables,
           } as NodeExecutionContext)
 
           // 실행 결과를 컨텍스트에 저장
           executionContext.nodeResults.set(node.id, result.output)
 
-          this.logExecutionStep(`노드 실행 완료 - ${node.data.name}`, {
+          this.logExecutionStep(`Node Execution Complete - ${node.data.name}`, {
             executor: executor.constructor.name,
             nodeId: node.id,
             output: result.output,
@@ -210,7 +250,7 @@ export class PipelineExecutionService {
             nodeName: node.data.name,
             nodeType: node.type,
             status: 'success',
-            args,
+            args: variables,
             output: JSON.stringify(result.output),
             timestamp: new Date(),
           })
@@ -224,7 +264,7 @@ export class PipelineExecutionService {
 
           return result
         } catch (error) {
-          this.logExecutionStep(`노드 실행 실패 - ${node.data.name}`, {
+          this.logExecutionStep(`Node Execution Failed - ${node.data.name}`, {
             nodeId: node.id,
             error: error instanceof Error ? error.message : '알 수 없는 오류',
           })
@@ -265,7 +305,7 @@ export class PipelineExecutionService {
         // __input__ 필드에 병합된 입력값을 JSON 문자열로 저장
         args.__input__ = executionContext.nodeResults.get('__input__')
 
-        this.logExecutionStep(`노드 실행 시작 - ${node.data.name}`, {
+        this.logExecutionStep(`Node Execution Start - ${node.data.name}`, {
           nodeId: node.id,
           nodeType: node.type,
           args,
@@ -293,7 +333,7 @@ export class PipelineExecutionService {
           // 실행 결과를 컨텍스트에 저장
           executionContext.nodeResults.set(node.id, result.output)
 
-          this.logExecutionStep(`노드 실행 완료 - ${node.data.name}`, {
+          this.logExecutionStep(`Node Execution Complete - ${node.data.name}`, {
             executor: executor.constructor.name,
             nodeId: node.id,
             output: result.output,
@@ -319,7 +359,7 @@ export class PipelineExecutionService {
 
           return result
         } catch (error) {
-          this.logExecutionStep(`노드 실행 실패 - ${node.data.name}`, {
+          this.logExecutionStep(`Node Execution Failed - ${node.data.name}`, {
             nodeId: node.id,
             error: error instanceof Error ? error.message : '알 수 없는 오류',
           })
@@ -338,7 +378,7 @@ export class PipelineExecutionService {
       }
     }
 
-    this.logExecutionStep(`노드 실행 실패 - ${node.data.name}`, {
+    this.logExecutionStep(`Node Execution Failed - ${node.data.name}`, {
       nodeId: node.id,
       error: '의존성 문제로 인해 실행할 수 없습니다',
     })
@@ -364,7 +404,7 @@ export class PipelineExecutionService {
     const id = uuidv4()
     const startTime = new Date()
 
-    this.logExecutionStep('파이프라인 실행 시작', {
+    this.logExecutionStep('Pipeline Execution Start', {
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,
       args: { __input__: input },
@@ -372,8 +412,8 @@ export class PipelineExecutionService {
 
     // 노드 배열이 비어있는지 검증
     if (!pipeline.nodes || pipeline.nodes.length === 0) {
-      const error = new Error('파이프라인에 실행할 노드가 없습니다')
-      this.logExecutionStep('파이프라인 실행 실패', {
+      const error = new Error('Pipeline has no nodes to execute')
+      this.logExecutionStep('Pipeline Execution Failed', {
         error: error.message,
       })
 
@@ -416,7 +456,7 @@ export class PipelineExecutionService {
 
     sendStreamMessage(res, {
       type: 'start',
-      message: '파이프라인 실행을 시작합니다.',
+      message: 'Pipeline execution started',
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,
       args: { __input__: input },
@@ -438,7 +478,7 @@ export class PipelineExecutionService {
         executionContext.nodeResults.set(nodeId, input)
       })
 
-      this.logExecutionStep('실행 그래프 생성 완료', {
+      this.logExecutionStep('Execution Graph Created', {
         nodes: Array.from(executionGraph.keys()),
       })
 
@@ -446,7 +486,7 @@ export class PipelineExecutionService {
 
       while (true) {
         const executableNodes = this.findExecutableNodes(executionGraph)
-        this.logExecutionStep('실행 가능한 노드 발견', {
+        this.logExecutionStep('Executable Nodes Found', {
           count: executableNodes.length,
           nodes: executableNodes.map((n) => ({ id: n.id, name: n.data.name })),
         })
@@ -456,13 +496,11 @@ export class PipelineExecutionService {
             (state) => state.executed,
           )
           if (allExecuted) {
-            this.logExecutionStep('모든 노드 실행 완료')
+            this.logExecutionStep('All Nodes Executed')
             break
           }
 
-          throw new Error(
-            '파이프라인 실행 오류: 실행할 수 없는 노드가 있습니다',
-          )
+          throw new Error('Pipeline execution error: No executable nodes found')
         }
 
         await Promise.all(
@@ -480,7 +518,7 @@ export class PipelineExecutionService {
                   typeof state.output === 'string'
                     ? state.output
                     : JSON.stringify(state.output)
-                this.logExecutionStep('최종 노드 실행 완료', {
+                this.logExecutionStep('Final Node Execution Complete', {
                   nodeId: node.id,
                   output: finalOutput,
                 })
@@ -498,7 +536,7 @@ export class PipelineExecutionService {
         record.endTime = new Date()
         record.finalOutput = finalOutput
         await this.repository.save(record)
-        this.logExecutionStep('파이프라인 실행 기록 저장 완료', {
+        this.logExecutionStep('Pipeline Execution Record Saved', {
           recordId: record.id,
           status: record.status,
         })
@@ -506,7 +544,7 @@ export class PipelineExecutionService {
 
       sendStreamMessage(res, {
         type: 'complete',
-        message: '파이프라인 실행이 완료되었습니다.',
+        message: 'Pipeline execution completed',
         output: finalOutput,
         result: {
           executionId: id,
@@ -521,7 +559,7 @@ export class PipelineExecutionService {
         timestamp: new Date(),
       })
     } catch (error) {
-      this.logExecutionStep('파이프라인 실행 실패', {
+      this.logExecutionStep('Pipeline Execution Failed', {
         error: error instanceof Error ? error.message : '알 수 없는 오류',
       })
 
@@ -538,9 +576,7 @@ export class PipelineExecutionService {
       sendStreamMessage(res, {
         type: 'error',
         message:
-          error instanceof Error
-            ? error.message
-            : '파이프라인 실행 중 오류가 발생했습니다.',
+          error instanceof Error ? error.message : 'Pipeline execution error',
         timestamp: new Date(),
       })
 

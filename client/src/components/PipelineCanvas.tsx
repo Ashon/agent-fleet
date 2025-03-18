@@ -138,7 +138,7 @@ export default function PipelineCanvas({
   }
 
   return (
-    <div className="w-full h-full bg-base-100">
+    <div className="w-full h-full min-h-[500px] bg-base-100">
       <GraphCanvas
         nodes={nodes}
         edges={edges}

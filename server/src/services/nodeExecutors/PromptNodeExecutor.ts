@@ -33,9 +33,6 @@ export class PromptNodeExecutor implements NodeExecutor {
       throw new Error('프롬프트 노드 설정이 없습니다.')
     }
 
-    // 기본 변수 추출
-    const variables = this.extractVariables(args, config)
-
     try {
       // 노드 실행 시작을 클라이언트에 알림
       response.write(
@@ -53,20 +50,20 @@ export class PromptNodeExecutor implements NodeExecutor {
       if (config.contextSources) {
         for (const source of config.contextSources) {
           const contextData = await this.fetchContextData(source)
-          Object.assign(variables, contextData)
+          Object.assign(args, contextData)
         }
       }
 
       // 프롬프트 렌더링
       const renderedPrompt = await this.promptService.renderPrompt(
         config.templateId,
-        variables,
+        args,
       )
 
       // LLM 호출
       const completion = await this.llmProvider.complete(renderedPrompt, {
-        maxTokens: config.maxTokens ?? 1000,
-        temperature: config.temperature ?? 0.7,
+        maxTokens: config.maxTokens ?? 100,
+        temperature: config.temperature ?? 0.1,
         stopSequences: config.stopSequences,
       })
 
@@ -138,44 +135,6 @@ export class PromptNodeExecutor implements NodeExecutor {
     // 컨텍스트 소스 타입을 커넥터 ID의 접두어로 사용
     const connectorId = source.connectorId || `${source.type}-default`
     return this.connectorFactory.fetchData(connectorId, source.config)
-  }
-
-  private extractVariables(
-    args: { [key: string]: any },
-    config: PromptNodeConfig,
-  ): Record<string, string> {
-    const variables: Record<string, string> = {}
-    const __input__ = args.__input__ || ''
-
-    try {
-      // args 객체 전체를 파싱 대상으로 사용
-      config.contextMapping.input.forEach((field) => {
-        if (field in args) {
-          variables[field] = args[field] || '__undefined__'
-        }
-      })
-
-      // __input__이 JSON 형태인 경우 추가 파싱
-      try {
-        const inputData = JSON.parse(__input__)
-        config.contextMapping.input.forEach((field) => {
-          if (field in inputData && !(field in variables)) {
-            variables[field] = inputData[field]
-          }
-        })
-      } catch {
-        // JSON 파싱 실패 시 전체 입력을 '__input__' 변수로 사용
-        if (!('__input__' in variables)) {
-          variables['__input__'] = __input__
-        }
-      }
-    } catch (error) {
-      // 예외 발생 시 기본적으로 __input__ 값은 보존
-      variables['__input__'] = __input__
-    }
-
-    // 추가 변수 병합
-    return { ...variables, ...config.variables }
   }
 
   private processOutput(

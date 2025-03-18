@@ -177,7 +177,7 @@ describe('PipelineExecutionService', () => {
           '테스트 입력',
           mockResponse as Response,
         ),
-      ).rejects.toThrow('파이프라인에 실행할 노드가 없습니다')
+      ).rejects.toThrow('Pipeline has no nodes to execute')
 
       // 에러 메시지 확인
       const errorMessages = writtenData.filter((data) =>
@@ -190,7 +190,7 @@ describe('PipelineExecutionService', () => {
       const lastRecord = records[records.length - 1]
       expect(lastRecord).toBeDefined()
       expect(lastRecord.status).toBe('failed')
-      expect(lastRecord.error).toBe('파이프라인에 실행할 노드가 없습니다')
+      expect(lastRecord.error).toBe('Pipeline has no nodes to execute')
     })
 
     it('노드 타입별로 올바른 출력을 생성해야 함', async () => {

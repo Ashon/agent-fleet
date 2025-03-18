@@ -54,11 +54,7 @@ export class WeatherConnector implements Connector {
     return {
       location,
       type,
-      data: {
-        ...weatherData,
-        timestamp: new Date().toISOString(),
-        location,
-      },
+      weatherData,
     }
   }
 }
