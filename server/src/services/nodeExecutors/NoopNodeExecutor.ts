@@ -2,18 +2,15 @@ import { NodeExecutionResult, PipelineNode } from '@agentfleet/types'
 import { NodeExecutionContext, NodeExecutor } from './NodeExecutor'
 
 export class MockNodeExecutor implements NodeExecutor {
-  private readonly nodeExecutionDelay =
-    process.env.NODE_ENV === 'test' ? 100 : 2000
-
   constructor(private readonly nodeType: string) {}
 
   canExecute(node: PipelineNode): boolean {
-    return node.type === 'prompt'
+    return node.type === this.nodeType
   }
 
   async execute(
     node: PipelineNode,
-    input: string,
+    args: { [key: string]: any },
     context: NodeExecutionContext,
   ): Promise<NodeExecutionResult> {
     const startTime = new Date()
@@ -24,43 +21,60 @@ export class MockNodeExecutor implements NodeExecutor {
         setTimeout(resolve, Math.random() * this.nodeExecutionDelay),
       )
 
-      // 출력 생성
-      const output = { value: `프롬프트 처리: "${input}"` }
+      // 글로벌 값들 (__로 시작하는 키들) 유지
+      const globalValues: { [key: string]: any } = {}
+      Object.entries(args).forEach(([key, value]) => {
+        if (key.startsWith('__')) {
+          globalValues[key] = value
+        }
+      })
+
+      // 이전 노드의 결과 처리
+      const prevNodeResults: { [key: string]: any } = {}
+      Object.entries(args).forEach(([key, value]) => {
+        if (!key.startsWith('__')) {
+          if (typeof value === 'object' && value.value !== undefined) {
+            prevNodeResults[key] = value.value
+          } else {
+            prevNodeResults[key] = value
+          }
+        }
+      })
+
+      // 현재 노드의 출력 생성
+      const output = {
+        value: `프롬프트 처리: "${args.__input__ || ''}"`,
+        prevResults: prevNodeResults,
+      }
 
       const endTime = new Date()
-      const result: NodeExecutionResult = {
+      return {
         nodeId: node.id,
         nodeName: node.data.name,
         nodeType: node.type,
-        input: { value: input },
+        args: {
+          ...globalValues,
+          [node.data.name]: output,
+        },
         output,
         startTime,
         endTime,
         status: 'success',
-        metadata: {
-          executionTime: endTime.getTime() - startTime.getTime(),
-        },
       }
-      return result
     } catch (error) {
       const endTime = new Date()
-      const result: NodeExecutionResult = {
+      return {
         nodeId: node.id,
         nodeName: node.data.name,
         nodeType: node.type,
-        input: { value: input },
+        args,
         output: {},
         startTime,
         endTime,
         status: 'failed',
-        metadata: {
-          executionTime: endTime.getTime() - startTime.getTime(),
-          errorMessage:
-            error instanceof Error ? error.message : '알 수 없는 오류',
-        },
       }
-
-      return result
     }
   }
+
+  private readonly nodeExecutionDelay = 1000
 }

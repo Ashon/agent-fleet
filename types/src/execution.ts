@@ -12,8 +12,10 @@ export interface NodeExecutionResult {
   nodeId: string
   nodeName: string
   nodeType: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  input: Record<string, any> | string
+  args: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   output: Record<string, any> | string
   startTime: Date
@@ -27,7 +29,9 @@ export interface PipelineExecutionRecord {
   id: string
   pipelineId: string
   pipelineName: string
-  input: string
+  args: {
+    [key: string]: any
+  }
   status: 'running' | 'completed' | 'failed'
   startTime: Date
   endTime?: Date

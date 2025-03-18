@@ -1,6 +1,5 @@
 import { Pipeline } from '@agentfleet/types'
 import { Response } from 'express'
-import { v4 as uuidv4 } from 'uuid'
 import { MockRepositoryDriver } from '../../drivers/mockRepositoryDriver'
 import { PipelineExecutionsRepository } from '../../repositories/pipelineExecution.repository'
 import { NodeExecutorFactory } from '../nodeExecutors/NodeExecutorFactory'
@@ -103,19 +102,17 @@ describe('PipelineExecutionService', () => {
     updatedAt: new Date().toISOString(),
   })
 
-  describe('executePipeline', () => {
+  describe('streamPipelineExecution', () => {
     // 테스트 타임아웃 시간 증가
     jest.setTimeout(10000)
 
     it('파이프라인 실행 시작과 완료 메시지를 스트리밍해야 함', async () => {
       const mockPipeline = createMockPipeline()
       const testInput = '테스트 입력'
-      const jobId = uuidv4()
 
-      await pipelineExecutionService.executePipeline(
+      const jobId = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         testInput,
-        jobId,
         mockResponse as Response,
       )
 
@@ -139,12 +136,10 @@ describe('PipelineExecutionService', () => {
     it('순차적인 노드 실행 순서를 지켜야 함', async () => {
       const mockPipeline = createMockPipeline()
       const testInput = '테스트 입력'
-      const jobId = uuidv4()
 
-      await pipelineExecutionService.executePipeline(
+      const jobId = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         testInput,
-        jobId,
         mockResponse as Response,
       )
 
@@ -175,22 +170,27 @@ describe('PipelineExecutionService', () => {
         ...createMockPipeline(),
         nodes: [], // 의도적으로 노드가 없는 파이프라인 생성
       }
-      const jobId = uuidv4()
 
       await expect(
-        pipelineExecutionService.executePipeline(
+        pipelineExecutionService.streamPipelineExecution(
           mockPipeline,
           '테스트 입력',
-          jobId,
           mockResponse as Response,
         ),
-      ).rejects.toThrow('파이프라인에 실행할 노드가 없습니다.')
+      ).rejects.toThrow('파이프라인에 실행할 노드가 없습니다')
 
-      // 실행 기록 확인
-      const record = await pipelineExecutionService.getExecutionRecord(jobId)
-      expect(record).toBeDefined()
-      expect(record?.status).toBe('failed')
-      expect(record?.error).toBe('파이프라인에 실행할 노드가 없습니다.')
+      // 에러 메시지 확인
+      const errorMessages = writtenData.filter((data) =>
+        data.includes('"type":"error"'),
+      )
+      expect(errorMessages.length).toBe(1)
+
+      // 실행 기록 확인 (마지막으로 생성된 실행 기록)
+      const records = await pipelineExecutionService.getAllExecutionRecords()
+      const lastRecord = records[records.length - 1]
+      expect(lastRecord).toBeDefined()
+      expect(lastRecord.status).toBe('failed')
+      expect(lastRecord.error).toBe('파이프라인에 실행할 노드가 없습니다')
     })
 
     it('노드 타입별로 올바른 출력을 생성해야 함', async () => {
@@ -201,19 +201,51 @@ describe('PipelineExecutionService', () => {
           {
             id: 'input-node',
             type: 'prompt',
-            data: { name: '입력 노드' },
+            data: {
+              name: '입력 노드',
+              config: {
+                templateId: 'template-1',
+                variables: {},
+                contextMapping: {
+                  input: ['text'],
+                  output: ['result'],
+                },
+              },
+            },
             position: { x: 0, y: 0 },
           },
           {
             id: 'plan-node',
             type: 'prompt',
-            data: { name: '계획 노드', description: '계획 수립' },
+            data: {
+              name: '계획 노드',
+              description: '계획 수립',
+              config: {
+                templateId: 'template-2',
+                variables: {},
+                contextMapping: {
+                  input: ['result'],
+                  output: ['plan'],
+                },
+              },
+            },
             position: { x: 100, y: 0 },
           },
           {
             id: 'action-node',
             type: 'prompt',
-            data: { name: '행동 노드', description: '작업 실행' },
+            data: {
+              name: '행동 노드',
+              description: '작업 실행',
+              config: {
+                templateId: 'template-3',
+                variables: {},
+                contextMapping: {
+                  input: ['plan'],
+                  output: ['action'],
+                },
+              },
+            },
             position: { x: 200, y: 0 },
           },
         ],
@@ -232,12 +264,10 @@ describe('PipelineExecutionService', () => {
           },
         ],
       }
-      const jobId = uuidv4()
 
-      await pipelineExecutionService.executePipeline(
+      const jobId = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         testInput,
-        jobId,
         mockResponse as Response,
       )
 
@@ -256,9 +286,23 @@ describe('PipelineExecutionService', () => {
         expect(output.status).toBe('success')
       })
 
+      // 각 노드의 출력 검증
       expect(nodeOutputs[0].output.value).toBe(`프롬프트 처리: "${testInput}"`)
-      expect(nodeOutputs[1].output.value).toBe('프롬프트 처리: "테스트 입력"')
-      expect(nodeOutputs[2].output.value).toBe('프롬프트 처리: "테스트 입력"')
+      expect(nodeOutputs[1].output.value).toBe(`프롬프트 처리: "${testInput}"`)
+      expect(nodeOutputs[2].output.value).toBe(`프롬프트 처리: "${testInput}"`)
+
+      // 이전 결과 전파 검증
+      expect(nodeOutputs[1].output.prevResults).toEqual({
+        '입력 노드': `프롬프트 처리: "${testInput}"`,
+      })
+      expect(nodeOutputs[2].output.prevResults).toEqual({
+        '입력 노드': `프롬프트 처리: "${testInput}"`,
+        '계획 노드': `프롬프트 처리: "${testInput}"`,
+      })
+
+      // 글로벌 값 전파 검증
+      expect(nodeOutputs[1].args.__input__).toBe(testInput)
+      expect(nodeOutputs[2].args.__input__).toBe(testInput)
 
       // 실행 기록 확인
       const record = await pipelineExecutionService.getExecutionRecord(jobId)
@@ -287,12 +331,10 @@ describe('PipelineExecutionService', () => {
 
     it('파이프라인 ID로 실행 기록을 조회할 수 있어야 함', async () => {
       const mockPipeline = createMockPipeline()
-      const jobId = uuidv4()
 
-      await pipelineExecutionService.executePipeline(
+      const jobId = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         '테스트 입력',
-        jobId,
         mockResponse as Response,
       )
 
@@ -308,19 +350,15 @@ describe('PipelineExecutionService', () => {
     it('모든 실행 기록을 조회할 수 있어야 함', async () => {
       mockRepositoryDriver.clear('pipeline-executions')
       const mockPipeline = createMockPipeline()
-      const jobId1 = uuidv4()
-      const jobId2 = uuidv4()
 
-      await pipelineExecutionService.executePipeline(
+      const jobId1 = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         '테스트 입력 1',
-        jobId1,
         mockResponse as Response,
       )
-      await pipelineExecutionService.executePipeline(
+      const jobId2 = await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         '테스트 입력 2',
-        jobId2,
         mockResponse as Response,
       )
 

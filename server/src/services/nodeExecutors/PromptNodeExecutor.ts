@@ -21,7 +21,7 @@ export class PromptNodeExecutor implements NodeExecutor {
 
   async execute(
     node: PipelineNode,
-    input: string,
+    args: { [key: string]: any },
     context: NodeExecutionContext,
   ): Promise<NodeExecutionResult> {
     const startTime = new Date()
@@ -34,7 +34,7 @@ export class PromptNodeExecutor implements NodeExecutor {
     }
 
     // 기본 변수 추출
-    const variables = this.extractVariables(input, config)
+    const variables = this.extractVariables(args, config)
 
     try {
       // 노드 실행 시작을 클라이언트에 알림
@@ -44,7 +44,7 @@ export class PromptNodeExecutor implements NodeExecutor {
           nodeId: node.id,
           nodeName: node.data.name,
           nodeType: node.type,
-          input,
+          args,
           jobId,
         })}\n\n`,
       )
@@ -78,7 +78,7 @@ export class PromptNodeExecutor implements NodeExecutor {
         nodeId: node.id,
         nodeName: node.data.name,
         nodeType: node.type,
-        input,
+        args,
         output,
         startTime,
         endTime,
@@ -106,7 +106,7 @@ export class PromptNodeExecutor implements NodeExecutor {
         nodeId: node.id,
         nodeName: node.data.name,
         nodeType: node.type,
-        input,
+        args,
         output: {
           error: error instanceof Error ? error.message : '알 수 없는 오류',
         },
@@ -141,21 +141,37 @@ export class PromptNodeExecutor implements NodeExecutor {
   }
 
   private extractVariables(
-    input: string,
+    args: { [key: string]: any },
     config: PromptNodeConfig,
   ): Record<string, string> {
     const variables: Record<string, string> = {}
+    const __input__ = args.__input__ || ''
 
     try {
-      const inputData = JSON.parse(input)
+      // args 객체 전체를 파싱 대상으로 사용
       config.contextMapping.input.forEach((field) => {
-        if (field in inputData) {
-          variables[field] = inputData[field]
+        if (field in args) {
+          variables[field] = args[field] || '__undefined__'
         }
       })
-    } catch {
-      // JSON 파싱 실패 시 전체 입력을 'input' 변수로 사용
-      variables['input'] = input
+
+      // __input__이 JSON 형태인 경우 추가 파싱
+      try {
+        const inputData = JSON.parse(__input__)
+        config.contextMapping.input.forEach((field) => {
+          if (field in inputData && !(field in variables)) {
+            variables[field] = inputData[field]
+          }
+        })
+      } catch {
+        // JSON 파싱 실패 시 전체 입력을 '__input__' 변수로 사용
+        if (!('__input__' in variables)) {
+          variables['__input__'] = __input__
+        }
+      }
+    } catch (error) {
+      // 예외 발생 시 기본적으로 __input__ 값은 보존
+      variables['__input__'] = __input__
     }
 
     // 추가 변수 병합

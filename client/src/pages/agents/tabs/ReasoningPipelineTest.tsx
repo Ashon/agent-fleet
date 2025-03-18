@@ -54,7 +54,7 @@ export function ReasoningPipelineTest({
       nodeName: data.nodeName,
       nodeType: data.nodeType,
       status: NODE_STATUS.RUNNING,
-      input: data.input,
+      args: data.args,
       output: data.output,
       startTime: data.startTime,
       endTime: data.endTime,
@@ -93,7 +93,7 @@ export function ReasoningPipelineTest({
       nodeType: data.nodeType,
       status: NODE_STATUS.SUCCESS,
       output: data.output,
-      input: data.input,
+      args: data.args,
       startTime: data.startTime,
       endTime: data.endTime,
     }

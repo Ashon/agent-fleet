@@ -7,7 +7,7 @@ export const mockPromptTemplates: PromptTemplate[] = [
     description: '사용자 입력의 의도를 파악하고 응답 계획을 수립하는 프롬프트',
     content: `당신은 사용자의 의도를 파악하고 적절한 응답 계획을 수립하는 전문가입니다.
 
-입력: {{input}}
+입력: {{__input__}}
 
 다음 단계를 수행하세요:
 1. 사용자 입력의 주요 의도 파악
@@ -20,7 +20,7 @@ export const mockPromptTemplates: PromptTemplate[] = [
   "requiredTools": ["필요한 도구 목록"],
   "plan": ["단계별 계획"]
 }`,
-    variables: ['input'],
+    variables: ['__input__'],
     createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
     updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
@@ -132,7 +132,7 @@ export const mockPromptTemplates: PromptTemplate[] = [
     description: '지식 베이스에서 관련 정보를 검색하는 프롬프트',
     content: `주어진 입력과 관련된 정보를 지식 베이스에서 검색하세요.
 
-입력: {{input}}
+입력: {{__input__}}
 
 검색 기준:
 1. 관련성 점수 계산
@@ -148,7 +148,7 @@ export const mockPromptTemplates: PromptTemplate[] = [
     "avgRelevance": 0.9
   }
 }`,
-    variables: ['input'],
+    variables: ['__input__'],
     createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
     updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },
@@ -211,7 +211,7 @@ export const mockPromptTemplates: PromptTemplate[] = [
     description: '사용자의 날씨 관련 질문 의도를 분석하는 프롬프트',
     content: `당신은 사용자의 날씨 관련 질문을 분석하는 전문가입니다.
 
-입력: {{input}}
+입력: {{__input__}}
 
 다음 단계를 수행하세요:
 1. 사용자 질문에서 날씨 정보 요청의 유형 파악 (current/today/tomorrow/dayAfterTomorrow)
@@ -230,7 +230,7 @@ export const mockPromptTemplates: PromptTemplate[] = [
 - location은 반드시 문자열 형태의 도시 이름이어야 합니다
 - 위치가 명시되지 않은 경우 "서울"을 기본값으로 사용하세요
 - 단순 인사만 있는 경우 current 타입과 서울 위치로 처리하세요`,
-    variables: ['input'],
+    variables: ['__input__'],
     createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
     updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
   },

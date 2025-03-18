@@ -16,7 +16,7 @@ interface StreamMessage {
   nodeName?: string
   nodeType?: string
   status?: string
-  input?: string | Record<string, any>
+  args?: { [key: string]: any }
   output?: any
   message?: string
   timestamp: Date
@@ -36,6 +36,23 @@ interface StreamMessage {
 
 const sendStreamMessage = (res: Response, message: StreamMessage) => {
   res.write(`data: ${JSON.stringify(message)}\n\n`)
+}
+
+interface ExecutionNodeState extends NodeExecutionState {
+  output?: any
+}
+
+interface NodeExecutionContext {
+  jobId: string
+  response: Response
+  args: { [key: string]: any }
+}
+
+interface ExecutionContext {
+  nodeResults: Map<string, any>
+  jobId: string
+  response: Response
+  pipeline: Pipeline
 }
 
 export class PipelineExecutionService {
@@ -75,8 +92,8 @@ export class PipelineExecutionService {
   // 실행 그래프 생성
   private buildExecutionGraph(
     pipeline: Pipeline,
-  ): Map<string, NodeExecutionState> {
-    const executionGraph = new Map<string, NodeExecutionState>()
+  ): Map<string, ExecutionNodeState> {
+    const executionGraph = new Map<string, ExecutionNodeState>()
 
     pipeline.nodes.forEach((node) => {
       executionGraph.set(node.id, {
@@ -100,7 +117,7 @@ export class PipelineExecutionService {
 
   // 실행 가능한 노드 찾기
   private findExecutableNodes(
-    executionGraph: Map<string, NodeExecutionState>,
+    executionGraph: Map<string, ExecutionNodeState>,
   ): PipelineNode[] {
     const executableNodes: PipelineNode[] = []
 
@@ -116,7 +133,7 @@ export class PipelineExecutionService {
   // 실행 상태 업데이트
   private updateExecutionState(
     nodeId: string,
-    executionGraph: Map<string, NodeExecutionState>,
+    executionGraph: Map<string, ExecutionNodeState>,
     pipeline: Pipeline,
   ): void {
     const state = executionGraph.get(nodeId)
@@ -137,177 +154,205 @@ export class PipelineExecutionService {
   // 노드 실행
   private async executeNode(
     node: PipelineNode,
-    input: string,
-    res: Response,
-    jobId: string,
+    executionContext: ExecutionContext,
+    executionGraph: Map<string, ExecutionNodeState>,
   ): Promise<NodeExecutionResult> {
     const startTime = new Date()
-    this.logExecutionStep(`노드 실행 시작 - ${node.data.name}`, {
-      nodeId: node.id,
-      nodeType: node.type,
-      input: input,
-    })
+    const state = executionGraph.get(node.id)
 
-    try {
-      const executor = this.nodeExecutorFactory.getExecutor(node)
+    if (state) {
+      // 모든 노드에 대해 args 객체 초기화
+      const args: { [key: string]: any } = {}
 
-      sendStreamMessage(res, {
-        type: 'node-start',
-        nodeId: node.id,
-        nodeName: node.data.name,
-        nodeType: node.type,
-        status: 'running',
-        input,
-        timestamp: startTime,
-      })
+      if (state.dependencies.size === 0) {
+        // 시작 노드인 경우 초기 입력값 사용
+        const initialInput = executionContext.nodeResults.get(node.id) || ''
+        executionContext.nodeResults.set('__input__', initialInput)
+        args.__input__ = initialInput
 
-      const result = await executor.execute(node, input, {
-        jobId,
-        response: res,
-      })
+        this.logExecutionStep(`노드 실행 시작 - ${node.data.name}`, {
+          nodeId: node.id,
+          nodeType: node.type,
+          args,
+        })
 
-      this.logExecutionStep(`노드 실행 완료 - ${node.data.name}`, {
-        executor: executor.constructor.name,
-        nodeId: node.id,
-        output: result.output,
-      })
+        try {
+          const executor = this.nodeExecutorFactory.getExecutor(node)
 
-      sendStreamMessage(res, {
-        type: 'node-complete',
-        nodeId: node.id,
-        nodeName: node.data.name,
-        nodeType: node.type,
-        status: 'success',
-        input,
-        output:
-          typeof result.output === 'string'
-            ? result.output
-            : JSON.stringify(result.output),
-        timestamp: new Date(),
-      })
+          sendStreamMessage(executionContext.response, {
+            type: 'node-start',
+            nodeId: node.id,
+            nodeName: node.data.name,
+            nodeType: node.type,
+            status: 'running',
+            args,
+            timestamp: startTime,
+          })
 
-      // 실행 결과를 실행 기록에 저장
-      const record = await this.repository.findById(jobId)
-      if (record) {
-        record.nodeResults = [...(record.nodeResults || []), result]
-        await this.repository.save(record)
-      }
+          const result = await executor.execute(node, args, {
+            jobId: executionContext.jobId,
+            response: executionContext.response,
+            args,
+          } as NodeExecutionContext)
 
-      return result
-    } catch (error) {
-      this.logExecutionStep(`노드 실행 실패 - ${node.data.name}`, {
-        nodeId: node.id,
-        error: error instanceof Error ? error.message : '알 수 없는 오류',
-      })
+          // 실행 결과를 컨텍스트에 저장
+          executionContext.nodeResults.set(node.id, result.output)
 
-      sendStreamMessage(res, {
-        type: 'node-complete',
-        nodeId: node.id,
-        nodeName: node.data.name,
-        nodeType: node.type,
-        status: 'error',
-        message: error instanceof Error ? error.message : '알 수 없는 오류',
-        timestamp: new Date(),
-      })
-      throw error
-    }
-  }
+          this.logExecutionStep(`노드 실행 완료 - ${node.data.name}`, {
+            executor: executor.constructor.name,
+            nodeId: node.id,
+            output: result.output,
+          })
 
-  // 파이프라인 실행
-  async executePipeline(
-    pipeline: Pipeline,
-    input: string,
-    jobId: string,
-    res: Response,
-  ) {
-    // 실행 기록 초기화
-    await this.repository.save({
-      id: jobId,
-      pipelineId: pipeline.id,
-      pipelineName: pipeline.name,
-      input,
-      status: 'running',
-      startTime: new Date(),
-      nodeResults: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
+          sendStreamMessage(executionContext.response, {
+            type: 'node-complete',
+            nodeId: node.id,
+            nodeName: node.data.name,
+            nodeType: node.type,
+            status: 'success',
+            args,
+            output: JSON.stringify(result.output),
+            timestamp: new Date(),
+          })
 
-    try {
-      if (!pipeline.nodes.length) {
-        throw new Error('파이프라인에 실행할 노드가 없습니다.')
-      }
+          // 실행 결과를 실행 기록에 저장
+          const record = await this.repository.findById(executionContext.jobId)
+          if (record) {
+            record.nodeResults = [...(record.nodeResults || []), result]
+            await this.repository.save(record)
+          }
 
-      const executionGraph = this.buildExecutionGraph(pipeline)
-      let finalOutput = ''
+          return result
+        } catch (error) {
+          this.logExecutionStep(`노드 실행 실패 - ${node.data.name}`, {
+            nodeId: node.id,
+            error: error instanceof Error ? error.message : '알 수 없는 오류',
+          })
 
-      while (true) {
-        const executableNodes = this.findExecutableNodes(executionGraph)
-        if (executableNodes.length === 0) {
-          const allExecuted = Array.from(executionGraph.values()).every(
-            (state) => state.executed,
-          )
-          if (allExecuted) break
-
-          throw new Error(
-            '파이프라인 실행 오류: 실행할 수 없는 노드가 있습니다',
-          )
+          sendStreamMessage(executionContext.response, {
+            type: 'node-complete',
+            nodeId: node.id,
+            nodeName: node.data.name,
+            nodeType: node.type,
+            status: 'error',
+            message: error instanceof Error ? error.message : '알 수 없는 오류',
+            timestamp: new Date(),
+          })
+          throw error
         }
+      } else {
+        // 의존성이 있는 노드의 경우 이전 노드들의 결과를 병합
+        const mergedInputs: { [key: string]: any } = {}
 
-        await Promise.all(
-          executableNodes.map(async (node) => {
-            const result = await this.executeNode(node, input, res, jobId)
-            const state = executionGraph.get(node.id)
-            if (state) {
-              state.output =
-                typeof result.output === 'string'
-                  ? result.output
-                  : JSON.stringify(result.output)
-              if (this.isFinalNode(node.id, pipeline)) {
-                finalOutput = state.output
-              }
-            }
-            this.updateExecutionState(node.id, executionGraph, pipeline)
-          }),
-        )
+        state.dependencies.forEach((depNodeId) => {
+          const depNode = executionContext.pipeline.nodes.find(
+            (n: PipelineNode) => n.id === depNodeId,
+          )
+          const depResult = executionContext.nodeResults.get(depNodeId)
+
+          if (depResult !== undefined && depNode) {
+            // 노드의 결과를 args에 추가
+            const resultValue =
+              typeof depResult === 'object' && depResult.value !== undefined
+                ? depResult.value
+                : depResult
+
+            args[depNode.data.name] = resultValue
+            mergedInputs[depNode.data.name] = resultValue
+          }
+        })
+
+        // __input__ 필드에 병합된 입력값을 JSON 문자열로 저장
+        args.__input__ = executionContext.nodeResults.get('__input__')
+
+        this.logExecutionStep(`노드 실행 시작 - ${node.data.name}`, {
+          nodeId: node.id,
+          nodeType: node.type,
+          args,
+        })
+
+        try {
+          const executor = this.nodeExecutorFactory.getExecutor(node)
+
+          sendStreamMessage(executionContext.response, {
+            type: 'node-start',
+            nodeId: node.id,
+            nodeName: node.data.name,
+            nodeType: node.type,
+            status: 'running',
+            args,
+            timestamp: startTime,
+          })
+
+          const result = await executor.execute(node, args, {
+            jobId: executionContext.jobId,
+            response: executionContext.response,
+            args,
+          } as NodeExecutionContext)
+
+          // 실행 결과를 컨텍스트에 저장
+          executionContext.nodeResults.set(node.id, result.output)
+
+          this.logExecutionStep(`노드 실행 완료 - ${node.data.name}`, {
+            executor: executor.constructor.name,
+            nodeId: node.id,
+            output: result.output,
+          })
+
+          sendStreamMessage(executionContext.response, {
+            type: 'node-complete',
+            nodeId: node.id,
+            nodeName: node.data.name,
+            nodeType: node.type,
+            status: 'success',
+            args,
+            output: JSON.stringify(result.output),
+            timestamp: new Date(),
+          })
+
+          // 실행 결과를 실행 기록에 저장
+          const record = await this.repository.findById(executionContext.jobId)
+          if (record) {
+            record.nodeResults = [...(record.nodeResults || []), result]
+            await this.repository.save(record)
+          }
+
+          return result
+        } catch (error) {
+          this.logExecutionStep(`노드 실행 실패 - ${node.data.name}`, {
+            nodeId: node.id,
+            error: error instanceof Error ? error.message : '알 수 없는 오류',
+          })
+
+          sendStreamMessage(executionContext.response, {
+            type: 'node-complete',
+            nodeId: node.id,
+            nodeName: node.data.name,
+            nodeType: node.type,
+            status: 'error',
+            message: error instanceof Error ? error.message : '알 수 없는 오류',
+            timestamp: new Date(),
+          })
+          throw error
+        }
       }
-
-      // 실행 완료 처리
-      const record = await this.repository.findById(jobId)
-      if (record) {
-        record.status = 'completed'
-        record.endTime = new Date()
-        record.finalOutput = finalOutput
-        await this.repository.save(record)
-      }
-
-      // 최종 노드의 출력을 반환
-      const finalNodeId = this.findFinalNodeId(pipeline)
-      if (finalNodeId) {
-        const finalState = executionGraph.get(finalNodeId)
-        return finalState?.output || ''
-      }
-
-      return ''
-    } catch (error) {
-      // 에러 발생 시 실행 기록 업데이트
-      const record = await this.repository.findById(jobId)
-      if (record) {
-        record.status = 'failed'
-        record.error =
-          error instanceof Error ? error.message : '알 수 없는 오류'
-        record.endTime = new Date()
-        await this.repository.save(record)
-      }
-
-      throw error
     }
-  }
 
-  private findFinalNodeId(pipeline: Pipeline): string | undefined {
-    // 나가는 엣지가 없는 노드를 찾음
-    const outgoingEdges = new Set(pipeline.edges.map((edge) => edge.source))
-    return pipeline.nodes.find((node) => !outgoingEdges.has(node.id))?.id
+    this.logExecutionStep(`노드 실행 실패 - ${node.data.name}`, {
+      nodeId: node.id,
+      error: '의존성 문제로 인해 실행할 수 없습니다',
+    })
+
+    sendStreamMessage(executionContext.response, {
+      type: 'node-complete',
+      nodeId: node.id,
+      nodeName: node.data.name,
+      nodeType: node.type,
+      status: 'error',
+      message: '의존성 문제로 인해 실행할 수 없습니다',
+      timestamp: new Date(),
+    })
+    throw new Error('의존성 문제로 인해 실행할 수 없습니다')
   }
 
   // 파이프라인 실행 스트리밍
@@ -322,15 +367,46 @@ export class PipelineExecutionService {
     this.logExecutionStep('파이프라인 실행 시작', {
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,
-      input: input,
+      args: { __input__: input },
     })
+
+    // 노드 배열이 비어있는지 검증
+    if (!pipeline.nodes || pipeline.nodes.length === 0) {
+      const error = new Error('파이프라인에 실행할 노드가 없습니다')
+      this.logExecutionStep('파이프라인 실행 실패', {
+        error: error.message,
+      })
+
+      // 실행 실패 기록 생성
+      await this.repository.save({
+        id,
+        pipelineId: pipeline.id,
+        pipelineName: pipeline.name,
+        args: { __input__: input },
+        status: 'failed',
+        startTime,
+        endTime: new Date(),
+        error: error.message,
+        nodeResults: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+
+      sendStreamMessage(res, {
+        type: 'error',
+        message: error.message,
+        timestamp: new Date(),
+      })
+
+      throw error
+    }
 
     // 실행 기록 생성
     await this.repository.save({
       id,
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,
-      input,
+      args: { __input__: input },
       status: 'running',
       startTime,
       nodeResults: [],
@@ -343,11 +419,25 @@ export class PipelineExecutionService {
       message: '파이프라인 실행을 시작합니다.',
       pipelineId: pipeline.id,
       pipelineName: pipeline.name,
+      args: { __input__: input },
       timestamp: startTime,
     })
 
     try {
       const executionGraph = this.buildExecutionGraph(pipeline)
+      const executionContext: ExecutionContext = {
+        nodeResults: new Map(),
+        jobId: id,
+        response: res,
+        pipeline,
+      }
+
+      // 초기 입력값을 시작 노드들에 설정
+      const startNodes = this.findStartNodes(pipeline)
+      startNodes.forEach((nodeId) => {
+        executionContext.nodeResults.set(nodeId, input)
+      })
+
       this.logExecutionStep('실행 그래프 생성 완료', {
         nodes: Array.from(executionGraph.keys()),
       })
@@ -377,15 +467,19 @@ export class PipelineExecutionService {
 
         await Promise.all(
           executableNodes.map(async (node) => {
-            const result = await this.executeNode(node, input, res, id)
+            const result = await this.executeNode(
+              node,
+              executionContext,
+              executionGraph,
+            )
             const state = executionGraph.get(node.id)
             if (state) {
-              state.output =
-                typeof result.output === 'string'
-                  ? result.output
-                  : JSON.stringify(result.output)
+              state.output = result.output
               if (this.isFinalNode(node.id, pipeline)) {
-                finalOutput = state.output
+                finalOutput =
+                  typeof state.output === 'string'
+                    ? state.output
+                    : JSON.stringify(state.output)
                 this.logExecutionStep('최종 노드 실행 완료', {
                   nodeId: node.id,
                   output: finalOutput,
@@ -458,5 +552,20 @@ export class PipelineExecutionService {
 
   private isFinalNode(nodeId: string, pipeline: Pipeline): boolean {
     return !pipeline.edges.some((edge) => edge.source === nodeId)
+  }
+
+  private findStartNodes(pipeline: Pipeline): string[] {
+    const startNodes: string[] = []
+    const nodeWithIncomingEdges = new Set(
+      pipeline.edges.map((edge) => edge.target),
+    )
+
+    pipeline.nodes.forEach((node) => {
+      if (!nodeWithIncomingEdges.has(node.id)) {
+        startNodes.push(node.id)
+      }
+    })
+
+    return startNodes
   }
 }
