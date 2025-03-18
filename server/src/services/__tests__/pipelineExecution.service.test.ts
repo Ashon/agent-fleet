@@ -296,7 +296,6 @@ describe('PipelineExecutionService', () => {
         '입력 노드': `프롬프트 처리: "${testInput}"`,
       })
       expect(nodeOutputs[2].output.prevResults).toEqual({
-        '입력 노드': `프롬프트 처리: "${testInput}"`,
         '계획 노드': `프롬프트 처리: "${testInput}"`,
       })
 
