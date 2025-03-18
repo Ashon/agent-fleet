@@ -55,7 +55,7 @@ export class PromptService {
 
   async renderPrompt(
     templateId: string,
-    variables: Record<string, string>,
+    variables: Record<string, any>,
   ): Promise<string> {
     const template = await this.getTemplate(templateId)
 
@@ -71,8 +71,18 @@ export class PromptService {
 
     try {
       // 템플릿 컴파일 및 렌더링
-      const compiledTemplate = Handlebars.compile(template.content)
-      return compiledTemplate(variables)
+      const stringifiedVariables = Object.entries(variables).reduce(
+        (acc: Record<string, string>, [key, value]) => {
+          acc[key] =
+            value instanceof Object ? JSON.stringify(value) : value.toString()
+          return acc
+        },
+        {},
+      )
+      const compiledTemplate = Handlebars.compile(template.content, {
+        noEscape: true,
+      })
+      return compiledTemplate(stringifiedVariables)
     } catch (err) {
       const error = err as Error
       throw new Error(`템플릿 렌더링 실패: ${error.message}`)

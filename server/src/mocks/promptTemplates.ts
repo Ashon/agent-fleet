@@ -211,12 +211,11 @@ export const mockPromptTemplates: PromptTemplate[] = [
     description: '사용자의 날씨 관련 질문 의도를 분석하는 프롬프트',
     content: `당신은 사용자의 날씨 관련 질문을 분석하는 전문가입니다.
 
-입력: {{__input__}}
-
 다음 단계를 수행하세요:
 1. 사용자 질문에서 날씨 정보 요청의 유형 파악 (current/today/tomorrow/dayAfterTomorrow)
 2. 위치 정보 추출 (기본값: 서울)
 3. 필요한 날씨 정보 유형 식별 (기온/강수/습도/바람 등)
+4. 한국어로만 대답할 것
 
 응답은 반드시 다음과 같은 JSON 형식으로 작성하세요:
 {
@@ -229,7 +228,10 @@ export const mockPromptTemplates: PromptTemplate[] = [
 - type은 반드시 current/today/tomorrow/dayAfterTomorrow 중 하나여야 합니다
 - location은 반드시 문자열 형태의 도시 이름이어야 합니다
 - 위치가 명시되지 않은 경우 "서울"을 기본값으로 사용하세요
-- 단순 인사만 있는 경우 current 타입과 서울 위치로 처리하세요`,
+- 단순 인사만 있는 경우 current 타입과 서울 위치로 처리하세요
+
+---
+사용자: {{__input__}}`,
     variables: ['__input__'],
     createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
     updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
@@ -248,6 +250,7 @@ export const mockPromptTemplates: PromptTemplate[] = [
 1. 간단한 날씨 요약
 2. 상세 날씨 정보 (기온, 강수, 습도, 바람 등)
 3. 필요한 경우 주의사항이나 추천사항
+4. 한국어로만 대답할 것
 
 응답은 자연스러운 대화체로 작성하되, 정확한 수치 정보를 포함해야 합니다.
 
@@ -261,7 +264,10 @@ export const mockPromptTemplates: PromptTemplate[] = [
     "wind": "바람 정보"
   },
   "recommendations": ["추천사항1", "추천사항2"]
-}`,
+}
+
+---
+사용자: {{__input__}}`,
     variables: ['weatherData', 'location', 'type'],
     createdAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),
     updatedAt: new Date('2024-03-15T09:00:00.000Z').toISOString(),

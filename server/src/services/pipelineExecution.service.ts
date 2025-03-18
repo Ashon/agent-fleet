@@ -1,4 +1,5 @@
 import {
+  LLMCompletionResult,
   NodeExecutionResult,
   NodeExecutionState,
   Pipeline,
@@ -20,6 +21,7 @@ interface StreamMessage {
   args?: { [key: string]: any }
   output?: any
   message?: string
+  completion?: LLMCompletionResult
   timestamp: Date
   pipelineId?: string
   pipelineName?: string
@@ -253,6 +255,7 @@ export class PipelineExecutionService {
             args: variables,
             output: JSON.stringify(result.output),
             timestamp: new Date(),
+            completion: result.completion,
           })
 
           // 실행 결과를 실행 기록에 저장
@@ -348,6 +351,7 @@ export class PipelineExecutionService {
             args,
             output: JSON.stringify(result.output),
             timestamp: new Date(),
+            completion: result.completion,
           })
 
           // 실행 결과를 실행 기록에 저장

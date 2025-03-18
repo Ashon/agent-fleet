@@ -1,4 +1,6 @@
+import { LLMCompletionResult } from './llm'
 import { PipelineNode } from './pipeline'
+import { PromptNodeConfig } from './prompt'
 
 export interface NodeExecutionState {
   node: PipelineNode
@@ -23,6 +25,8 @@ export interface NodeExecutionResult {
   status: 'running' | 'success' | 'failed'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>
+  completion?: LLMCompletionResult
+  config?: PromptNodeConfig
 }
 
 export interface PipelineExecutionRecord {

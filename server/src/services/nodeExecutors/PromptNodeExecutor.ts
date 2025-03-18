@@ -1,4 +1,5 @@
 import {
+  LLMCompletionResult,
   NodeExecutionResult,
   PipelineNode,
   PromptNodeConfig,
@@ -62,13 +63,13 @@ export class PromptNodeExecutor implements NodeExecutor {
 
       // LLM 호출
       const completion = await this.llmProvider.complete(renderedPrompt, {
-        maxTokens: config.maxTokens ?? 100,
+        maxTokens: config.maxTokens ?? 1000,
         temperature: config.temperature ?? 0.1,
         stopSequences: config.stopSequences,
       })
 
       // 출력 데이터 구성
-      const output = this.processOutput(completion.text, config)
+      const output = this.processOutput(completion, config)
 
       const endTime = new Date()
       const result: NodeExecutionResult = {
@@ -80,11 +81,8 @@ export class PromptNodeExecutor implements NodeExecutor {
         startTime,
         endTime,
         status: 'success',
-        metadata: {
-          model: completion.model,
-          tokenUsage: completion.tokenUsage,
-          contextSources: config.contextSources?.map((source) => source.type),
-        },
+        completion: completion,
+        config: config,
       }
 
       // 노드 실행 완료를 클라이언트에 알림
@@ -110,6 +108,8 @@ export class PromptNodeExecutor implements NodeExecutor {
         startTime,
         endTime,
         status: 'failed',
+        completion: undefined,
+        config: config,
       }
 
       // 노드 실행 실패를 클라이언트에 알림
@@ -138,17 +138,17 @@ export class PromptNodeExecutor implements NodeExecutor {
   }
 
   private processOutput(
-    completionText: string,
+    completion: LLMCompletionResult,
     config: PromptNodeConfig,
   ): Record<string, any> {
     const output: Record<string, any> = {
-      completion: completionText,
+      __completion__: completion,
     }
 
     // 지정된 출력 필드만 선택
     if (config.contextMapping.output.length > 0) {
       try {
-        const parsedCompletion = JSON.parse(completionText)
+        const parsedCompletion = completion.json || JSON.parse(completion.text)
         config.contextMapping.output.forEach((field) => {
           if (field in parsedCompletion) {
             output[field] = parsedCompletion[field]
@@ -156,7 +156,11 @@ export class PromptNodeExecutor implements NodeExecutor {
         })
       } catch {
         // JSON 파싱 실패 시 전체 응답을 반환
-        output.result = completionText
+        output.result = {
+          __output__: completion.text,
+          json: completion.json,
+          thinking: completion.thinking,
+        }
       }
     }
 

@@ -1,18 +1,10 @@
+import { LLMCompletionResult } from '@agentfleet/types'
+
 export interface LLMCompletionOptions {
   maxTokens?: number
   temperature?: number
   stopSequences?: string[]
   timeout?: number
-}
-
-export interface LLMCompletionResult {
-  text: string
-  model: string
-  tokenUsage: {
-    prompt: number
-    completion: number
-    total: number
-  }
 }
 
 export interface LLMProvider {

@@ -56,6 +56,7 @@ export function ReasoningPipelineTest({
       status: NODE_STATUS.RUNNING,
       args: data.args,
       output: data.output,
+      completion: data.completion,
       startTime: data.startTime,
       endTime: data.endTime,
     }
@@ -94,6 +95,7 @@ export function ReasoningPipelineTest({
       status: NODE_STATUS.SUCCESS,
       output: data.output,
       args: data.args,
+      completion: data.completion,
       startTime: data.startTime,
       endTime: data.endTime,
     }
@@ -146,13 +148,15 @@ export function ReasoningPipelineTest({
           })
         }
 
+        const completion = JSON.parse(data.output).__completion__
+
         // 최종 메시지에 완료된 노드 결과 포함
         setMessages((prevMessages) => [
           ...prevMessages.filter((m) => m.id !== completionId),
           {
             id: completionId,
             role: 'assistant',
-            content: JSON.stringify(JSON.parse(data.output).completion),
+            content: completion?.json || completion?.text || completion,
             createdAt: new Date(),
             extra: Array.from(next.values()).map((result) => ({
               ...result,

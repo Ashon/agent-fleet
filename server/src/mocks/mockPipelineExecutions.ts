@@ -23,6 +23,12 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
         startTime: new Date('2024-03-15T09:00:00.000Z'),
         endTime: new Date('2024-03-15T09:00:30.000Z'),
         status: 'success',
+        config: {
+          templateId: 'prompt-template-1',
+          contextSources: [],
+          variables: {},
+          contextMapping: { input: [], output: [] },
+        },
       },
       {
         nodeId: 'node-2',
@@ -35,6 +41,12 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
         startTime: new Date('2024-03-15T09:00:31.000Z'),
         endTime: new Date('2024-03-15T09:01:00.000Z'),
         status: 'success',
+        config: {
+          templateId: 'prompt-template-1',
+          contextSources: [],
+          variables: {},
+          contextMapping: { input: [], output: [] },
+        },
       },
       {
         nodeId: 'node-3',
@@ -47,6 +59,12 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
         startTime: new Date('2024-03-15T09:01:01.000Z'),
         endTime: new Date('2024-03-15T09:02:00.000Z'),
         status: 'success',
+        config: {
+          templateId: 'prompt-template-1',
+          contextSources: [],
+          variables: {},
+          contextMapping: { input: [], output: [] },
+        },
       },
     ],
     finalOutput: '행동 실행: 계획에 따른 작업 수행',

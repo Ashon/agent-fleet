@@ -1,13 +1,29 @@
+import Code from '@/components/Code'
 import { Agent, ChatMessage } from '@agentfleet/types'
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline'
 import { useEffect, useRef, useState } from 'react'
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import oneDark from 'react-syntax-highlighter/dist/esm/styles/prism/one-dark'
 
 export type ChatMessageWithExtra = ChatMessage & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extra?: any
+}
+
+const getCircularReplacer = () => {
+  const seen = new WeakSet()
+  return (key: string, value: any) => {
+    if (typeof value === 'object' && value !== null) {
+      if (seen.has(value)) {
+        return '[Circular Reference]'
+      }
+      seen.add(value)
+    }
+    return value
+  }
 }
 
 type ChatPannelProps = {
@@ -53,24 +69,34 @@ function ChatMessagePanel({
             {Array.isArray(message.extra) ? (
               message.extra.map((item) => (
                 <div key={item.nodeId} className="text-xs items-center">
-                  <div className="flex gap-1 items-center">
-                    {item.status === 'success' ? (
-                      <div className="font-bold text-success">
-                        <CheckCircleIcon className="w-4 h-4" />
+                  <div tabIndex={0} className="collapse">
+                    <div className="collapse-title p-0 min-h-0">
+                      <div className="flex gap-1 items-center">
+                        {item.status === 'success' ? (
+                          <div className="font-bold text-success">
+                            <CheckCircleIcon className="w-4 h-4" />
+                          </div>
+                        ) : item.status === 'error' ? (
+                          <div className="font-bold text-error">
+                            <ExclamationCircleIcon className="w-4 h-4" />
+                          </div>
+                        ) : (
+                          <div>
+                            <span className="loading loading-spinner loading-xs w-4 h-4"></span>
+                          </div>
+                        )}
+                        <div className="font-bold">
+                          {item.nodeId} {item.nodeName}
+                        </div>
                       </div>
-                    ) : item.status === 'error' ? (
-                      <div className="font-bold text-error">
-                        <ExclamationCircleIcon className="w-4 h-4" />
+                    </div>
+                    <div className="collapse-content">
+                      <div className="text-xs mt-1">
+                        <Code
+                          code={JSON.stringify(item, getCircularReplacer(), 2)}
+                        />
                       </div>
-                    ) : (
-                      <div>
-                        <span className="loading loading-spinner loading-xs w-4 h-4"></span>
-                      </div>
-                    )}
-                    <div className="font-bold">{item.nodeId}</div>
-                  </div>
-                  <div className="text-xs mt-1">
-                    <pre>{JSON.stringify(item, null, 2)}</pre>
+                    </div>
                   </div>
                 </div>
               ))
@@ -79,7 +105,13 @@ function ChatMessagePanel({
             )}
           </div>
         )}
-        <p className="whitespace-pre-wrap">{message.content}</p>
+        {typeof message.content === 'string'
+          ? message.content
+          : !isLoading && (
+              <Code
+                code={JSON.stringify(message.content, getCircularReplacer(), 2)}
+              />
+            )}
       </div>
     </div>
   )

@@ -60,6 +60,7 @@ export class MockNodeExecutor implements NodeExecutor {
         startTime,
         endTime,
         status: 'success',
+        config: node.data.config,
       }
     } catch (error) {
       const endTime = new Date()
@@ -72,6 +73,7 @@ export class MockNodeExecutor implements NodeExecutor {
         startTime,
         endTime,
         status: 'failed',
+        config: node.data.config,
       }
     }
   }

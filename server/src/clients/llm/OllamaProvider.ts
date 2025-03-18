@@ -1,8 +1,5 @@
-import {
-  LLMCompletionOptions,
-  LLMCompletionResult,
-  LLMProvider,
-} from './LLMProvider'
+import { LLMCompletionResult } from '@agentfleet/types'
+import { LLMCompletionOptions, LLMProvider } from './LLMProvider'
 
 interface OllamaCompletionResponse {
   model: string
@@ -53,14 +50,42 @@ export class OllamaProvider implements LLMProvider {
 
       const result = (await response.json()) as OllamaCompletionResponse
 
+      // think 블록과 응답 분리
+      const thinkMatch = result.response.match(/<think>(.*?)<\/think>/s)
+      const thinking = thinkMatch ? thinkMatch[1].trim() : ''
+      const cleanResponse = result.response
+        .replace(/<think>.*?<\/think>/s, '')
+        .trim()
+
+      // JSON 코드 블록 확인 및 파싱 (```json 또는 ``` 형식 모두 처리)
+      const codeBlockMatch = cleanResponse.match(
+        /```(?:json)?\s*([\s\S]*?)\s*```/,
+      )
+      let parsedResponse = cleanResponse
+      let jsonData = null
+
+      if (codeBlockMatch) {
+        try {
+          jsonData = JSON.parse(codeBlockMatch[1].trim())
+          parsedResponse = cleanResponse
+            .replace(/```(?:json)?\s*[\s\S]*?\s*```/, '')
+            .trim()
+        } catch (e) {
+          console.warn('JSON 파싱 실패:', e)
+        }
+      }
+
       // Ollama는 정확한 토큰 수를 제공하지 않을 수 있으므로 근사값 사용
       const promptTokens = result.prompt_tokens ?? Math.ceil(prompt.length / 4)
       const completionTokens =
         result.eval_tokens ?? Math.ceil(result.response.length / 4)
 
       return {
-        text: result.response,
+        text: parsedResponse,
+        json: jsonData,
+        thinking,
         model: result.model,
+        prompt,
         tokenUsage: {
           prompt: promptTokens,
           completion: completionTokens,
