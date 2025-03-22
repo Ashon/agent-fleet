@@ -25,7 +25,7 @@ coverage
 tsconfig.tsbuildinfo
 
 # Environment variables
-.env*
+.env
 
 # container volumes
 .minio-data
