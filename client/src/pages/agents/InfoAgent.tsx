@@ -1,13 +1,10 @@
-import Breadcrumb from '@/components/Breadcrumb'
 import ChatHistory from '@/pages/agents/tabs/ChatHistory'
 import PipelineJobs from '@/pages/agents/tabs/PipelineJobs'
-import ReasoningPipeline from '@/pages/agents/tabs/ReasoningPipeline'
 import { api } from '@/services/api'
 import { Agent } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 import General from './tabs/General'
-
 type TabType = 'general' | 'reasoning-pipeline' | 'history' | 'pipeline-jobs'
 
 export default function InfoAgent() {
@@ -45,50 +42,40 @@ export default function InfoAgent() {
   }
 
   return (
-    <div className="container-2xl mx-auto">
-      <div className="flex flex-col gap-2">
-        <Breadcrumb
-          items={[
-            { label: 'Agents', path: '/agents' },
-            { label: agent.name },
-            { label: 'Info' },
-          ]}
-        />
+    <div className="fixed inset-0 pt-16 px-4">
+      {/* <div className="flex gap-5 text-sm mb-2">
+        <Link
+          className={
+            `${tab === 'general' ? 'text-foreground' : 'text-muted-foreground'}` +
+            ' cursor-pointer hover:text-foreground'
+          }
+          to={`/agents/${id}/general`}
+        >
+          General
+        </Link>
+        <Link
+          className={
+            `${tab === 'history' ? 'text-foreground' : 'text-muted-foreground'}` +
+            ' cursor-pointer hover:text-foreground'
+          }
+          to={`/agents/${id}/history`}
+        >
+          Chat History
+        </Link>
+        <Link
+          className={
+            `${tab === 'pipeline-jobs' ? 'text-foreground' : 'text-muted-foreground'}` +
+            ' cursor-pointer hover:text-foreground'
+          }
+          to={`/agents/${id}/pipeline-jobs`}
+        >
+          Pipeline Jobs
+        </Link>
+      </div> */}
 
-        <div className="tabs tabs-border">
-          <Link
-            to={`/agents/${id}/general`}
-            className={`tab ${tab === 'general' ? 'tab-active' : ''}`}
-          >
-            General
-          </Link>
-          <Link
-            to={`/agents/${id}/reasoning-pipeline`}
-            className={`tab ${tab === 'reasoning-pipeline' ? 'tab-active' : ''}`}
-          >
-            Reasoning Pipeline
-          </Link>
-          <Link
-            to={`/agents/${id}/history`}
-            className={`tab ${tab === 'history' ? 'tab-active' : ''}`}
-          >
-            Chat History
-          </Link>
-          <Link
-            to={`/agents/${id}/pipeline-jobs`}
-            className={`tab ${tab === 'pipeline-jobs' ? 'tab-active' : ''}`}
-          >
-            Pipeline Jobs
-          </Link>
-        </div>
-
-        <div className="mt-2">
-          {tab === 'general' && <General agent={agent} />}
-          {tab === 'reasoning-pipeline' && <ReasoningPipeline agent={agent} />}
-          {tab === 'history' && <ChatHistory agent={agent} />}
-          {tab === 'pipeline-jobs' && <PipelineJobs agent={agent} />}
-        </div>
-      </div>
+      {tab === 'general' && <General agent={agent} />}
+      {tab === 'history' && <ChatHistory agent={agent} />}
+      {tab === 'pipeline-jobs' && <PipelineJobs agent={agent} />}
     </div>
   )
 }

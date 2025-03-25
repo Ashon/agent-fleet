@@ -1,5 +1,13 @@
 import TextArea from '@/components/form/TextArea'
 import TextField from '@/components/form/TextField'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import debounce from 'lodash/debounce'
 import { useCallback, useState } from 'react'
 
@@ -110,12 +118,18 @@ export function CreateTemplateModal({
   }
 
   return (
-    <div className={`modal ${isOpen ? 'modal-open' : ''}`}>
-      <div className="modal-box max-w-2xl">
-        <h3 className="font-bold text-lg mb-4">새 프롬프트 템플릿 등록</h3>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>새 프롬프트 템플릿 등록</DialogTitle>
+          <DialogDescription>
+            프롬프트 템플릿을 등록하여 작업 노드에서 사용할 수 있습니다.
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="space-y-4">
           <TextField
+            fieldId="name"
             label="템플릿 이름"
             required
             value={templateFormData.name}
@@ -128,6 +142,7 @@ export function CreateTemplateModal({
           />
 
           <TextArea
+            fieldId="description"
             label="설명"
             required
             value={templateFormData.description}
@@ -140,6 +155,7 @@ export function CreateTemplateModal({
           />
 
           <TextArea
+            fieldId="content"
             label="프롬프트 내용"
             required
             className="font-mono"
@@ -180,12 +196,17 @@ export function CreateTemplateModal({
           )}
         </div>
 
-        <div className="modal-action">
-          <button className="btn btn-ghost" onClick={onClose}>
+        <div className="flex justify-end gap-2">
+          <Button
+            className="cursor-pointer"
+            variant="outline"
+            onClick={onClose}
+          >
             취소
-          </button>
-          <button
-            className="btn btn-primary"
+          </Button>
+          <Button
+            className="cursor-pointer"
+            variant="default"
             onClick={handleCreateTemplate}
             disabled={
               !templateFormData.name ||
@@ -194,9 +215,9 @@ export function CreateTemplateModal({
             }
           >
             생성
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -1,4 +1,4 @@
-import ChatPannel, { ChatMessageWithExtra } from '@/panels/ChatPannel'
+import { ChatMessageWithExtra, ChatPannel } from '@/panels/ChatPannel'
 import { api } from '@/services/api'
 import { Agent, NodeExecutionResult, Pipeline } from '@agentfleet/types'
 import { useCallback, useEffect, useState } from 'react'
@@ -278,7 +278,7 @@ export function ReasoningPipelineTest({
   }, [nodeResults, onNodeResultsChange])
 
   return (
-    <div className="h-full pt-2">
+    <div className="h-full p-2">
       <ChatPannel
         agent={agent}
         messages={messages}

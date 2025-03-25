@@ -66,7 +66,7 @@ export default function Minimap({
     null,
   )
 
-  const getNodeSize = (node: DisplayNode) => {
+  const getNodeWhRatio = (node: DisplayNode) => {
     const nodeElement =
       container?.querySelector(`div[data-node-id="${node.id}"]`) ||
       container?.querySelector(`[data-node-id="${node.id}"]`)
@@ -76,18 +76,27 @@ export default function Minimap({
     const rect = nodeElement.getBoundingClientRect()
 
     return {
-      width: rect.width,
-      height: rect.height,
+      width: rect.width / rect.height,
+      height: 1,
     }
   }
 
   const viewport = calculateMinimapViewport(container, viewOffset, zoomScale)
 
   const nodesBound = getNodesBound(nodes)
+
+  // 캔버스의 실제 크기 계산
+  const canvasWidth = container?.clientWidth || 0
+  const canvasHeight = container?.clientHeight || 0
+
+  // 노드 바운딩 박스와 캔버스 크기를 모두 고려한 스케일 계산
+  const contentWidth = Math.max(nodesBound.width, canvasWidth)
+  const contentHeight = Math.max(nodesBound.height, canvasHeight)
+
   const minimapScaleX =
-    nodesBound.width === 0 ? 1 : (width - padding) / nodesBound.width
+    contentWidth === 0 ? 1 : (width - padding) / contentWidth
   const minimapScaleY =
-    nodesBound.height === 0 ? 1 : (height - padding) / nodesBound.height
+    contentHeight === 0 ? 1 : (height - padding) / contentHeight
   const minimapScale = Math.min(minimapScaleX, minimapScaleY)
   const scaledPadding = padding * minimapScale
 
@@ -125,7 +134,7 @@ export default function Minimap({
         'rounded-md',
         'overflow-hidden',
         'shadow-lg',
-        'bg-base-100',
+        'bg-background',
       ].join(' ')}
       style={{ width, height }}
     >
@@ -159,22 +168,22 @@ export default function Minimap({
         </g>
         <g className="node-group">
           {nodes.map((node: DisplayNode) => {
-            const bound = getNodeSize(node)
+            const bound = getNodeWhRatio(node)
             return (
               <rect
                 data-node-id={node.id}
-                className="minimap-node stroke-gray-600 fill-base-300"
+                className="minimap-node stroke-gray-600 fill-background"
                 key={node.id}
                 x={
-                  ((node.x || 0) - bound.width / 2) * minimapScale +
+                  ((node.x || 0) - (100 * bound.width) / 2) * minimapScale +
                   minimapCenter.x
                 }
                 y={
-                  ((node.y || 0) - bound.height / 2) * minimapScale +
+                  ((node.y || 0) - (100 * bound.height) / 2) * minimapScale +
                   minimapCenter.y
                 }
-                width={bound.width * minimapScale}
-                height={bound.height * minimapScale}
+                width={100 * bound.width * minimapScale}
+                height={100 * bound.height * minimapScale}
                 strokeWidth={1}
               />
             )

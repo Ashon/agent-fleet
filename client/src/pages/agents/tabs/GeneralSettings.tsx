@@ -27,6 +27,7 @@ export default function GeneralSettings({
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <TextField
+            fieldId="name"
             label="Agent Name"
             required
             placeholder="Enter agent name"
@@ -47,6 +48,7 @@ export default function GeneralSettings({
         </div>
 
         <TextArea
+          fieldId="description"
           label="Description"
           required
           placeholder="Enter agent description"

@@ -1,4 +1,8 @@
+import { Badge } from '../ui/badge'
+import { Label } from '../ui/label'
+
 interface FormFieldProps {
+  htmlFor?: string
   label: string
   required?: boolean
   className?: string
@@ -6,6 +10,7 @@ interface FormFieldProps {
 }
 
 export default function FormField({
+  htmlFor,
   label,
   required,
   className = '',
@@ -13,14 +18,10 @@ export default function FormField({
 }: FormFieldProps) {
   return (
     <div className={`form-control w-full grid gap-1 ${className}`}>
-      <label className="label">
+      <Label htmlFor={htmlFor}>
         <span className="label-text font-medium">{label}</span>
-        {required && (
-          <span className="badge badge-sm badge-primary badge-outline">
-            Required
-          </span>
-        )}
-      </label>
+        {required && <Badge variant="outline">Required</Badge>}
+      </Label>
       {children}
     </div>
   )

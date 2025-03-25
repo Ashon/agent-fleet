@@ -4,7 +4,7 @@ import TextArea from '@/components/form/TextArea'
 import TextField from '@/components/form/TextField'
 import { api } from '@/services/api'
 import { Agent, Fleet } from '@agentfleet/types'
-import { XCircleIcon } from '@heroicons/react/24/outline'
+import { XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -81,7 +81,7 @@ export default function EditFleet() {
     return (
       <div className="container-2xl mx-auto">
         <div className="alert alert-error">
-          <XCircleIcon className="stroke-current shrink-0 h-6 w-6" />
+          <XCircle className="stroke-current shrink-0 h-6 w-6" />
           <span>Fleet not found</span>
         </div>
       </div>
@@ -105,6 +105,7 @@ export default function EditFleet() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <TextField
+                fieldId="name"
                 label="Name"
                 required
                 value={formData.name}
@@ -115,6 +116,7 @@ export default function EditFleet() {
               />
 
               <TextArea
+                fieldId="description"
                 label="Description"
                 required
                 value={formData.description}
@@ -124,7 +126,7 @@ export default function EditFleet() {
                 placeholder="Enter fleet description"
               />
 
-              <FormField label="Agents" required>
+              <FormField label="Agents" required htmlFor="agents">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
                   {availableAgents.map((agent) => (
                     <label

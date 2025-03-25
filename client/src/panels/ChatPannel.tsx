@@ -1,12 +1,20 @@
 import Code from '@/components/Code'
+import { Button } from '@/components/ui/button'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import { Input } from '@/components/ui/input'
 import { Agent, ChatMessage } from '@agentfleet/types'
 import {
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-} from '@heroicons/react/24/outline'
+  ChevronsUpDown,
+  CircleAlert,
+  CircleCheck,
+  LoaderCircle,
+  SendIcon,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import SyntaxHighlighter from 'react-syntax-highlighter'
-import oneDark from 'react-syntax-highlighter/dist/esm/styles/prism/one-dark'
 
 export type ChatMessageWithExtra = ChatMessage & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,57 +55,73 @@ function ChatMessagePanel({
 }) {
   return (
     <div key={message.id} className="flex flex-col gap-1 mb-4">
-      <div className="text-xs text-base-content/40">{message.id}</div>
+      <div className="text-xs text-foreground/40">{message.id}</div>
       <div
-        className={`max-w-[80%] py-2 px-4 ${
+        className={`py-2 px-4 ${
           message.role === 'user'
-            ? 'bg-base-200 border-l-[3px] border-primary'
-            : 'bg-base-200 border-l-[3px] border-secondary'
+            ? 'bg-background border-l-[3px] border-primary'
+            : 'bg-background border-l-[3px] border-secondary'
         }`}
       >
-        <div className="flex items-center gap-1 text-xs text-base-content/40">
+        <div className="flex items-center gap-1 text-xs text-foreground">
           <span>{message.role === 'user' ? 'You' : agent.name}</span>
           <span>•</span>
           <span>
-            {isLoading
-              ? 'typing...'
-              : new Date(message.createdAt).toLocaleTimeString()}
+            {isLoading ? (
+              <div className="flex items-center gap-1">
+                <LoaderCircle className="animate-spin w-4 h-4" />
+                typing...
+              </div>
+            ) : (
+              new Date(message.createdAt).toLocaleTimeString()
+            )}
           </span>
         </div>
         {message.extra && (
-          <div className="my-2 flex flex-col gap-1 text-gray-500">
+          <div className="my-2 flex flex-col gap-1">
             {Array.isArray(message.extra) ? (
               message.extra.map((item) => (
-                <div key={item.nodeId} className="text-xs items-center">
-                  <div tabIndex={0} className="collapse">
-                    <div className="collapse-title p-0 min-h-0">
-                      <div className="flex gap-1 items-center">
-                        {item.status === 'success' ? (
-                          <div className="font-bold text-success">
-                            <CheckCircleIcon className="w-4 h-4" />
-                          </div>
-                        ) : item.status === 'error' ? (
-                          <div className="font-bold text-error">
-                            <ExclamationCircleIcon className="w-4 h-4" />
-                          </div>
-                        ) : (
-                          <div>
-                            <span className="loading loading-spinner loading-xs w-4 h-4"></span>
-                          </div>
-                        )}
-                        <div className="font-bold">
-                          {item.nodeId} {item.nodeName}
+                <div
+                  key={item.nodeId}
+                  className="text-xs flex items-center justify-between"
+                >
+                  <Collapsible className="overflow-x-auto">
+                    <div className="flex gap-1 items-center">
+                      {item.status === 'success' ? (
+                        <div className="font-bold text-success">
+                          <CircleCheck className="w-4 h-4" />
                         </div>
+                      ) : item.status === 'error' ? (
+                        <div className="font-bold text-error">
+                          <CircleAlert className="w-4 h-4" />
+                        </div>
+                      ) : (
+                        <div>
+                          <LoaderCircle className="animate-spin w-4 h-4" />
+                        </div>
+                      )}
+                      <div className="font-bold">
+                        {item.nodeId} {item.nodeName}
                       </div>
+                      <CollapsibleTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="cursor-pointer"
+                        >
+                          <ChevronsUpDown className="w-4 h-4" />
+                        </Button>
+                      </CollapsibleTrigger>
                     </div>
-                    <div className="collapse-content">
+
+                    <CollapsibleContent>
                       <div className="text-xs mt-1">
                         <Code
                           code={JSON.stringify(item, getCircularReplacer(), 2)}
                         />
                       </div>
-                    </div>
-                  </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
               ))
             ) : (
@@ -117,7 +141,7 @@ function ChatMessagePanel({
   )
 }
 
-export default function ChatPannel({
+export function ChatPannel({
   messages,
   progressingMessage,
   isWaitingForResponse,
@@ -190,9 +214,7 @@ export default function ChatPannel({
                 message={{
                   id: 'progressing',
                   role: 'assistant',
-                  content: (
-                    <span className="loading loading-dots loading-sm"></span>
-                  ),
+                  content: <LoaderCircle className="animate-spin" />,
                   createdAt: new Date(),
                 }}
                 isLoading
@@ -206,7 +228,7 @@ export default function ChatPannel({
       {/* Input Form */}
       <div className="mt-auto">
         <form onSubmit={handleSubmit} className="flex gap-2">
-          <input
+          <Input
             type="text"
             className="input input-bordered flex-1"
             placeholder="메시지를 입력하세요..."
@@ -214,13 +236,13 @@ export default function ChatPannel({
             onChange={(e) => setInput(e.target.value)}
             disabled={isWaitingForResponse}
           />
-          <button
+          <Button
             type="submit"
-            className="btn btn-primary"
+            variant="default"
             disabled={isWaitingForResponse || !input.trim()}
           >
-            전송
-          </button>
+            <SendIcon className="w-4 h-4" />
+          </Button>
         </form>
       </div>
     </div>

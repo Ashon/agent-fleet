@@ -51,7 +51,7 @@ const ContextMenuItem = ({ text, onClick }: ContextMenuItemProps) => {
   return (
     <div>
       <button
-        className="w-full px-4 py-1 text-left hover:bg-primary hover:text-primary-content transition-colors select-none"
+        className="w-full cursor-pointer px-4 py-1 text-left hover:bg-primary hover:text-secondary transition-colors select-none"
         onClick={onClick}
       >
         {text}

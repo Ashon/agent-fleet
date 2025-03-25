@@ -1,6 +1,8 @@
 import Breadcrumb from '@/components/Breadcrumb'
 import TextArea from '@/components/form/TextArea'
 import TextField from '@/components/form/TextField'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { api, CreateAgentRequest } from '@/services/api'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -24,15 +26,14 @@ export default function NewAgent() {
   return (
     <div className="container-2xl mx-auto">
       <div className="flex flex-col gap-4">
-        <Breadcrumb
-          items={[{ label: 'Agents', path: '/agents' }, { label: 'New Agent' }]}
-        />
-
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">Create New Agent</h2>
+        <Card>
+          <CardHeader>
+            <CardTitle>Create New Agent</CardTitle>
+          </CardHeader>
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-8">
               <TextField
+                fieldId="name"
                 label="Agent Name"
                 required
                 placeholder="Enter agent name"
@@ -43,6 +44,7 @@ export default function NewAgent() {
               />
 
               <TextArea
+                fieldId="description"
                 label="Description"
                 required
                 placeholder="Enter agent description"
@@ -53,20 +55,20 @@ export default function NewAgent() {
               />
 
               <div className="flex justify-end gap-4">
-                <button
-                  type="button"
-                  className="btn btn-outline"
+                <Button
+                  className="cursor-pointer"
+                  variant="outline"
                   onClick={() => navigate('/agents')}
                 >
                   Cancel
-                </button>
-                <button type="submit" className="btn btn-primary">
+                </Button>
+                <Button className="cursor-pointer" type="submit">
                   Create
-                </button>
+                </Button>
               </div>
             </form>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

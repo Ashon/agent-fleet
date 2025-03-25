@@ -1,8 +1,15 @@
-import Breadcrumb from '@/components/Breadcrumb'
-import Card from '@/components/Card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { api } from '@/services/api'
 import { Agent } from '@agentfleet/types'
-import { ClockIcon, PlusIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { Clock, Plus, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -68,7 +75,7 @@ export default function Agents() {
     return (
       <div className="container-2xl mx-auto">
         <div className="alert alert-error">
-          <XCircleIcon className="stroke-current shrink-0 h-6 w-6" />
+          <XCircle className="stroke-current shrink-0 h-6 w-6" />
           <span>{error}</span>
         </div>
       </div>
@@ -78,12 +85,12 @@ export default function Agents() {
   return (
     <div className="container-2xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <Breadcrumb items={[{ label: 'Agents' }]} />
-        </div>
-        <Link to="/agents/new" className="btn btn-primary btn-sm">
-          <PlusIcon className="h-4 w-4 mr-1" />
-          New Agent
+        <div className="flex items-center gap-4"></div>
+        <Link to="/agents/new">
+          <Button size="sm" className="cursor-pointer">
+            <Plus className="h-4 w-4 mr-1" />
+            New Agent
+          </Button>
         </Link>
       </div>
 
@@ -93,51 +100,53 @@ export default function Agents() {
           const lastActive = new Date()
 
           return (
-            <Card key={agent.id} hover>
-              <div>
-                <div className="flex items-start justify-between">
-                  <h2 className="card-title">{agent.name}</h2>
-                  <div
-                    className={`badge badge-sm ${
-                      agent.status === 'active'
-                        ? 'badge-success'
-                        : 'badge-ghost'
-                    }`}
-                  >
-                    {agent.status}
+            <Card key={agent.id} className="hover:shadow-xl transition-shadow">
+              <CardHeader>
+                <CardTitle>
+                  <div className="flex items-center gap-2 justify-between">
+                    {agent.name}
+                    <Badge
+                      variant={
+                        agent.status === 'active' ? 'default' : 'secondary'
+                      }
+                    >
+                      {agent.status}
+                    </Badge>
+                  </div>
+                </CardTitle>
+                <CardDescription>{agent.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="h-4 w-4 text-base-content/70" />
+                    <span className="text-base-content/70">
+                      {formatLastActive(lastActive)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Link to={`/agents/${agent.id}/`}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="cursor-pointer"
+                      >
+                        Info
+                      </Button>
+                    </Link>
+                    <Link to={`/agents/${agent.id}/chat`}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="cursor-pointer"
+                      >
+                        Chat
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-
-                <p className="text-sm text-base-content/70 mt-1">
-                  {agent.description}
-                </p>
-              </div>
-
-              <div className="mt-4 flex justify-between">
-                <div className="flex items-center gap-2 text-sm">
-                  <ClockIcon className="h-4 w-4 text-base-content/70" />
-                  <span className="text-base-content/70">
-                    {formatLastActive(lastActive)}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Link
-                    to={`/agents/${agent.id}/`}
-                    className="btn btn-outline btn-sm"
-                  >
-                    Info
-                  </Link>
-                  <Link
-                    to={`/agents/${agent.id}/chat`}
-                    className={`btn btn-outline btn-sm ${
-                      agent.status !== 'active' ? 'btn-disabled' : ''
-                    }`}
-                  >
-                    Chat
-                  </Link>
-                </div>
-              </div>
+              </CardContent>
             </Card>
           )
         })}

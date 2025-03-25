@@ -1,5 +1,5 @@
-import { getAnchorDirection, getDistance } from '@/utils/nodeUtils'
 import { DisplayEdge, DisplayNode, PathData, Point } from '../types'
+import { getAnchorDirection, getDistance } from './node'
 
 export const getAnchorPoints = (
   container: HTMLElement | null,
@@ -94,7 +94,7 @@ export const getPathData = (
   const sourceDirection = getAnchorDirection(bestSourceAnchor, sourceCenter)
   const targetDirection = getAnchorDirection(bestTargetAnchor, targetCenter)
 
-  const controlPointOffset = Math.min(100 * scale, minDistance * 0.5)
+  const controlPointOffset = minDistance * 0.3
 
   // 방향에 따른 제어점 계산
   let sourceControlX = bestSourceAnchor.x

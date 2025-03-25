@@ -1,5 +1,6 @@
 import Logo from '@/assets/logo.svg'
-import { Bars3Icon, MoonIcon, SunIcon } from '@heroicons/react/24/outline'
+import { Button } from '@/components/ui/button'
+import { Moon, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 
@@ -20,70 +21,48 @@ export default function MainLayout() {
     const savedTheme = localStorage.getItem('theme') as Theme
     if (savedTheme) {
       setTheme(savedTheme)
-      document.documentElement.setAttribute('data-theme', savedTheme)
+      document.documentElement.setAttribute('class', savedTheme)
     }
   }, [])
 
   const toggleTheme = () => {
     const newTheme = theme === LIGHT_THEME ? DARK_THEME : LIGHT_THEME
     setTheme(newTheme)
-    document.documentElement.setAttribute('data-theme', newTheme)
+    document.documentElement.setAttribute('class', newTheme)
     localStorage.setItem('theme', newTheme)
   }
 
   return (
     <div>
-      <div className="p-2 flex justify-between items-center backdrop-blur-xl fixed top-0 left-0 right-0 z-50">
-        <div className="flex items-center gap-2">
-          <div className="dropdown dropdown-start sm:hidden">
-            <div
-              tabIndex={0}
-              role="button"
-              className="p-2 btn btn-sm btn-ghost"
-            >
-              <Bars3Icon className="h-5 w-5" />
-            </div>
-            <ul
-              tabIndex={0}
-              className="menu menu-md dropdown-content mt-3 z-[1] gap-2 shadow bg-base-100 rounded-box w-52"
-            >
-              {MENUS.map((menu) => (
-                <li key={menu.path}>
-                  <Link to={menu.path}>{menu.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+      <div className="p-2 border-b flex justify-between items-center backdrop-blur fixed top-0 left-0 right-0 z-50">
+        <div className="flex items-center gap-5">
           <Link
             to="/"
             className="flex items-center gap-2 text-sm px-2 font-bold hover:text-primary transition-colors"
           >
-            <img src={Logo} className="logo h-6" alt="AgentFleet Logo" />
             AgentFleet
           </Link>
-          <ul className="menu menu-horizontal gap-1 hidden sm:flex p-0">
+          <div className="flex gap-5">
             {MENUS.map((menu) => (
-              <li key={menu.path}>
-                <Link to={menu.path}>{menu.label}</Link>
-              </li>
+              <Link key={menu.path} to={menu.path} className="text-sm">
+                {menu.label}
+              </Link>
             ))}
-          </ul>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            className="btn btn-sm btn-ghost btn-circle"
+          <Button
+            variant="ghost"
+            size="sm"
+            className="cursor-pointer"
             onClick={toggleTheme}
           >
-            {theme === LIGHT_THEME ? (
-              <MoonIcon className="h-5 w-5" />
-            ) : (
-              <SunIcon className="h-5 w-5" />
-            )}
-          </button>
+            {theme === LIGHT_THEME ? <Moon /> : <Sun />}
+          </Button>
         </div>
       </div>
 
-      <main className="pt-14 px-4">{<Outlet />}</main>
+      <main className="pt-16 px-4">{<Outlet />}</main>
     </div>
   )
 }

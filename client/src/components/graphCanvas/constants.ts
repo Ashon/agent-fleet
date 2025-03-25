@@ -15,7 +15,7 @@ export const SVG_ANIMATION_STYLE = `
 
 export const defaultEdgeStyle = {
   strokeWidth: 1.5,
-  stroke: '#888',
+  stroke: 'var(--color-gray-500)',
   opacity: 1,
   animation: 'none',
 }

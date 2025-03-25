@@ -1,7 +1,14 @@
-import Card from '@/components/Card'
+import { Badge } from '@/components/ui/badge'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { api } from '@/services/api'
 import { Agent, PipelineExecutionRecord } from '@agentfleet/types'
-import { ClockIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { CircleX, Clock } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -51,21 +58,6 @@ export default function PipelineJobs({ agent }: { agent: Agent }) {
     })
   }
 
-  const getStatusBadgeColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return 'badge-success'
-      case 'running':
-        return 'badge-info'
-      case 'failed':
-        return 'badge-error'
-      case 'pending':
-        return 'badge-warning'
-      default:
-        return 'badge-ghost'
-    }
-  }
-
   if (loading) {
     return (
       <div className="mx-auto">
@@ -80,7 +72,7 @@ export default function PipelineJobs({ agent }: { agent: Agent }) {
     return (
       <div className="mx-auto">
         <div className="alert alert-error">
-          <XCircleIcon className="stroke-current shrink-0 h-6 w-6" />
+          <CircleX className="stroke-current shrink-0 h-6 w-6" />
           <span>{error}</span>
         </div>
       </div>
@@ -88,50 +80,52 @@ export default function PipelineJobs({ agent }: { agent: Agent }) {
   }
 
   return (
-    <div className="mx-auto px-4">
+    <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {jobs.map((job) => (
-          <Card key={job.id} hover>
-            <div>
-              <div className="flex items-start justify-between">
-                <h2 className="card-title">{job.pipelineName}</h2>
-                <div
-                  className={`badge badge-sm ${getStatusBadgeColor(job.status)}`}
-                >
-                  {job.status}
+          <Card key={job.id} className="hover:shadow-xl transition-shadow">
+            <CardHeader>
+              <CardTitle>
+                <div className="flex items-center gap-2 justify-between">
+                  {job.pipelineName}
+                  <Badge
+                    variant={
+                      job.status === 'completed' ? 'default' : 'secondary'
+                    }
+                  >
+                    {job.status}
+                  </Badge>
                 </div>
-              </div>
-
-              <p className="text-sm text-base-content/70 mt-1">
-                Job ID: {job.id}
-              </p>
-            </div>
-
-            <div className="mt-4">
-              <div className="flex items-center gap-2 text-sm">
-                <ClockIcon className="h-4 w-4 text-base-content/70" />
-                <span className="text-base-content/70">
-                  시작: {formatDate(job.startTime as unknown as string)}
-                </span>
-              </div>
-              {job.endTime && (
-                <div className="flex items-center gap-2 text-sm mt-1">
-                  <ClockIcon className="h-4 w-4 text-base-content/70" />
+              </CardTitle>
+              <CardDescription>Job ID: {job.id}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="mt-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-base-content/70" />
                   <span className="text-base-content/70">
-                    종료: {formatDate(job.endTime as unknown as string)}
+                    시작: {formatDate(job.startTime as unknown as string)}
                   </span>
                 </div>
-              )}
-            </div>
+                {job.endTime && (
+                  <div className="flex items-center gap-2 text-sm mt-1">
+                    <Clock className="h-4 w-4 text-base-content/70" />
+                    <span className="text-base-content/70">
+                      종료: {formatDate(job.endTime as unknown as string)}
+                    </span>
+                  </div>
+                )}
+              </div>
 
-            <div className="mt-4 flex justify-end">
-              <Link
-                to={`/pipeline-jobs/${job.id}`}
-                className="btn btn-outline btn-sm"
-              >
-                상세보기
-              </Link>
-            </div>
+              <div className="mt-4 flex justify-end">
+                <Link
+                  to={`/pipeline-jobs/${job.id}`}
+                  className="btn btn-outline btn-sm"
+                >
+                  상세보기
+                </Link>
+              </div>
+            </CardContent>
           </Card>
         ))}
       </div>
