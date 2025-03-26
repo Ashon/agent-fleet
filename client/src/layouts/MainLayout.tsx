@@ -40,6 +40,9 @@ export default function MainLayout() {
             to="/"
             className="flex items-center gap-2 text-sm px-2 font-bold hover:text-primary transition-colors"
           >
+            <span className="bg-foreground text-background px-2 py-1 rounded transform-[skewx(-24deg)]">
+              ||=
+            </span>
             AgentFleet
           </Link>
           <div className="flex gap-5">
