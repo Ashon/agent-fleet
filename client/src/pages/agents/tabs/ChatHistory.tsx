@@ -6,7 +6,7 @@ interface ChatHistoryProps {
 
 export default function ChatHistory({ agent }: ChatHistoryProps) {
   return (
-    <div className="px-4">
+    <div>
       <div className="overflow-x-auto">
         <table className="table">
           <thead>

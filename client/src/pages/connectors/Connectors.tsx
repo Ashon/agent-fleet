@@ -1,8 +1,16 @@
 import Breadcrumb from '@/components/Breadcrumb'
-import Card from '@/components/Card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { api } from '@/services/api'
 import { Connector } from '@agentfleet/types'
-import { PlusIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { Plus, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -64,7 +72,7 @@ export default function Connectors() {
     return (
       <div className="container-2xl mx-auto">
         <div className="alert alert-error">
-          <XCircleIcon className="stroke-current shrink-0 h-6 w-6" />
+          <XCircle className="stroke-current shrink-0 h-6 w-6" />
           <span>{error}</span>
         </div>
       </div>
@@ -74,12 +82,12 @@ export default function Connectors() {
   return (
     <div className="container-2xl mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <Breadcrumb items={[{ label: 'Connectors' }]} />
-        </div>
-        <Link to="/connectors/new" className="btn btn-primary btn-sm">
-          <PlusIcon className="h-4 w-4 mr-1" />
-          New Connector
+        <div className="flex items-center gap-4"></div>
+        <Link to="/connectors/new">
+          <Button size="sm" className="cursor-pointer">
+            <Plus className="h-4 w-4 mr-1" />
+            New Connector
+          </Button>
         </Link>
       </div>
 
@@ -110,44 +118,60 @@ export default function Connectors() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredConnectors.map((connector) => (
-          <Card key={connector.id} hover>
-            <div className="flex justify-between items-start">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{connector.icon}</span>
-                <h2 className="card-title">{connector.name}</h2>
+          <Card
+            key={connector.id}
+            className="hover:shadow-xl transition-shadow"
+          >
+            <CardHeader>
+              <CardTitle>
+                <div className="flex items-center gap-2 justify-between">
+                  {connector.icon} {connector.name}
+                  <Badge
+                    variant={
+                      connector.status === 'active' ? 'default' : 'secondary'
+                    }
+                  >
+                    {connector.status}
+                  </Badge>
+                </div>
+              </CardTitle>
+              <CardDescription>{connector.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {connector.lastSync && (
+                <div className="text-sm text-base-content/60">
+                  마지막 동기화: {new Date(connector.lastSync).toLocaleString()}
+                </div>
+              )}
+              <div className="mt-4 flex justify-end">
+                <div className="flex items-center gap-2">
+                  <Link
+                    to={`/connectors/${connector.id}/edit`}
+                    className="btn btn-sm btn-outline"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="cursor-pointer"
+                    >
+                      설정
+                    </Button>
+                  </Link>
+                  <Link
+                    to={`/connectors/${connector.id}/test`}
+                    className="btn btn-sm btn-primary"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="cursor-pointer"
+                    >
+                      테스트
+                    </Button>
+                  </Link>
+                </div>
               </div>
-              <div
-                className={`badge badge-sm ${
-                  connector.status === 'active'
-                    ? 'badge-success'
-                    : connector.status === 'inactive'
-                      ? 'badge-ghost'
-                      : 'badge-error'
-                }`}
-              >
-                {connector.status}
-              </div>
-            </div>
-            <p className="text-base-content/70">{connector.description}</p>
-            {connector.lastSync && (
-              <div className="text-sm text-base-content/60">
-                마지막 동기화: {new Date(connector.lastSync).toLocaleString()}
-              </div>
-            )}
-            <div className="card-actions justify-end mt-4">
-              <Link
-                to={`/connectors/${connector.id}/edit`}
-                className="btn btn-sm btn-outline"
-              >
-                설정
-              </Link>
-              <Link
-                to={`/connectors/${connector.id}/test`}
-                className="btn btn-sm btn-primary"
-              >
-                테스트
-              </Link>
-            </div>
+            </CardContent>
           </Card>
         ))}
       </div>

@@ -1,5 +1,12 @@
-import { Link } from 'react-router-dom'
-
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
+import React from 'react'
 interface BreadcrumbItem {
   label: string
   path?: string
@@ -9,25 +16,27 @@ interface BreadcrumbProps {
   items: BreadcrumbItem[]
 }
 
-export default function Breadcrumb({ items }: BreadcrumbProps) {
+export default function BreadcrumbUI({ items }: BreadcrumbProps) {
   return (
-    <div className="text-sm breadcrumbs">
-      <ul>
-        {items.map((item, index) => (
-          <li key={index}>
-            {item.path ? (
-              <Link
-                to={item.path}
+    <Breadcrumb>
+      <BreadcrumbList>
+        {items.slice(0, -1).map((item) => (
+          <React.Fragment key={`${item.path}-${item.label}`}>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                href={item.path}
                 className="text-primary hover:text-primary-focus"
               >
                 {item.label}
-              </Link>
-            ) : (
-              <span className="text-base-content/70">{item.label}</span>
-            )}
-          </li>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+          </React.Fragment>
         ))}
-      </ul>
-    </div>
+        <BreadcrumbPage className="text-base-content/70">
+          {items[items.length - 1].label}
+        </BreadcrumbPage>
+      </BreadcrumbList>
+    </Breadcrumb>
   )
 }

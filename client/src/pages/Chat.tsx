@@ -1,5 +1,5 @@
 import Breadcrumb from '@/components/Breadcrumb'
-import ChatPannel from '@/panels/ChatPannel'
+import { ChatPannel } from '@/panels/ChatPannel'
 import { api } from '@/services/api'
 import { Agent, ChatMessage } from '@agentfleet/types'
 import { useEffect, useState } from 'react'

@@ -129,7 +129,7 @@ export function Edge({
         )}
       {drawText && (
         <text
-          className="edge-text fill-current stroke-base-100"
+          className="edge-text fill-current stroke-foreground"
           style={{
             fontSize: ((edge.style?.fontSize as number) || 10) * scale,
             fontWeight: edge.style?.fontWeight || 'bold',

@@ -20,6 +20,14 @@ type NodeGraphProps = {
   nodes?: GraphNode[]
   edges?: GraphEdge[]
   zoomRange?: number[]
+  contextMenu?: {
+    enabled?: boolean
+    items?: {
+      type: 'menu' | 'divider'
+      text?: string
+      onClick?: () => void
+    }[]
+  }
   onNodesChange?: (nodes: GraphNode[]) => void
   minimap?: {
     enabled?: boolean
@@ -28,6 +36,12 @@ type NodeGraphProps = {
     height?: number
     padding?: number
   }
+}
+
+type EdgeViewProps = {
+  scale: number
+  viewOffset: Point
+  isGraphInitialized: boolean
 }
 
 type DragEvent = Point & {
@@ -42,7 +56,11 @@ function GraphCanvas({
   nodes,
   edges,
   onNodesChange,
-  zoomRange = [0.1, 2],
+  zoomRange = [0.5, 1.5],
+  contextMenu = {
+    enabled: true,
+    items: [],
+  },
   minimap = {
     enabled: true,
     scale: 0.15,
@@ -58,13 +76,17 @@ function GraphCanvas({
   const [viewOffset, setViewOffset] = useState<Point>({ x: 0, y: 0 })
   const [minZoomScale, maxZoomScale] = zoomRange
   const [zoomScale, setZoomScale] = useState(1)
+  const [edgeViewProps, setEdgeViewProps] = useState<EdgeViewProps | undefined>(
+    undefined,
+  )
 
   const contextMenuRef = useRef<HTMLDivElement>(null)
   const contextMenuBound = useMemo<BoundingRect>(() => {
     if (!contextMenuRef.current) return { x: 0, y: 0, width: 0, height: 0 }
     return contextMenuRef.current.getBoundingClientRect() as BoundingRect
   }, [])
-  const { contextMenu, handleContextMenu } = useContextMenu(contextMenuBound)
+  const { contextMenuState, handleContextMenu } =
+    useContextMenu(contextMenuBound)
 
   // Memoize display nodes
   const displayNodes = useMemo<DisplayNode[]>(() => {
@@ -106,28 +128,26 @@ function GraphCanvas({
       const newZoomScale = Math.min(widthRatio, heightRatio, maxZoomScale)
       const finalZoomScale = Math.max(newZoomScale, minZoomScale)
 
-      // 상태 업데이트를 Promise로 처리
-      Promise.all([
-        new Promise<void>((resolve) => {
-          setZoomScale(finalZoomScale)
-          resolve()
-        }),
-        new Promise<void>((resolve) => {
-          setViewOffset({
-            x: containerWidth / 2 - center.x * finalZoomScale,
-            y: containerHeight / 2 - center.y * finalZoomScale,
-          })
-          resolve()
-        }),
-      ]).then(() => {
-        setIsLayoutReady(true)
+      setZoomScale(finalZoomScale)
+      setViewOffset({
+        x: containerWidth / 2 - center.x * finalZoomScale,
+        y: containerHeight / 2 - center.y * finalZoomScale,
       })
+      setIsLayoutReady(true)
     }
   }, [displayNodes, isLayoutReady, minZoomScale, maxZoomScale])
 
+  useEffect(() => {
+    setEdgeViewProps({
+      scale: zoomScale,
+      viewOffset: viewOffset,
+      isGraphInitialized: isInitialized,
+    })
+  }, [zoomScale, viewOffset, isLayoutReady])
+
   // Wait for layout and zoom to be ready
   useEffect(() => {
-    if (isLayoutReady && zoomScale !== 1) {
+    if (isLayoutReady) {
       // 모든 초기 레이아웃이 준비된 후 초기화 완료
       setIsInitialized(true)
     }
@@ -164,16 +184,6 @@ function GraphCanvas({
       .filter((edge): edge is DisplayEdge => edge !== null)
   }, [edges, displayNodes, hoverRef, isInitialized])
 
-  // Edge view props with initialization check
-  const edgeViewProps = useMemo(
-    () => ({
-      scale: zoomScale,
-      viewOffset,
-      isGraphInitialized: isInitialized,
-    }),
-    [zoomScale, viewOffset, isInitialized],
-  )
-
   // Memoize display groups
   const displayGroups = useMemo<DisplayGroup[]>(() => {
     const nodesByGroup = displayNodes.reduce(
@@ -198,7 +208,7 @@ function GraphCanvas({
           nodes,
           ...bound,
           style: {
-            color: 'var(--color-gray-600)',
+            color: 'var(--color-foreground)',
           },
         }
       })
@@ -273,7 +283,6 @@ function GraphCanvas({
       <div
         ref={containerRef}
         className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing"
-        onContextMenu={handleContextMenu}
         onMouseDown={onBackgroundMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
@@ -283,6 +292,11 @@ function GraphCanvas({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
+        {...(contextMenu.enabled &&
+        contextMenu.items &&
+        contextMenu.items.length > 0
+          ? { onContextMenu: handleContextMenu }
+          : {})}
       >
         <svg
           className="inset-0 w-full flex-1 pointer-events-none main-svg bg-base-100"
@@ -296,15 +310,18 @@ function GraphCanvas({
         >
           <style>{SVG_ANIMATION_STYLE}</style>
           <g className="edge-layer">
-            {displayEdges.map((edge) => (
-              <Edge
-                key={`${edge.source_id}-${edge.target_id}`}
-                edge={edge}
-                pathAnchorSolver={getPathData}
-                container={containerRef.current}
-                {...edgeViewProps}
-              />
-            ))}
+            {displayEdges.map(
+              (edge) =>
+                edgeViewProps && (
+                  <Edge
+                    key={`${edge.source_id}-${edge.target_id}`}
+                    edge={edge}
+                    pathAnchorSolver={getPathData}
+                    container={containerRef.current}
+                    {...edgeViewProps}
+                  />
+                ),
+            )}
           </g>
           <g className="group-layer">
             {displayGroups.map((group) => (
@@ -378,13 +395,23 @@ function GraphCanvas({
         </div>
       </div>
 
-      <ContextMenu ref={contextMenuRef} state={contextMenu}>
-        <ContextMenu.Item text="컨텍스트 메뉴 테스트 중" />
-        <ContextMenu.Item text="메뉴 항목 1" />
-        <ContextMenu.Item text="메뉴 항목 2" />
-        <ContextMenu.Divider />
-        <ContextMenu.Item text="메뉴 항목 3" />
-      </ContextMenu>
+      {contextMenu?.enabled &&
+        contextMenu.items &&
+        contextMenu.items.length > 0 && (
+          <ContextMenu ref={contextMenuRef} state={contextMenuState}>
+            {contextMenu.items?.map((item, idx) =>
+              item.type === 'menu' ? (
+                <ContextMenu.Item
+                  key={item.text}
+                  text={item.text || ''}
+                  onClick={item.onClick}
+                />
+              ) : (
+                <ContextMenu.Divider key={`divider-${idx}`} />
+              ),
+            )}
+          </ContextMenu>
+        )}
 
       {minimap.enabled && containerRef.current && (
         <Minimap

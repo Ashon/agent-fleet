@@ -1,6 +1,9 @@
 import Select from '@/components/form/Select'
 import TextArea from '@/components/form/TextArea'
 import TextField from '@/components/form/TextField'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { api } from '@/services/api'
 import {
   PipelineNode,
@@ -9,9 +12,8 @@ import {
 } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
 import { CreateTemplateModal, TemplateFormData } from './CreateTemplateModal'
-
 interface ReasoningPipelineConfigProps {
-  selectedNode: PipelineNode | null
+  selectedNode?: PipelineNode
   pipelineId: string
 }
 
@@ -135,53 +137,66 @@ export function ReasoningPipelineConfig({
   }
 
   return (
-    <div className="pt-2 space-y-2 overflow-y-auto">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-bold">작업 노드 기본 설정</h3>
-        <div className="flex items-center gap-2">
+    <div className="p-4 space-y-2 overflow-y-auto h-full">
+      <div className="flex flex-col gap-6">
+        <div>
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-bold">작업 노드 기본 설정</h3>
+            <div>
+              <Button
+                size="sm"
+                className={`btn btn-primary btn-sm ${isSaving ? 'loading' : ''}`}
+                onClick={handleSave}
+                disabled={!hasChanges || isSaving}
+              >
+                {isSaving ? '저장 중...' : '저장'}
+              </Button>
+            </div>
+          </div>
           {hasChanges && (
-            <span className="text-sm text-warning">
+            <div className="text-sm text-gray-500">
               * 저장되지 않은 변경사항이 있습니다
-            </span>
+            </div>
           )}
-          <button
-            className={`btn btn-primary btn-sm ${isSaving ? 'loading' : ''}`}
-            onClick={handleSave}
-            disabled={!hasChanges || isSaving}
-          >
-            {isSaving ? '저장 중...' : '저장'}
-          </button>
         </div>
-      </div>
 
-      <div className="space-y-4">
-        <TextField label="작업 이름" defaultValue={selectedNode.data.name} />
+        <TextField
+          label="작업 이름"
+          defaultValue={selectedNode.data.name}
+          fieldId={`${selectedNode.id}-task-name`}
+        />
         <TextField
           label="작업 설명"
           defaultValue={selectedNode.data.description}
+          fieldId={selectedNode.id}
         />
+      </div>
+      <Separator className="my-4" />
 
+      <div className="space-y-4">
         <div className="divider"></div>
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-bold">프롬프트 템플릿 설정</h3>
-          <button
-            className="btn btn-primary btn-sm"
+          <Button
+            className="cursor-pointer"
+            size="sm"
             onClick={() => setIsTemplateModalOpen(true)}
           >
             템플릿 추가
-          </button>
+          </Button>
         </div>
 
         <Select
           label="프롬프트 템플릿"
           required
+          placeholder="템플릿 선택"
           options={templates.map((template) => ({
             value: template.id,
             label: template.name,
           }))}
           value={config.templateId}
-          onChange={(e) => {
-            const templateId = e.target.value
+          onChange={(value) => {
+            const templateId = value
             const template = templates.find(
               (t: PromptTemplate) => t.id === templateId,
             )
@@ -201,9 +216,9 @@ export function ReasoningPipelineConfig({
                 <h5 className="text-sm font-medium">필요한 변수:</h5>
                 <div className="flex flex-wrap gap-2">
                   {selectedTemplate.variables.map((variable) => (
-                    <span key={variable} className="badge badge-primary">
+                    <Badge key={variable} variant="outline">
                       {variable}
-                    </span>
+                    </Badge>
                   ))}
                 </div>
               </div>
@@ -214,6 +229,7 @@ export function ReasoningPipelineConfig({
               value={selectedTemplate.content}
               readOnly
               className="font-mono text-sm"
+              fieldId={selectedNode.id}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -226,9 +242,11 @@ export function ReasoningPipelineConfig({
                 onChange={(e) =>
                   handleConfigChange({ maxTokens: parseInt(e.target.value) })
                 }
+                fieldId={`${selectedNode.id}-max-tokens`}
               />
 
               <TextField
+                fieldId={`${selectedNode.id}-temperature`}
                 label="Temperature"
                 type="number"
                 min={0}
@@ -248,6 +266,7 @@ export function ReasoningPipelineConfig({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TextArea
+                  fieldId={selectedNode.id}
                   label="입력 필드"
                   placeholder="한 줄에 하나의 필드명을 입력하세요"
                   value={config.contextMapping.input.join('\n')}
@@ -262,6 +281,7 @@ export function ReasoningPipelineConfig({
                 />
 
                 <TextArea
+                  fieldId={selectedNode.id}
                   label="출력 필드"
                   placeholder="한 줄에 하나의 필드명을 입력하세요"
                   value={config.contextMapping.output.join('\n')}
@@ -282,6 +302,7 @@ export function ReasoningPipelineConfig({
               <div className="grid gap-4">
                 {selectedTemplate.variables.map((variable) => (
                   <TextField
+                    fieldId={`${selectedNode.id}-${variable}`}
                     key={variable}
                     label={variable}
                     value={config.variables[variable] || ''}

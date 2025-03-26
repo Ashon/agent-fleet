@@ -2,6 +2,10 @@ import Breadcrumb from '@/components/Breadcrumb'
 import FormField from '@/components/form/FormField'
 import TextArea from '@/components/form/TextArea'
 import TextField from '@/components/form/TextField'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { api } from '@/services/api'
 import { Agent } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
@@ -50,16 +54,14 @@ export default function NewFleet() {
   return (
     <div className="container-2xl mx-auto">
       <div className="flex flex-col gap-4">
-        <Breadcrumb
-          items={[{ label: 'Fleets', path: '/fleets' }, { label: 'New Fleet' }]}
-        />
-
-        <div className="card bg-base-100">
-          <div className="card-body">
-            <h2 className="card-title">Create New Fleet</h2>
-
+        <Card>
+          <CardHeader>
+            <CardTitle>Create New Fleet</CardTitle>
+          </CardHeader>
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <TextField
+                fieldId="name"
                 label="Name"
                 required
                 value={formData.name}
@@ -70,6 +72,7 @@ export default function NewFleet() {
               />
 
               <TextArea
+                fieldId="description"
                 label="Description"
                 required
                 value={formData.description}
@@ -79,54 +82,54 @@ export default function NewFleet() {
                 placeholder="Enter fleet description"
               />
 
-              <FormField label="Agents" required>
+              <FormField label="Agents" required htmlFor="agents">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
                   {availableAgents.map((agent) => (
-                    <label
-                      key={agent.id}
-                      className="flex items-center gap-3 p-3 border border-base-300 hover:bg-base-200 cursor-pointer transition-colors"
-                    >
-                      <input
-                        type="checkbox"
+                    <div className="flex items-center gap-3 p-3 border border-base-300 hover:bg-base-200 cursor-pointer transition-colors">
+                      <Checkbox
+                        id={agent.id}
                         className="checkbox checkbox-primary"
                         checked={formData.agents.includes(agent.id)}
-                        onChange={(e) => {
-                          const newAgents = e.target.checked
+                        onCheckedChange={(checked) => {
+                          const newAgents = checked
                             ? [...formData.agents, agent.id]
                             : formData.agents.filter((id) => id !== agent.id)
                           setFormData({ ...formData, agents: newAgents })
                         }}
                       />
-                      <div className="flex flex-col">
-                        <span className="font-medium">{agent.name}</span>
-                        <span className="text-sm text-base-content/70">
-                          {agent.description}
-                        </span>
-                      </div>
-                    </label>
+                      <Label htmlFor={agent.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{agent.name}</span>
+                          <span className="text-sm text-foreground/70">
+                            {agent.description}
+                          </span>
+                        </div>
+                      </Label>
+                    </div>
                   ))}
                 </div>
               </FormField>
 
-              <div className="card-actions justify-end pt-4">
-                <button
-                  type="button"
-                  className="btn btn-outline"
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  className="cursor-pointer"
+                  variant="outline"
                   onClick={handleCancel}
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className={`btn btn-primary ${loading ? 'loading' : ''}`}
+                </Button>
+                <Button
+                  className="cursor-pointer"
+                  variant="default"
+                  onClick={handleSubmit}
                   disabled={loading}
                 >
                   Create Fleet
-                </button>
+                </Button>
               </div>
             </form>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

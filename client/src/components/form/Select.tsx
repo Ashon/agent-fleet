@@ -1,31 +1,48 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select'
 import FormField from './FormField'
 
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps {
   label: string
   required?: boolean
   className?: string
+  placeholder?: string
   options: Array<{
     value: string
     label: string
   }>
+  value: string
+  onChange: (value: string) => void
 }
 
-export default function Select({
+export default function SelectUI({
   label,
   required,
   className = '',
+  placeholder = '',
   options,
-  ...props
+  value,
+  onChange,
 }: SelectProps) {
   return (
     <FormField label={label} required={required} className={className}>
-      <select className="select select-bordered w-full mt-1" {...props}>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </FormField>
   )
 }

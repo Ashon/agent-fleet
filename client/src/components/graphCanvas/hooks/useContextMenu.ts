@@ -8,7 +8,7 @@ interface ContextMenuState {
 }
 
 export function useContextMenu(contextMenuBound: BoundingRect) {
-  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
+  const [contextMenuState, setContextMenu] = useState<ContextMenuState>({
     visible: false,
     x: 0,
     y: 0,
@@ -51,7 +51,7 @@ export function useContextMenu(contextMenuBound: BoundingRect) {
   }, [handleClick])
 
   return {
-    contextMenu,
+    contextMenuState,
     handleContextMenu,
   }
 }

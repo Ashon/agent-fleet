@@ -1,4 +1,4 @@
-import { AnchorPoints, Point } from '../types/pipeline'
+import { Point } from '../types'
 
 // 두 점 사이의 거리 계산
 export const getDistance = (p1: Point, p2: Point) => {
@@ -14,30 +14,5 @@ export const getAnchorDirection = (anchorPoint: Point, nodeCenter: Point) => {
     return dx > 0 ? 'right' : 'left'
   } else {
     return dy > 0 ? 'bottom' : 'top'
-  }
-}
-
-export const getAnchorPoints = (
-  element: HTMLElement,
-  center: Point,
-): AnchorPoints => {
-  const rect = element.getBoundingClientRect()
-  return {
-    top: {
-      x: center.x,
-      y: center.y - rect.height / 2,
-    },
-    right: {
-      x: center.x + rect.width / 2,
-      y: center.y,
-    },
-    bottom: {
-      x: center.x,
-      y: center.y + rect.height / 2,
-    },
-    left: {
-      x: center.x - rect.width / 2,
-      y: center.y,
-    },
   }
 }
