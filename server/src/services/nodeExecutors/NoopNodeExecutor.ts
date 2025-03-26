@@ -11,6 +11,7 @@ export class MockNodeExecutor implements NodeExecutor {
   async execute(
     node: PipelineNode,
     args: { [key: string]: any },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     context: NodeExecutionContext,
   ): Promise<NodeExecutionResult> {
     const startTime = new Date()
@@ -62,7 +63,7 @@ export class MockNodeExecutor implements NodeExecutor {
         status: 'success',
         config: node.data.config,
       }
-    } catch (error) {
+    } catch {
       const endTime = new Date()
       return {
         nodeId: node.id,

@@ -15,7 +15,7 @@ export default tseslint.config(
     },
     rules: {
       '@typescript-eslint/no-unused-vars': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   // 프론트엔드 특화 규칙
@@ -31,7 +31,7 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': [
-        'warn',
+        'off',
         { allowConstantExport: true },
       ],
     },

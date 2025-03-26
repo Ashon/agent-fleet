@@ -331,7 +331,7 @@ describe('PipelineExecutionService', () => {
     it('파이프라인 ID로 실행 기록을 조회할 수 있어야 함', async () => {
       const mockPipeline = createMockPipeline()
 
-      const jobId = await pipelineExecutionService.streamPipelineExecution(
+      await pipelineExecutionService.streamPipelineExecution(
         mockPipeline,
         '테스트 입력',
         mockResponse as Response,

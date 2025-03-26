@@ -1,4 +1,4 @@
-import { Agent, AgentStatus } from '@agentfleet/types'
+import { Agent } from '@agentfleet/types'
 
 export const mockAgents: Agent[] = [
   {

@@ -64,7 +64,6 @@ export class PipelineExecutionService {
     private readonly nodeExecutorFactory: NodeExecutorFactory,
   ) {}
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private logExecutionStep(message: string, data?: any) {
     console.log(
       `[파이프라인 실행] ${message}`,
@@ -181,7 +180,7 @@ export class PipelineExecutionService {
           variables['__input__'] = __input__
         }
       }
-    } catch (error) {
+    } catch {
       // 예외 발생 시 기본적으로 __input__ 값은 보존
       variables['__input__'] = __input__
     }

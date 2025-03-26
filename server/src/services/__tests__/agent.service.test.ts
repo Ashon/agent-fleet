@@ -135,7 +135,6 @@ describe('AgentService', () => {
       }
 
       await expect(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         agentService.createAgent(invalidAgent as any),
       ).rejects.toThrow()
     })

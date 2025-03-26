@@ -48,17 +48,19 @@ export function ReasoningPipelineConfig({
   }, [selectedNode])
 
   useEffect(() => {
-    loadTemplates()
+    if (config.templateId) {
+      loadTemplates(config.templateId)
+    }
   }, [config.templateId])
 
-  const loadTemplates = async () => {
+  const loadTemplates = async (templateId: string) => {
     try {
       const templates = await api.getPromptTemplates()
       setTemplates(templates)
 
-      if (config.templateId) {
+      if (templateId) {
         const template = templates.find(
-          (t: PromptTemplate) => t.id === config.templateId,
+          (t: PromptTemplate) => t.id === templateId,
         )
         setSelectedTemplate(template || null)
       }

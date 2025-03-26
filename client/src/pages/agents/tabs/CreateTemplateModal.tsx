@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import debounce from 'lodash/debounce'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
 export interface TemplateFormData {
   name: string
@@ -86,7 +86,7 @@ export function CreateTemplateModal({
         error: '',
         variables: Array.from(new Set(variables)),
       }
-    } catch (error) {
+    } catch {
       return {
         isValid: false,
         error: '템플릿 구문 분석 중 오류가 발생했습니다.',
@@ -96,18 +96,15 @@ export function CreateTemplateModal({
   }
 
   // 디바운스된 템플릿 내용 변경 핸들러
-  const debouncedValidateTemplate = useCallback(
-    debounce((content: string) => {
-      const { isValid, error, variables } = validateTemplate(content)
-      setTemplateFormData((prev) => ({
-        ...prev,
-        isValid,
-        validationError: error,
-        variables,
-      }))
-    }, 500),
-    [],
-  )
+  const debouncedValidateTemplate = debounce((content: string) => {
+    const { isValid, error, variables } = validateTemplate(content)
+    setTemplateFormData((prev) => ({
+      ...prev,
+      isValid,
+      validationError: error,
+      variables,
+    }))
+  }, 500)
 
   const handleCreateTemplate = () => {
     if (!templateFormData.isValid) {

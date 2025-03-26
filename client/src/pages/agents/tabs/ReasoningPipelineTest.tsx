@@ -47,7 +47,6 @@ export function ReasoningPipelineTest({
   >(undefined)
 
   // 노드 시작 처리
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleNodeStart = useCallback((completionId: string, data: any) => {
     const result: NodeExecutionResult = {
       nodeId: data.nodeId,
@@ -86,7 +85,6 @@ export function ReasoningPipelineTest({
   }, [])
 
   // 노드 완료 처리
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleNodeComplete = useCallback((completionId: string, data: any) => {
     const result: NodeExecutionResult = {
       nodeId: data.nodeId,
@@ -132,52 +130,47 @@ export function ReasoningPipelineTest({
   }, [])
 
   // 실행 완료 처리
-  const handleComplete = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (completionId: string, data: any) => {
-      setNodeResults((prev) => {
-        console.log('handleComplete', data)
+  const handleComplete = useCallback((completionId: string, data: any) => {
+    setNodeResults((prev) => {
+      console.log('handleComplete', data)
 
-        const next = new Map(prev)
-        // 모든 노드를 success 상태로 업데이트
-        for (const [nodeId, result] of next.entries()) {
-          next.set(nodeId, {
+      const next = new Map(prev)
+      // 모든 노드를 success 상태로 업데이트
+      for (const [nodeId, result] of next.entries()) {
+        next.set(nodeId, {
+          ...result,
+          status: NODE_STATUS.SUCCESS,
+          output: result.output || data.output,
+        })
+      }
+
+      const completion = JSON.parse(data.output).__completion__
+
+      // 최종 메시지에 완료된 노드 결과 포함
+      setMessages((prevMessages) => [
+        ...prevMessages.filter((m) => m.id !== completionId),
+        {
+          id: completionId,
+          role: 'assistant',
+          content: completion?.json || completion?.text || completion,
+          createdAt: new Date(),
+          extra: Array.from(next.values()).map((result) => ({
             ...result,
             status: NODE_STATUS.SUCCESS,
-            output: result.output || data.output,
-          })
-        }
+          })),
+        },
+      ])
 
-        const completion = JSON.parse(data.output).__completion__
+      return next
+    })
 
-        // 최종 메시지에 완료된 노드 결과 포함
-        setMessages((prevMessages) => [
-          ...prevMessages.filter((m) => m.id !== completionId),
-          {
-            id: completionId,
-            role: 'assistant',
-            content: completion?.json || completion?.text || completion,
-            createdAt: new Date(),
-            extra: Array.from(next.values()).map((result) => ({
-              ...result,
-              status: NODE_STATUS.SUCCESS,
-            })),
-          },
-        ])
-
-        return next
-      })
-
-      setProgressingMessage(undefined)
-      setIsWaitingForResponse(false)
-      setActiveNodeIds(new Set())
-    },
-    [],
-  )
+    setProgressingMessage(undefined)
+    setIsWaitingForResponse(false)
+    setActiveNodeIds(new Set())
+  }, [])
 
   // 에러 처리
   const handleError = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (completionId: string, data: any) => {
       // 현재 실행 중인 노드가 있다면 에러 상태로 변경
       if (activeNodeIds.size > 0) {

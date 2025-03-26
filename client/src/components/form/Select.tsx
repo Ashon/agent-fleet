@@ -16,7 +16,7 @@ interface SelectProps {
     value: string
     label: string
   }>
-  value: string
+  value?: string
   onChange: (value: string) => void
 }
 

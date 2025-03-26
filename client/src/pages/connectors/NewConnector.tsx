@@ -48,6 +48,7 @@ export default function NewConnector() {
           <h2 className="card-title">새 커넥터 생성</h2>
           <form onSubmit={handleSubmit} className="space-y-8">
             <TextField
+              fieldId="name"
               label="Connector Name"
               required
               placeholder="Enter connector name"
@@ -58,6 +59,7 @@ export default function NewConnector() {
             />
 
             <TextArea
+              fieldId="description"
               label="Description"
               required
               placeholder="Enter connector description"
@@ -75,15 +77,16 @@ export default function NewConnector() {
                   label: category.label,
                 }))}
                 value={formData.category}
-                onChange={(e) =>
+                onChange={(value) =>
                   setFormData({
                     ...formData,
-                    category: e.target.value as Connector['category'],
+                    category: value as Connector['category'],
                   })
                 }
               />
 
               <TextField
+                fieldId="icon"
                 label="Icon"
                 required
                 placeholder="Enter emoji icon"

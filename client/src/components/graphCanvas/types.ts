@@ -32,9 +32,7 @@ export interface EdgeStyle extends Omit<CSSProperties, 'animationDuration'> {
 export type GraphNode = {
   id: string | number
   group?: string | number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   render?: (data: any) => React.ReactNode
   x?: number
   y?: number
@@ -60,7 +58,6 @@ export type DisplayNode = {
   group?: string | number
   x: number
   y: number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any
   style?: {
     width?: number

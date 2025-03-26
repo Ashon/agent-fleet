@@ -17,7 +17,6 @@ import {
 import { useEffect, useRef, useState } from 'react'
 
 export type ChatMessageWithExtra = ChatMessage & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extra?: any
 }
 

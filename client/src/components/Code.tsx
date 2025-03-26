@@ -24,7 +24,7 @@ export default function Code({
         {code}
       </SyntaxHighlighter>
     ),
-    [code],
+    [code, showLineNumbers],
   )
 
   return <>{memoizedHighlighter}</>

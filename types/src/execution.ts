@@ -15,15 +15,12 @@ export interface NodeExecutionResult {
   nodeName: string
   nodeType: string
   args: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   output: Record<string, any> | string
   startTime: Date
   endTime: Date
   status: 'running' | 'success' | 'failed'
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>
   completion?: LLMCompletionResult
   config?: PromptNodeConfig

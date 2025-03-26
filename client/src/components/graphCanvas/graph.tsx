@@ -143,7 +143,7 @@ function GraphCanvas({
       viewOffset: viewOffset,
       isGraphInitialized: isInitialized,
     })
-  }, [zoomScale, viewOffset, isLayoutReady])
+  }, [zoomScale, viewOffset, isInitialized])
 
   // Wait for layout and zoom to be ready
   useEffect(() => {

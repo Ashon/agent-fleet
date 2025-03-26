@@ -5,7 +5,6 @@ export const getAnchorPoints = (
   container: HTMLElement | null,
   node: DisplayNode,
   scale: number,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   viewOffset: any,
 ) => {
   const nodeElement =

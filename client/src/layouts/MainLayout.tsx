@@ -1,4 +1,3 @@
-import Logo from '@/assets/logo.svg'
 import { Button } from '@/components/ui/button'
 import { Moon, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
