@@ -1,9 +1,6 @@
+import { LLMCompletionResult } from '@agentfleet/types'
 import OpenAI from 'openai'
-import {
-  LLMCompletionOptions,
-  LLMCompletionResult,
-  LLMProvider,
-} from './LLMProvider'
+import { LLMCompletionOptions, LLMProvider } from './LLMProvider'
 
 export class OpenAIProvider implements LLMProvider {
   private client: OpenAI
@@ -29,6 +26,7 @@ export class OpenAIProvider implements LLMProvider {
 
       return {
         text: result.message.content || '',
+        prompt: prompt,
         model: completion.model,
         tokenUsage: {
           prompt: completion.usage?.prompt_tokens || 0,

@@ -1,8 +1,5 @@
-import {
-  LLMCompletionOptions,
-  LLMCompletionResult,
-  LLMProvider,
-} from './LLMProvider'
+import { LLMCompletionResult } from '@agentfleet/types'
+import { LLMCompletionOptions, LLMProvider } from './LLMProvider'
 
 export class NoopProvider implements LLMProvider {
   private readonly nodeExecutionDelay =
@@ -23,6 +20,7 @@ export class NoopProvider implements LLMProvider {
 
     return {
       text: response,
+      prompt: prompt,
       model: 'noop',
       tokenUsage: {
         prompt: Math.ceil(prompt.length / 4),
