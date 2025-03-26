@@ -18,7 +18,7 @@ interface OllamaCompletionResponse {
 export class OllamaProvider implements LLMProvider {
   constructor(
     private readonly baseUrl: string = 'http://localhost:11434',
-    private readonly model: string = 'deepseek-r1',
+    private readonly model: string = 'gemma3',
   ) {}
 
   async complete(
