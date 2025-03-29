@@ -6,7 +6,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
-import { Agent, ChatMessage } from '@agentfleet/types'
+import { Agent, Conversation } from '@agentfleet/types'
 import {
   ChevronsUpDown,
   CircleAlert,
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
-export type ChatMessageWithExtra = ChatMessage & {
+export type ConversationWithExtra = Conversation & {
   extra?: any
 }
 
@@ -34,8 +34,8 @@ const getCircularReplacer = () => {
 }
 
 type ChatPannelProps = {
-  messages: ChatMessageWithExtra[]
-  progressingMessage?: ChatMessageWithExtra
+  messages: ConversationWithExtra[]
+  progressingMessage?: ConversationWithExtra
   isWaitingForResponse: boolean
   handleSubmit: (e: React.FormEvent) => void
   input: string
@@ -49,7 +49,7 @@ function ChatMessagePanel({
   isLoading,
 }: {
   agent: Agent
-  message: ChatMessageWithExtra
+  message: ConversationWithExtra
   isLoading?: boolean
 }) {
   return (

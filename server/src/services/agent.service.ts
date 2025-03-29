@@ -1,8 +1,8 @@
 import {
   Agent,
   AgentStatus,
-  ChatMessage,
-  ChatMessageRole,
+  Conversation,
+  ConversationRole,
   CreateAgentData,
 } from '@agentfleet/types'
 import { AgentRepository } from '../repositories/agent.repository'
@@ -33,8 +33,7 @@ export class AgentService {
       ...agentData,
       status: 'active' as AgentStatus,
       chatHistory: [],
-      capabilities: {},
-      connectors: [],
+      tools: [],
     }
 
     return this.repository.create(newAgent)
@@ -76,7 +75,7 @@ export class AgentService {
 
   async addChatMessage(
     id: string,
-    message: { role: ChatMessageRole; content: string },
+    message: { role: ConversationRole; content: string },
   ): Promise<Agent | undefined> {
     // 유효한 메시지 형식인지 검증
     if (
@@ -96,7 +95,7 @@ export class AgentService {
     ]
 
     return this.repository.update(id, {
-      chatHistory: chatHistory as ChatMessage[],
+      chatHistory: chatHistory as Conversation[],
     })
   }
 }

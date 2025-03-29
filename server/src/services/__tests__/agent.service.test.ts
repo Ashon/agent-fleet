@@ -1,8 +1,8 @@
 import {
   Agent,
   AgentStatus,
-  ChatMessage,
-  ChatMessageRole,
+  Conversation,
+  ConversationRole,
 } from '@agentfleet/types'
 import { v4 } from 'uuid'
 import { S3RepositoryDriver } from '../../drivers/s3RepositoryDriver'
@@ -23,11 +23,7 @@ describe('AgentService', () => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     chatHistory: [],
-    capabilities: {
-      reasoning: true,
-      planning: true,
-    },
-    connectors: ['test-connector'],
+    tools: [],
   }
 
   beforeEach(() => {
@@ -105,11 +101,7 @@ describe('AgentService', () => {
         description: '새로운 에이전트입니다.',
         createdAt: new Date(),
         updatedAt: new Date(),
-        capabilities: {
-          reasoning: true,
-          planning: true,
-        },
-        connectors: [],
+        tools: [],
       }
 
       const expectedAgent: Agent = {
@@ -119,8 +111,7 @@ describe('AgentService', () => {
         chatHistory: [],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-        capabilities: {},
-        connectors: [],
+        tools: [],
       }
 
       mockRepository.create.mockResolvedValue(expectedAgent)
@@ -153,8 +144,7 @@ describe('AgentService', () => {
         chatHistory: [],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-        capabilities: {},
-        connectors: [],
+        tools: [],
       }
 
       mockRepository.create.mockResolvedValue(expectedAgent)
@@ -265,7 +255,7 @@ describe('AgentService', () => {
   describe('addChatMessage', () => {
     it('채팅 메시지를 추가해야 합니다', async () => {
       mockRepository.findById.mockResolvedValue(testAgent)
-      const message: ChatMessage = {
+      const message: Conversation = {
         id: v4(),
         role: 'user',
         content: '안녕하세요',
@@ -301,7 +291,7 @@ describe('AgentService', () => {
       mockRepository.findById.mockResolvedValue(testAgent)
       await expect(
         agentService.addChatMessage(testAgent.id, {
-          role: 'invalid' as ChatMessageRole,
+          role: 'invalid' as ConversationRole,
           content: '안녕하세요',
         }),
       ).rejects.toThrow()

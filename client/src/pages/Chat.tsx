@@ -1,7 +1,7 @@
 import Breadcrumb from '@/components/Breadcrumb'
 import { ChatPannel } from '@/panels/ChatPannel'
 import { api } from '@/services/api'
-import { Agent, ChatMessage } from '@agentfleet/types'
+import { Agent, Conversation } from '@agentfleet/types'
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
@@ -10,7 +10,7 @@ export default function Chat() {
   const { id } = useParams<{ id: string }>()
   const [isLoading, setIsLoading] = useState(true)
   const [agent, setAgent] = useState<Agent | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [messages, setMessages] = useState<Conversation[]>([])
   const [input, setInput] = useState('')
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
 
@@ -34,7 +34,7 @@ export default function Chat() {
     e.preventDefault()
     if (!input.trim() || isWaitingForResponse) return
 
-    const userMessage: ChatMessage = {
+    const userMessage: Conversation = {
       id: Date.now().toString(),
       content: input,
       role: 'user',
@@ -47,7 +47,7 @@ export default function Chat() {
 
     // TODO: API 연동 시 실제 응답 로직 구현
     setTimeout(() => {
-      const assistantMessage: ChatMessage = {
+      const assistantMessage: Conversation = {
         id: (Date.now() + 1).toString(),
         content:
           '죄송합니다. 현재는 데모 모드입니다. 실제 API 연동이 필요합니다.',
