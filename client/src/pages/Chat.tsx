@@ -1,18 +1,31 @@
 import Breadcrumb from '@/components/Breadcrumb'
-import { ChatPannel } from '@/panels/ChatPannel'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { api } from '@/services/api'
-import { Agent, Conversation } from '@agentfleet/types'
+import {
+  Agent,
+  Conversation,
+  NodeExecutionResult,
+  Pipeline,
+} from '@agentfleet/types'
+import { PencilIcon, TrashIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { ReasoningPipelineTest } from './agents/tabs/ReasoningPipelineTest'
 
 export default function Chat() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const [pipeline, setPipeline] = useState<Pipeline | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [agent, setAgent] = useState<Agent | null>(null)
   const [messages, setMessages] = useState<Conversation[]>([])
   const [input, setInput] = useState('')
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
+  const [activeNodeIds, setActiveNodeIds] = useState<Set<string>>(new Set())
+  const [nodeResults, setNodeResults] = useState<
+    Map<string, NodeExecutionResult>
+  >(new Map())
 
   useEffect(() => {
     // TODO: API 연동 시 실제 데이터 조회 로직 구현
@@ -26,71 +39,60 @@ export default function Chat() {
         return
       }
       setAgent(agent)
-      setIsLoading(false)
+
+      api
+        .getReasoningPipelines(agent.id)
+        .then((pipelines) => {
+          const foundPipeline = pipelines.find((p) => p.agentId === agent.id)
+          setPipeline(foundPipeline || null)
+        })
+        .finally(() => {
+          setIsLoading(false)
+        })
     })
   }, [id, navigate])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isWaitingForResponse) return
-
-    const userMessage: Conversation = {
-      id: Date.now().toString(),
-      content: input,
-      role: 'user',
-      createdAt: new Date(),
-    }
-
-    setMessages((prev) => [...prev, userMessage])
-    setInput('')
-    setIsWaitingForResponse(true)
-
-    // TODO: API 연동 시 실제 응답 로직 구현
-    setTimeout(() => {
-      const assistantMessage: Conversation = {
-        id: (Date.now() + 1).toString(),
-        content:
-          '죄송합니다. 현재는 데모 모드입니다. 실제 API 연동이 필요합니다.',
-        role: 'assistant',
-        createdAt: new Date(),
-      }
-      setMessages((prev) => [...prev, assistantMessage])
-      setIsWaitingForResponse(false)
-    }, 1000)
-  }
 
   return isLoading ? (
     <></>
   ) : !agent ? (
     <Navigate to="/404" replace />
   ) : (
-    <div className="container-2xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <Breadcrumb
-            items={[
-              { label: 'Agents', path: '/agents' },
-              { label: agent.name },
-            ]}
-          />
-          <div
-            className={`badge badge-sm ${
-              agent.status === 'active' ? 'badge-success' : 'badge-ghost'
-            }`}
-          >
-            {agent.status}
+    <div className="fixed inset-0 pt-16 px-4">
+      <div className="mb-2 gap-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="text-2xl">{agent.name}</div>
+            <Badge
+              variant={agent.status === 'active' ? 'default' : 'secondary'}
+            >
+              {agent.status}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-sm">
+              <h4 className="font-semibold">생성일</h4>
+              {new Date(agent.createdAt).toLocaleString()}
+            </div>
+            <Button className="cursor-pointer" variant="outline" size="sm">
+              <PencilIcon className="h-4 w-4" />
+            </Button>
+            <Button className="cursor-pointer" variant="destructive" size="sm">
+              <TrashIcon className="h-4 w-4" />
+            </Button>
           </div>
         </div>
+        <div className="flex items-center h-8">
+          {agent.description || '설명이 없습니다.'}
+        </div>
       </div>
-      <div className="h-[calc(100vh-10rem)]">
-        <ChatPannel
-          agent={agent}
-          messages={messages}
-          isWaitingForResponse={isWaitingForResponse}
-          handleSubmit={handleSubmit}
-          input={input}
-          setInput={setInput}
-        />
+      <div className="h-full relative">
+        <div className="absolute w-full top-0 bottom-22">
+          <ReasoningPipelineTest
+            agent={agent}
+            pipeline={pipeline}
+            onActiveNodeIdsChange={setActiveNodeIds}
+          />
+        </div>
       </div>
     </div>
   )

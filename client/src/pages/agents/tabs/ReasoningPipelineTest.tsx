@@ -1,10 +1,10 @@
-import { ChatMessageWithExtra, ChatPannel } from '@/panels/ChatPannel'
+import { ChatPannel, ConversationWithExtra } from '@/panels/ChatPannel'
 import { api } from '@/services/api'
 import { Agent, NodeExecutionResult, Pipeline } from '@agentfleet/types'
 import { useCallback, useEffect, useState } from 'react'
 
-// ChatMessageWithExtra 타입 확장
-interface ProgressMessage extends ChatMessageWithExtra {
+// ConversationWithExtra 타입 확장
+interface ProgressMessage extends ConversationWithExtra {
   isLoading?: boolean
   extra?: NodeExecutionResult[]
   nodeId?: string
@@ -24,7 +24,7 @@ interface ReasoningPipelineTestProps {
   agent: Agent
   pipeline: Pipeline | null
   onActiveNodeIdsChange: (activeNodeIds: Set<string>) => void
-  onNodeResultsChange: (
+  onNodeResultsChange?: (
     nodeResults: Record<string, NodeExecutionResult>,
   ) => void
 }
@@ -267,7 +267,7 @@ export function ReasoningPipelineTest({
   }, [activeNodeIds, onActiveNodeIdsChange])
 
   useEffect(() => {
-    onNodeResultsChange(Object.fromEntries(nodeResults))
+    onNodeResultsChange?.(Object.fromEntries(nodeResults))
   }, [nodeResults, onNodeResultsChange])
 
   return (
