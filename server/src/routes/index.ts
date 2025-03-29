@@ -11,7 +11,6 @@ import { PipelineRepository } from '../repositories/pipeline.repository'
 import { PipelineExecutionsRepository } from '../repositories/pipelineExecution.repository'
 import { PromptTemplateRepository } from '../repositories/promptTemplate.repository'
 import { AgentService } from '../services/agent.service'
-import { PipelineService } from '../services/agentReasoningPipeline.service'
 import { ConnectorService } from '../services/connector.service'
 import { ConnectorFactory } from '../services/connectors/ConnectorFactory'
 import { KnowledgeBaseConnector } from '../services/connectors/KnowledgeBaseConnector'
@@ -22,12 +21,13 @@ import { NodeExecutorFactory } from '../services/nodeExecutors/NodeExecutorFacto
 import { PromptNodeExecutor } from '../services/nodeExecutors/PromptNodeExecutor'
 import { PipelineExecutionService } from '../services/pipelineExecution.service'
 import { PromptService } from '../services/prompt.service'
-import { createAgentReasoningPipelinesRouter } from './agentReasoningPipelines.routes'
+import { PipelineService } from '../services/reasoningPipeline.service'
 import { createAgentsRouter } from './agents.routes'
 import { createConnectorsRouter } from './connectors.routes'
 import { createFleetsRouter } from './fleets.routes'
 import { createPipelineExecutionsRouter } from './pipelineJobs.routes'
 import { createPromptsRouter } from './prompts.routes'
+import { createReasoningPipelinesRouter } from './reasoningPipelines.routes'
 
 const repositoryDriverType = process.env.REPOSITORY_DRIVER || 'mock'
 const s3Client = createS3Client({
@@ -92,10 +92,7 @@ router.use(
 )
 router.use(
   '/reasoning-pipelines',
-  createAgentReasoningPipelinesRouter(
-    pipelineService,
-    pipelineExecutionService,
-  ),
+  createReasoningPipelinesRouter(pipelineService, pipelineExecutionService),
 )
 router.use('/prompts', createPromptsRouter(promptService))
 

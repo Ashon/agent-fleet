@@ -1,10 +1,10 @@
 import { Router } from 'express'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
-import { PipelineService } from '../services/agentReasoningPipeline.service'
 import { PipelineExecutionService } from '../services/pipelineExecution.service'
+import { PipelineService } from '../services/reasoningPipeline.service'
 
-export const createAgentReasoningPipelinesRouter = (
+export const createReasoningPipelinesRouter = (
   pipelineService: PipelineService,
   pipelineExecutionService: PipelineExecutionService,
 ) => {

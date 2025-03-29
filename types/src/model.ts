@@ -1,10 +1,9 @@
 import { BaseEntity } from './common'
 
-export interface Model extends BaseEntity {
+export interface ModelConfig extends BaseEntity {
   name: string
-  provider: 'openai' | 'anthropic' | 'google'
+  provider: 'openai' | 'anthropic' | 'google' | 'ollama'
   description: string
   maxTokens: number
-  costPer1kTokens: number
-  status: 'stable' | 'beta' | 'deprecated'
+  status: 'active' | 'inactive'
 }

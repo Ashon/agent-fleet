@@ -8,11 +8,11 @@ import express from 'express'
 import request from 'supertest'
 import { pipelineExecutionService, pipelineService } from '..'
 import { errorHandler } from '../../middleware/errorHandler'
-import { PipelineService } from '../../services/agentReasoningPipeline.service'
 import { PipelineExecutionService } from '../../services/pipelineExecution.service'
-import { createAgentReasoningPipelinesRouter } from '../agentReasoningPipelines.routes'
+import { PipelineService } from '../../services/reasoningPipeline.service'
+import { createReasoningPipelinesRouter } from '../reasoningPipelines.routes'
 
-jest.mock('../../services/agentReasoningPipeline.service')
+jest.mock('../../services/reasoningPipeline.service')
 jest.mock('../../services/pipelineExecution.service')
 
 describe('Pipeline Routes', () => {
@@ -47,10 +47,7 @@ describe('Pipeline Routes', () => {
     app.use(express.json())
     app.use(
       '/api/reasoning-pipelines',
-      createAgentReasoningPipelinesRouter(
-        pipelineService,
-        pipelineExecutionService,
-      ),
+      createReasoningPipelinesRouter(pipelineService, pipelineExecutionService),
     )
     app.use(errorHandler)
 

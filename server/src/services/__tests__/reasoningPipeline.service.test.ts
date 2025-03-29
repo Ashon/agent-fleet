@@ -4,9 +4,9 @@ import {
   PipelineNode,
 } from '@agentfleet/types'
 import { S3RepositoryDriver } from '../../drivers/s3RepositoryDriver'
-import { mockPipelines } from '../../mocks/agentReasoningPipeline'
+import { mockPipelines } from '../../mocks/reasoningPipeline'
 import { PipelineRepository } from '../../repositories/pipeline.repository'
-import { PipelineService } from '../agentReasoningPipeline.service'
+import { PipelineService } from '../reasoningPipeline.service'
 
 jest.mock('../../repositories/pipeline.repository')
 

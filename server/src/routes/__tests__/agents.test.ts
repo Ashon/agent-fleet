@@ -18,6 +18,7 @@ describe('Agent Routes', () => {
       name: '테스트 에이전트 1',
       description: '테스트 설명 1',
       status: 'active',
+      modelId: 'ollama-gemma3',
       createdAt: mockDate,
       updatedAt: mockDate,
       chatHistory: [],
@@ -28,6 +29,7 @@ describe('Agent Routes', () => {
       name: '테스트 에이전트 2',
       description: '테스트 설명 2',
       status: 'active',
+      modelId: 'ollama-gemma3',
       createdAt: mockDate,
       updatedAt: mockDate,
       chatHistory: [],
@@ -55,6 +57,7 @@ describe('Agent Routes', () => {
           id: '3',
           ...data,
           status: 'active',
+          modelId: 'ollama-gemma3',
           createdAt: mockDate,
           updatedAt: mockDate,
           chatHistory: [],
@@ -68,6 +71,7 @@ describe('Agent Routes', () => {
         return Promise.resolve({
           ...agent,
           ...data,
+          modelId: 'ollama-gemma3',
           updatedAt: mockDate,
         })
       },
@@ -112,6 +116,7 @@ describe('Agent Routes', () => {
       const newAgentData: CreateAgentData = {
         name: '새 에이전트',
         description: '새 설명',
+        modelId: 'ollama-gemma3',
       }
 
       const response = await request(app).post('/api/agents').send(newAgentData)

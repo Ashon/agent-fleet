@@ -20,6 +20,7 @@ describe('AgentService', () => {
     name: '테스트 에이전트',
     description: '테스트를 위한 에이전트입니다.',
     status: 'active' as AgentStatus,
+    modelId: 'ollama-gemma3',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     chatHistory: [],
@@ -99,6 +100,7 @@ describe('AgentService', () => {
       const agentData = {
         name: '새 에이전트',
         description: '새로운 에이전트입니다.',
+        modelId: 'ollama-gemma3',
         createdAt: new Date(),
         updatedAt: new Date(),
         tools: [],
@@ -135,12 +137,14 @@ describe('AgentService', () => {
       const agentData = {
         name: longString,
         description: longString,
+        modelId: 'ollama-gemma3',
       }
 
       const expectedAgent: Agent = {
         id: expect.any(String),
         ...agentData,
         status: 'active',
+        modelId: 'ollama-gemma3',
         chatHistory: [],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
