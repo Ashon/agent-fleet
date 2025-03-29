@@ -1,6 +1,6 @@
-import { PromptTemplate } from '@agentfleet/types'
+import { Prompt } from '@agentfleet/types'
 
-export const mockPromptTemplates: PromptTemplate[] = [
+export const mockPrompts: Prompt[] = [
   {
     id: 'template-1',
     name: '의도 파악 프롬프트',

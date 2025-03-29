@@ -15,10 +15,14 @@ describe('Agent Routes', () => {
   const mockAgents: Agent[] = [
     {
       id: '1',
-      name: '테스트 에이전트 1',
-      description: '테스트 설명 1',
+      name: 'Test Agent 1',
+      description: 'Test Description 1',
       status: 'active',
-      modelId: 'ollama-gemma3',
+      modelConfig: {
+        provider: 'ollama',
+        modelName: 'gemma3',
+        maxTokens: 8192,
+      },
       createdAt: mockDate,
       updatedAt: mockDate,
       chatHistory: [],
@@ -26,10 +30,14 @@ describe('Agent Routes', () => {
     },
     {
       id: '2',
-      name: '테스트 에이전트 2',
-      description: '테스트 설명 2',
+      name: 'Test Agent 2',
+      description: 'Test Description 2',
       status: 'active',
-      modelId: 'ollama-gemma3',
+      modelConfig: {
+        provider: 'ollama',
+        modelName: 'gemma3',
+        maxTokens: 8192,
+      },
       createdAt: mockDate,
       updatedAt: mockDate,
       chatHistory: [],
@@ -91,7 +99,7 @@ describe('Agent Routes', () => {
 
       expect(response.status).toBe(200)
       expect(response.body).toHaveLength(2)
-      expect(response.body[0].name).toBe('테스트 에이전트 1')
+      expect(response.body[0].name).toBe('Test Agent 1')
     })
   })
 
@@ -100,7 +108,7 @@ describe('Agent Routes', () => {
       const response = await request(app).get('/api/agents/1')
 
       expect(response.status).toBe(200)
-      expect(response.body.name).toBe('테스트 에이전트 1')
+      expect(response.body.name).toBe('Test Agent 1')
     })
 
     it('존재하지 않는 ID로 404를 반환해야 함', async () => {
@@ -114,21 +122,25 @@ describe('Agent Routes', () => {
   describe('POST /api/agents', () => {
     it('새로운 에이전트를 생성해야 함', async () => {
       const newAgentData: CreateAgentData = {
-        name: '새 에이전트',
-        description: '새 설명',
-        modelId: 'ollama-gemma3',
+        name: 'New Agent',
+        description: 'New Description',
+        modelConfig: {
+          provider: 'ollama',
+          modelName: 'gemma3',
+          maxTokens: 8192,
+        },
       }
 
       const response = await request(app).post('/api/agents').send(newAgentData)
 
       expect(response.status).toBe(201)
-      expect(response.body.name).toBe('새 에이전트')
+      expect(response.body.name).toBe('New Agent')
     })
 
     it('필수 필드가 누락된 경우 400을 반환해야 함', async () => {
       const response = await request(app)
         .post('/api/agents')
-        .send({ name: '새 에이전트' })
+        .send({ name: 'New Agent' })
 
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(
@@ -140,20 +152,20 @@ describe('Agent Routes', () => {
   describe('PUT /api/agents/:id', () => {
     it('존재하는 에이전트를 업데이트해야 함', async () => {
       const updateData = {
-        name: '수정된 에이전트',
-        description: '수정된 설명',
+        name: 'Updated Agent',
+        description: 'Updated Description',
       }
 
       const response = await request(app).put('/api/agents/1').send(updateData)
 
       expect(response.status).toBe(200)
-      expect(response.body.name).toBe('수정된 에이전트')
+      expect(response.body.name).toBe('Updated Agent')
     })
 
     it('존재하지 않는 에이전트 업데이트 시 404를 반환해야 함', async () => {
       const response = await request(app).put('/api/agents/999').send({
-        name: '수정된 에이전트',
-        description: '수정된 설명',
+        name: 'Updated Agent',
+        description: 'Updated Description',
       })
 
       expect(response.status).toBe(404)
@@ -163,7 +175,7 @@ describe('Agent Routes', () => {
     it('필수 필드가 누락된 경우 400을 반환해야 함', async () => {
       const response = await request(app)
         .put('/api/agents/1')
-        .send({ name: '수정된 에이전트' })
+        .send({ name: 'Updated Agent' })
 
       expect(response.status).toBe(400)
       expect(response.body.error).toBe(

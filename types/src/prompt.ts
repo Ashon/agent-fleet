@@ -1,20 +1,20 @@
 import { BaseEntity } from './common'
 
-export interface PromptTemplate extends BaseEntity {
+export interface Prompt extends BaseEntity {
   name: string
   description?: string
   content: string
   variables: string[]
 }
 
-export interface CreatePromptTemplateDto {
+export interface CreatePromptDto {
   name: string
   description?: string
   content: string
   variables: string[]
 }
 
-export interface UpdatePromptTemplateDto {
+export interface UpdatePromptDto {
   name?: string
   description?: string
   content?: string
@@ -23,7 +23,7 @@ export interface UpdatePromptTemplateDto {
 
 // Pipeline 노드에서 사용할 프롬프트 설정
 export interface PromptNodeConfig {
-  templateId: string
+  promptId: string
   contextSources?: {
     type: 'connector' | 'memory' | 'knowledge-base'
     connectorId?: string // 외부 시스템 연동을 위한 커넥터 ID
@@ -44,7 +44,7 @@ export interface PromptNodeConfig {
 }
 
 export interface PromptExecutionResult {
-  templateId: string
+  promptId: string
   renderedPrompt: string
   completion: string
   tokenUsage: {

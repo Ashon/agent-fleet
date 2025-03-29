@@ -49,7 +49,7 @@ describe('PipelineExecutionService', () => {
         data: {
           name: '입력 노드',
           config: {
-            templateId: 'template-1',
+            promptId: 'prompt-1',
             variables: {},
             contextMapping: {
               input: ['text'],
@@ -66,7 +66,7 @@ describe('PipelineExecutionService', () => {
           name: '처리 노드',
           description: '데이터 처리',
           config: {
-            templateId: 'template-2',
+            promptId: 'prompt-2',
             variables: {},
             contextMapping: {
               input: ['intent'],
@@ -82,7 +82,7 @@ describe('PipelineExecutionService', () => {
         data: {
           name: '출력 노드',
           config: {
-            templateId: 'template-3',
+            promptId: 'prompt-3',
             variables: {},
             contextMapping: {
               input: ['response'],
@@ -204,7 +204,7 @@ describe('PipelineExecutionService', () => {
             data: {
               name: '입력 노드',
               config: {
-                templateId: 'template-1',
+                promptId: 'prompt-1',
                 variables: {},
                 contextMapping: {
                   input: ['text'],
@@ -221,7 +221,7 @@ describe('PipelineExecutionService', () => {
               name: '계획 노드',
               description: '계획 수립',
               config: {
-                templateId: 'template-2',
+                promptId: 'prompt-2',
                 variables: {},
                 contextMapping: {
                   input: ['result'],
@@ -238,7 +238,7 @@ describe('PipelineExecutionService', () => {
               name: '행동 노드',
               description: '작업 실행',
               config: {
-                templateId: 'template-3',
+                promptId: 'prompt-3',
                 variables: {},
                 contextMapping: {
                   input: ['plan'],

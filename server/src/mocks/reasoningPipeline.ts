@@ -14,7 +14,7 @@ export const mockPipelines: Pipeline[] = [
         data: {
           name: '지식 베이스 검색',
           config: {
-            templateId: 'knowledge-base-search',
+            promptId: 'knowledge-base-search',
             variables: {},
             contextSources: [
               {
@@ -44,7 +44,7 @@ export const mockPipelines: Pipeline[] = [
         data: {
           name: '의도 분석',
           config: {
-            templateId: 'intent-analysis',
+            promptId: 'intent-analysis',
             variables: {},
             contextMapping: {
               input: ['text', 'documents'],
@@ -61,7 +61,7 @@ export const mockPipelines: Pipeline[] = [
           name: '정보 수집',
           description: '필요한 정보를 수집하는 노드',
           config: {
-            templateId: 'template-3',
+            promptId: 'template-3',
             variables: {},
             contextSources: [
               {
@@ -94,7 +94,7 @@ export const mockPipelines: Pipeline[] = [
           name: '응답 결정',
           description: '수집된 정보를 바탕으로 최종 응답을 결정하는 노드',
           config: {
-            templateId: 'template-4',
+            promptId: 'template-4',
             variables: {
               responseStyle: 'informative',
               formatType: 'markdown',
@@ -116,7 +116,7 @@ export const mockPipelines: Pipeline[] = [
           name: '응답 생성',
           description: '최종 응답을 생성하고 포맷팅하는 노드',
           config: {
-            templateId: 'template-5',
+            promptId: 'template-5',
             variables: {
               format: 'markdown',
               style: 'conversational',
@@ -154,7 +154,7 @@ export const mockPipelines: Pipeline[] = [
           name: '사용자 입력',
           description: '사용자로부터 입력을 받는 노드',
           config: {
-            templateId: 'template-1',
+            promptId: 'template-1',
             variables: {},
             contextMapping: {
               input: ['text'],
@@ -173,7 +173,7 @@ export const mockPipelines: Pipeline[] = [
           name: '분석 계획',
           description: '입력의 복잡도에 따른 분석 계획 수립',
           config: {
-            templateId: 'template-2',
+            promptId: 'template-2',
             variables: {
               systemRole: '분석 전문가',
             },
@@ -194,7 +194,7 @@ export const mockPipelines: Pipeline[] = [
           name: '데이터 수집',
           description: '필요한 데이터를 다양한 소스에서 수집',
           config: {
-            templateId: 'template-3',
+            promptId: 'template-3',
             variables: {},
             contextSources: [
               {
@@ -227,7 +227,7 @@ export const mockPipelines: Pipeline[] = [
           name: '데이터 분석',
           description: '수집된 데이터의 심층 분석 수행',
           config: {
-            templateId: 'template-4',
+            promptId: 'template-4',
             variables: {},
             contextSources: [
               {
@@ -260,7 +260,7 @@ export const mockPipelines: Pipeline[] = [
           name: '결론 도출',
           description: '분석 결과를 바탕으로 결론 도출',
           config: {
-            templateId: 'template-5',
+            promptId: 'template-5',
             variables: {
               confidenceThreshold: '0.8',
               method: 'weighted',
@@ -282,7 +282,7 @@ export const mockPipelines: Pipeline[] = [
           name: '응답 생성',
           description: '최종 응답 생성 및 포맷팅',
           config: {
-            templateId: 'template-6',
+            promptId: 'template-6',
             variables: {
               format: 'markdown',
               style: 'academic',
@@ -324,7 +324,7 @@ export const mockPipelines: Pipeline[] = [
           name: '멀티모달 입력',
           description: '텍스트와 이미지를 함께 입력받습니다',
           config: {
-            templateId: 'template-1',
+            promptId: 'template-1',
             variables: {},
             contextMapping: {
               input: ['text', 'image'],
@@ -342,7 +342,7 @@ export const mockPipelines: Pipeline[] = [
           name: '이미지 분석',
           description: '입력된 이미지를 분석하고 주요 특징을 추출합니다',
           config: {
-            templateId: 'template-3',
+            promptId: 'template-3',
             variables: {
               imageUrl: '{{node-1.images[0]}}',
               detailLevel: 'high',
@@ -369,7 +369,7 @@ export const mockPipelines: Pipeline[] = [
           name: '텍스트 분석',
           description: '입력된 텍스트를 분석하고 주요 의도를 파악합니다',
           config: {
-            templateId: 'template-4',
+            promptId: 'template-4',
             variables: {},
             contextMapping: {
               input: ['text'],
@@ -387,7 +387,7 @@ export const mockPipelines: Pipeline[] = [
           description:
             '이미지와 텍스트 분석 결과를 통합하고 응답 방향을 결정합니다',
           config: {
-            templateId: 'template-5',
+            promptId: 'template-5',
             variables: {},
             contextMapping: {
               input: ['intent', 'entities'],
@@ -405,7 +405,7 @@ export const mockPipelines: Pipeline[] = [
           description:
             '텍스트 응답과 필요시 이미지 생성을 포함한 응답을 생성합니다',
           config: {
-            templateId: 'template-6',
+            promptId: 'template-6',
             variables: {},
             contextMapping: {
               input: ['intent', 'entities'],
@@ -439,7 +439,7 @@ export const mockPipelines: Pipeline[] = [
           name: '복합 입력',
           description: '여러 종류의 입력을 동시에 처리합니다',
           config: {
-            templateId: 'template-1',
+            promptId: 'template-1',
             variables: {},
             contextMapping: {
               input: ['text', 'image', 'audio'],
@@ -456,7 +456,7 @@ export const mockPipelines: Pipeline[] = [
           name: '텍스트 처리',
           description: '텍스트 입력을 병렬로 처리',
           config: {
-            templateId: 'template-2',
+            promptId: 'template-2',
             variables: {},
             contextSources: [
               {
@@ -484,7 +484,7 @@ export const mockPipelines: Pipeline[] = [
           name: '이미지 처리',
           description: '이미지 입력을 병렬로 처리',
           config: {
-            templateId: 'template-2',
+            promptId: 'template-2',
             variables: {},
             contextSources: [
               {
@@ -512,7 +512,7 @@ export const mockPipelines: Pipeline[] = [
           name: '오디오 처리',
           description: '오디오 입력을 병렬로 처리',
           config: {
-            templateId: 'template-2',
+            promptId: 'template-2',
             variables: {},
             contextSources: [
               {
@@ -540,7 +540,7 @@ export const mockPipelines: Pipeline[] = [
           name: '결과 통합',
           description: '병렬 처리된 결과를 통합',
           config: {
-            templateId: 'template-3',
+            promptId: 'template-3',
             variables: {},
             contextSources: [
               {
@@ -568,7 +568,7 @@ export const mockPipelines: Pipeline[] = [
           name: '심층 분석 A',
           description: '첫 번째 분석 경로',
           config: {
-            templateId: 'template-3',
+            promptId: 'template-3',
             variables: {},
             contextSources: [
               {
@@ -599,7 +599,7 @@ export const mockPipelines: Pipeline[] = [
           name: '심층 분석 B',
           description: '두 번째 분석 경로',
           config: {
-            templateId: 'template-4',
+            promptId: 'template-4',
             variables: {},
             contextSources: [
               {
@@ -630,7 +630,7 @@ export const mockPipelines: Pipeline[] = [
           name: '분석 결과 통합',
           description: '병렬 분석 결과를 비교하고 최적의 결과 선택',
           config: {
-            templateId: 'template-5',
+            promptId: 'template-5',
             variables: {},
             contextMapping: {
               input: ['intent', 'entities'],
@@ -692,7 +692,7 @@ export const mockPipelines: Pipeline[] = [
           name: '의도 분석',
           description: '사용자의 날씨 관련 질문 의도를 분석',
           config: {
-            templateId: 'weather-intent',
+            promptId: 'weather-intent',
             variables: {},
             contextMapping: {
               input: ['text'],
@@ -709,7 +709,7 @@ export const mockPipelines: Pipeline[] = [
           name: '날씨 정보 검색',
           description: '날씨 데이터베이스에서 정보 검색',
           config: {
-            templateId: 'weather-response',
+            promptId: 'weather-response',
             variables: {},
             contextSources: [
               {

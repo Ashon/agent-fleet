@@ -17,10 +17,14 @@ describe('AgentService', () => {
 
   const testAgent: Agent = {
     id: '1',
-    name: '테스트 에이전트',
-    description: '테스트를 위한 에이전트입니다.',
+    name: 'Test Agent',
+    description: 'Test Agent Description',
     status: 'active' as AgentStatus,
-    modelId: 'ollama-gemma3',
+    modelConfig: {
+      provider: 'ollama',
+      modelName: 'gemma3',
+      maxTokens: 8192,
+    },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     chatHistory: [],
@@ -100,7 +104,11 @@ describe('AgentService', () => {
       const agentData = {
         name: '새 에이전트',
         description: '새로운 에이전트입니다.',
-        modelId: 'ollama-gemma3',
+        modelConfig: {
+          provider: 'ollama',
+          modelName: 'gemma3',
+          maxTokens: 8192,
+        },
         createdAt: new Date(),
         updatedAt: new Date(),
         tools: [],
@@ -137,14 +145,22 @@ describe('AgentService', () => {
       const agentData = {
         name: longString,
         description: longString,
-        modelId: 'ollama-gemma3',
+        modelConfig: {
+          provider: 'ollama',
+          modelName: 'gemma3',
+          maxTokens: 8192,
+        },
       }
 
       const expectedAgent: Agent = {
         id: expect.any(String),
         ...agentData,
         status: 'active',
-        modelId: 'ollama-gemma3',
+        modelConfig: {
+          provider: 'ollama',
+          modelName: 'gemma3',
+          maxTokens: 8192,
+        },
         chatHistory: [],
         createdAt: expect.any(String),
         updatedAt: expect.any(String),

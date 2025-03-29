@@ -1,56 +1,47 @@
-import {
-  CreatePromptTemplateDto,
-  PromptTemplate,
-  UpdatePromptTemplateDto,
-} from '@agentfleet/types'
+import { CreatePromptDto, Prompt, UpdatePromptDto } from '@agentfleet/types'
 import Handlebars from 'handlebars'
-import { PromptTemplateRepository } from '../repositories/promptTemplate.repository'
+import { PromptRepository } from '../repositories/prompt.repository'
 
 export class PromptService {
   private readonly helpers = new Set(['lowercase', 'uppercase', 'trim'])
 
-  constructor(
-    private readonly promptTemplateRepository: PromptTemplateRepository,
-  ) {
+  constructor(private readonly promptRepository: PromptRepository) {
     // 기본 헬퍼 함수 등록
     Handlebars.registerHelper('lowercase', (str) => str?.toLowerCase())
     Handlebars.registerHelper('uppercase', (str) => str?.toUpperCase())
     Handlebars.registerHelper('trim', (str) => str?.trim())
   }
 
-  async createTemplate(dto: CreatePromptTemplateDto): Promise<PromptTemplate> {
+  async createTemplate(dto: CreatePromptDto): Promise<Prompt> {
     // 템플릿 유효성 검사 및 변수 추출
     const extractedVariables = this.extractTemplateVariables(dto.content)
     dto.variables = extractedVariables
-    return this.promptTemplateRepository.create(dto)
+    return this.promptRepository.create(dto)
   }
 
-  async getTemplate(id: string): Promise<PromptTemplate> {
-    const template = await this.promptTemplateRepository.findById(id)
+  async getTemplate(id: string): Promise<Prompt> {
+    const template = await this.promptRepository.findById(id)
     if (!template) {
       throw new Error(`Template with id ${id} not found`)
     }
     return template
   }
 
-  async getAllTemplates(): Promise<PromptTemplate[]> {
-    return this.promptTemplateRepository.findAll()
+  async getAllTemplates(): Promise<Prompt[]> {
+    return this.promptRepository.findAll()
   }
 
-  async updateTemplate(
-    id: string,
-    dto: UpdatePromptTemplateDto,
-  ): Promise<PromptTemplate> {
+  async updateTemplate(id: string, dto: UpdatePromptDto): Promise<Prompt> {
     if (dto.content) {
       // 템플릿 유효성 검사 및 변수 추출
       const extractedVariables = this.extractTemplateVariables(dto.content)
       dto.variables = extractedVariables
     }
-    return this.promptTemplateRepository.update(id, dto)
+    return this.promptRepository.update(id, dto)
   }
 
   async deleteTemplate(id: string): Promise<void> {
-    await this.promptTemplateRepository.delete(id)
+    await this.promptRepository.delete(id)
   }
 
   async renderPrompt(

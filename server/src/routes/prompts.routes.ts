@@ -1,7 +1,4 @@
-import {
-  CreatePromptTemplateDto,
-  UpdatePromptTemplateDto,
-} from '@agentfleet/types'
+import { CreatePromptDto, UpdatePromptDto } from '@agentfleet/types'
 import { Router } from 'express'
 import { PromptService } from '../services/prompt.service'
 
@@ -11,7 +8,7 @@ export function createPromptsRouter(promptService: PromptService): Router {
   // 프롬프트 템플릿 생성
   router.post('/templates', async (req, res, next) => {
     try {
-      const dto: CreatePromptTemplateDto = req.body
+      const dto: CreatePromptDto = req.body
       const template = await promptService.createTemplate(dto)
       res.status(201).json(template)
     } catch (error) {
@@ -42,7 +39,7 @@ export function createPromptsRouter(promptService: PromptService): Router {
   // 템플릿 수정
   router.put('/templates/:id', async (req, res, next) => {
     try {
-      const dto: UpdatePromptTemplateDto = req.body
+      const dto: UpdatePromptDto = req.body
       const template = await promptService.updateTemplate(req.params.id, dto)
       res.json(template)
     } catch (error) {

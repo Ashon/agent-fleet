@@ -1,3 +1,4 @@
+import { CreateAgentData } from '@agentfleet/types'
 import { Router } from 'express'
 import { asyncHandler } from '../middleware/asyncHandler'
 import { ApiError } from '../middleware/errorHandler'
@@ -34,13 +35,13 @@ export const createAgentsRouter = (service: AgentService) => {
   router.post(
     '/',
     asyncHandler(async (req, res) => {
-      const agent = req.body
+      const createPayload: CreateAgentData = req.body
 
-      if (!agent.name || !agent.description) {
+      if (!createPayload.name || !createPayload.description) {
         throw new ApiError(400, 'Name and description are required fields')
       }
 
-      const newAgent = await service.createAgent(agent)
+      const newAgent = await service.createAgent(createPayload)
       res.status(201).json(newAgent)
     }),
   )

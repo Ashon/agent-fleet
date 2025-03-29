@@ -7,7 +7,11 @@ export interface Agent extends BaseEntity {
   name: string
   description: string
   status: AgentStatus
-  modelId: string
+  modelConfig: {
+    provider: string
+    modelName: string
+    maxTokens: number
+  }
   chatHistory: Conversation[]
   tools: string[]
 }
@@ -15,7 +19,11 @@ export interface Agent extends BaseEntity {
 export interface CreateAgentData {
   name: string
   description: string
-  modelId: string
+  modelConfig: {
+    provider: string
+    modelName: string
+    maxTokens: number
+  }
 }
 
 export interface UpdateAgentData extends Partial<CreateAgentData> {

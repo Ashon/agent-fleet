@@ -57,7 +57,7 @@ export class PromptNodeExecutor implements NodeExecutor {
 
       // 프롬프트 렌더링
       const renderedPrompt = await this.promptService.renderPrompt(
-        config.templateId,
+        config.promptId,
         args,
       )
 

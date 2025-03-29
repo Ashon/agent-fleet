@@ -24,7 +24,7 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
         endTime: new Date('2024-03-15T09:00:30.000Z'),
         status: 'success',
         config: {
-          templateId: 'prompt-template-1',
+          promptId: 'prompt-1',
           contextSources: [],
           variables: {},
           contextMapping: { input: [], output: [] },
@@ -42,7 +42,7 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
         endTime: new Date('2024-03-15T09:01:00.000Z'),
         status: 'success',
         config: {
-          templateId: 'prompt-template-1',
+          promptId: 'prompt-2',
           contextSources: [],
           variables: {},
           contextMapping: { input: [], output: [] },
@@ -60,7 +60,7 @@ export const mockPipelineExecutions: PipelineExecutionRecord[] = [
         endTime: new Date('2024-03-15T09:02:00.000Z'),
         status: 'success',
         config: {
-          templateId: 'prompt-template-1',
+          promptId: 'prompt-3',
           contextSources: [],
           variables: {},
           contextMapping: { input: [], output: [] },

@@ -2,7 +2,7 @@ import { mockAgents } from '../mocks/agents'
 import { mockConnectors } from '../mocks/connectors'
 import { mockFleets } from '../mocks/fleets'
 import { mockPipelineExecutions } from '../mocks/mockPipelineExecutions'
-import { mockPromptTemplates } from '../mocks/promptTemplates'
+import { mockPrompts } from '../mocks/prompts'
 import { mockPipelines } from '../mocks/reasoningPipeline'
 import { Entity, RepositoryDriver } from './repositoryDriver'
 
@@ -28,8 +28,8 @@ export class MockRepositoryDriver implements RepositoryDriver {
       new Map(mockPipelines.map((pipeline) => [pipeline.id, pipeline])),
     )
     this.data.set(
-      'prompt-templates',
-      new Map(mockPromptTemplates.map((template) => [template.id, template])),
+      'prompts',
+      new Map(mockPrompts.map((prompt) => [prompt.id, prompt])),
     )
     this.data.set(
       'pipeline-executions',

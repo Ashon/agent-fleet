@@ -9,7 +9,7 @@ import { ConnectorRepository } from '../repositories/connector.repository'
 import { FleetRepository } from '../repositories/fleet.repository'
 import { PipelineRepository } from '../repositories/pipeline.repository'
 import { PipelineExecutionsRepository } from '../repositories/pipelineExecution.repository'
-import { PromptTemplateRepository } from '../repositories/promptTemplate.repository'
+import { PromptRepository } from '../repositories/prompt.repository'
 import { AgentService } from '../services/agent.service'
 import { ConnectorService } from '../services/connector.service'
 import { ConnectorFactory } from '../services/connectors/ConnectorFactory'
@@ -55,8 +55,8 @@ const pipelineExecutionsRepository = new PipelineExecutionsRepository(
   repositoryDriver,
 )
 
-const promptTemplateRepository = new PromptTemplateRepository(repositoryDriver)
-export const promptService = new PromptService(promptTemplateRepository)
+const promptRepository = new PromptRepository(repositoryDriver)
+export const promptService = new PromptService(promptRepository)
 
 const llmProvider = new OllamaProvider()
 

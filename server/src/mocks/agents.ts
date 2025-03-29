@@ -6,7 +6,11 @@ export const mockAgents: Agent[] = [
     name: '기본 추론 에이전트',
     description: '사용자 입력을 분석하고 적절한 응답을 생성하는 기본 에이전트',
     status: 'active',
-    modelId: 'ollama-gemma3',
+    modelConfig: {
+      provider: 'ollama',
+      modelName: 'gemma3',
+      maxTokens: 8192,
+    },
     chatHistory: [],
     tools: [],
     createdAt: new Date().toISOString(),

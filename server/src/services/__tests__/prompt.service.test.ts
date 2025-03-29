@@ -1,15 +1,15 @@
-import { PromptTemplate } from '@agentfleet/types'
+import { Prompt } from '@agentfleet/types'
 import { RepositoryDriver } from '../../drivers/repositoryDriver'
-import { PromptTemplateRepository } from '../../repositories/promptTemplate.repository'
+import { PromptRepository } from '../../repositories/prompt.repository'
 import { PromptService } from '../prompt.service'
 
-jest.mock('../../repositories/promptTemplate.repository')
+jest.mock('../../repositories/prompt.repository')
 
 describe('PromptService', () => {
-  let mockRepository: jest.Mocked<PromptTemplateRepository>
+  let mockRepository: jest.Mocked<PromptRepository>
   let service: PromptService
 
-  const mockTemplate: PromptTemplate = {
+  const mockTemplate: Prompt = {
     id: 'test-template-1',
     name: '테스트 템플릿',
     description: '테스트 설명',
@@ -20,13 +20,12 @@ describe('PromptService', () => {
   }
 
   beforeEach(() => {
-    const MockedPromptTemplateRepository =
-      PromptTemplateRepository as jest.MockedClass<
-        typeof PromptTemplateRepository
-      >
-    mockRepository = new MockedPromptTemplateRepository(
+    const MockedPromptRepository = PromptRepository as jest.MockedClass<
+      typeof PromptRepository
+    >
+    mockRepository = new MockedPromptRepository(
       {} as RepositoryDriver,
-    ) as jest.Mocked<PromptTemplateRepository>
+    ) as jest.Mocked<PromptRepository>
 
     // 메서드 모킹
     mockRepository.findAll = jest.fn()

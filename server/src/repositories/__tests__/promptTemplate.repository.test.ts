@@ -1,12 +1,12 @@
-import { PromptTemplate } from '@agentfleet/types'
+import { Prompt } from '@agentfleet/types'
 import { RepositoryDriver } from '../../drivers/repositoryDriver'
-import { PromptTemplateRepository } from '../promptTemplate.repository'
+import { PromptRepository } from '../prompt.repository'
 
 describe('PromptTemplateRepository', () => {
   let mockDriver: jest.Mocked<RepositoryDriver>
-  let repository: PromptTemplateRepository
+  let repository: PromptRepository
 
-  const mockTemplate: PromptTemplate = {
+  const mockTemplate: Prompt = {
     id: 'test-template-1',
     name: '테스트 템플릿',
     description: '테스트 설명',
@@ -25,7 +25,7 @@ describe('PromptTemplateRepository', () => {
       clear: jest.fn(),
       exists: jest.fn(),
     }
-    repository = new PromptTemplateRepository(mockDriver)
+    repository = new PromptRepository(mockDriver)
   })
 
   describe('findAll', () => {
@@ -42,7 +42,7 @@ describe('PromptTemplateRepository', () => {
 
       const result = await repository.findAll()
       expect(result).toEqual(mockTemplates)
-      expect(mockDriver.findAll).toHaveBeenCalledWith('prompt-templates')
+      expect(mockDriver.findAll).toHaveBeenCalledWith('prompts')
     })
   })
 
@@ -53,7 +53,7 @@ describe('PromptTemplateRepository', () => {
       const result = await repository.findById(mockTemplate.id)
       expect(result).toEqual(mockTemplate)
       expect(mockDriver.findById).toHaveBeenCalledWith(
-        'prompt-templates',
+        'prompts',
         mockTemplate.id,
       )
     })
@@ -88,10 +88,7 @@ describe('PromptTemplateRepository', () => {
 
       const result = await repository.create(createDto)
       expect(result).toMatchObject(expectedTemplate)
-      expect(mockDriver.save).toHaveBeenCalledWith(
-        'prompt-templates',
-        expectedTemplate,
-      )
+      expect(mockDriver.save).toHaveBeenCalledWith('prompts', expectedTemplate)
     })
   })
 
@@ -120,7 +117,7 @@ describe('PromptTemplateRepository', () => {
     it('존재하지 않는 템플릿 수정 시 에러를 발생시켜야 함', async () => {
       await expect(
         repository.update('non-existent-id', { name: '수정된 이름' }),
-      ).rejects.toThrow('prompt templates with id non-existent-id not found')
+      ).rejects.toThrow('prompts with id non-existent-id not found')
     })
   })
 
@@ -129,7 +126,7 @@ describe('PromptTemplateRepository', () => {
       mockDriver.delete.mockResolvedValue(Promise.resolve())
 
       await expect(repository.delete(mockTemplate.id)).rejects.toThrow(
-        'prompt templates with id test-template-1 not found',
+        'prompts with id test-template-1 not found',
       )
     })
   })
