@@ -41,7 +41,7 @@ export class PipelineService {
       !payload.nodes ||
       !payload.edges
     ) {
-      throw new Error('필수 필드가 누락되었습니다.')
+      throw new Error('Required field is missing')
     }
 
     return this.repository.create(payload)
@@ -106,7 +106,7 @@ export class PipelineService {
     if (!pipeline) {
       return {
         isValid: false,
-        message: '파이프라인을 찾을 수 없습니다.',
+        message: 'Pipeline not found',
       }
     }
 
@@ -121,7 +121,7 @@ export class PipelineService {
     if (hasInvalidEdge) {
       return {
         isValid: false,
-        message: '유효하지 않은 엣지가 있습니다.',
+        message: 'Invalid edge found',
       }
     }
 
@@ -153,7 +153,7 @@ export class PipelineService {
       if (hasCycle(node.id)) {
         return {
           isValid: false,
-          message: '순환 참조가 있습니다.',
+          message: 'Cycle reference found',
         }
       }
     }
@@ -168,13 +168,13 @@ export class PipelineService {
 
     const pipeline = await this.getPipelineById(pipelineId)
     if (!pipeline) {
-      throw new Error('파이프라인을 찾을 수 없습니다.')
+      throw new Error('Pipeline not found')
     }
 
     // 파이프라인 유효성 검사
     const validation = await this.validatePipeline(pipelineId)
     if (!validation.isValid) {
-      throw new Error(validation.message || '유효하지 않은 파이프라인입니다.')
+      throw new Error(validation.message || 'Invalid pipeline')
     }
 
     // 실행 경로 추적
@@ -183,14 +183,14 @@ export class PipelineService {
     // 입력 노드 찾기
     const inputNode = pipeline.nodes[0] // 첫 번째 노드를 입력 노드로 사용
     if (!inputNode) {
-      throw new Error('파이프라인에 노드가 없습니다.')
+      throw new Error('Pipeline has no nodes')
     }
 
     // 입력 노드 실행
     executionPath.push({
       nodeId: inputNode.id,
       status: 'success',
-      output: `입력: ${input}`,
+      output: `Input: ${input}`,
       timestamp: new Date(),
     })
 
@@ -214,10 +214,10 @@ export class PipelineService {
       let output = ''
       switch (nextNode.type) {
         case 'prompt':
-          output = `프롬프트 처리: ${input}`
+          output = `Prompt processing: ${input}`
           break
         default:
-          output = `처리: ${input}`
+          output = `Processing: ${input}`
       }
 
       // 실행 경로에 추가
@@ -233,7 +233,7 @@ export class PipelineService {
     }
 
     // 최종 출력 생성
-    const finalOutput = `"${input}"에 대한 처리가 완료되었습니다.`
+    const finalOutput = `Processing of "${input}" is complete`
 
     return {
       output: finalOutput,

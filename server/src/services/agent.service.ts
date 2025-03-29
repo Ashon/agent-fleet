@@ -26,7 +26,7 @@ export class AgentService {
   async createAgent(agentData: CreateAgentData): Promise<Agent> {
     // 필수 필드 검증
     if (!agentData.name) {
-      throw new Error('필수 필드가 누락되었습니다.')
+      throw new Error('Required field is missing')
     }
 
     const newAgent = {
@@ -65,7 +65,7 @@ export class AgentService {
   ): Promise<Agent | undefined> {
     // 유효한 상태인지 검증
     if (status !== 'active' && status !== 'inactive') {
-      throw new Error('유효하지 않은 상태입니다.')
+      throw new Error('Invalid status')
     }
 
     const agent = await this.repository.findById(id)
@@ -84,7 +84,7 @@ export class AgentService {
       !message.content ||
       (message.role !== 'user' && message.role !== 'assistant')
     ) {
-      throw new Error('유효하지 않은 메시지 형식입니다.')
+      throw new Error('Invalid message format')
     }
 
     const agent = await this.repository.findById(id)

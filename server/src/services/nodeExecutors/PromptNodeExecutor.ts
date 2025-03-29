@@ -31,7 +31,7 @@ export class PromptNodeExecutor implements NodeExecutor {
     // 입력 데이터에서 변수 추출
     const config = node.data.config as PromptNodeConfig
     if (!config) {
-      throw new Error('프롬프트 노드 설정이 없습니다.')
+      throw new Error('Prompt node config not found')
     }
 
     try {
@@ -103,7 +103,7 @@ export class PromptNodeExecutor implements NodeExecutor {
         nodeType: node.type,
         args,
         output: {
-          error: error instanceof Error ? error.message : '알 수 없는 오류',
+          error: error instanceof Error ? error.message : 'Unknown error',
         },
         startTime,
         endTime,
@@ -129,7 +129,7 @@ export class PromptNodeExecutor implements NodeExecutor {
     source: NonNullable<PromptNodeConfig['contextSources']>[0],
   ): Promise<Record<string, string>> {
     if (!source.config) {
-      throw new Error('컨텍스트 소스 설정이 없습니다.')
+      throw new Error('Context source config not found')
     }
 
     // 컨텍스트 소스 타입을 커넥터 ID의 접두어로 사용

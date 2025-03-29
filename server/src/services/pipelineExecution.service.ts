@@ -66,7 +66,7 @@ export class PipelineExecutionService {
 
   private logExecutionStep(message: string, data?: any) {
     console.log(
-      `[파이프라인 실행] ${message}`,
+      `[Execute Pipeline] ${message}`,
       data ? JSON.stringify(data, null, 2) : '',
     )
   }
@@ -268,7 +268,7 @@ export class PipelineExecutionService {
         } catch (error) {
           this.logExecutionStep(`Node Execution Failed - ${node.data.name}`, {
             nodeId: node.id,
-            error: error instanceof Error ? error.message : '알 수 없는 오류',
+            error: error instanceof Error ? error.message : 'Unknown error',
           })
 
           sendStreamMessage(executionContext.response, {
@@ -277,7 +277,7 @@ export class PipelineExecutionService {
             nodeName: node.data.name,
             nodeType: node.type,
             status: 'error',
-            message: error instanceof Error ? error.message : '알 수 없는 오류',
+            message: error instanceof Error ? error.message : 'Unknown error',
             timestamp: new Date(),
           })
           throw error
@@ -364,7 +364,7 @@ export class PipelineExecutionService {
         } catch (error) {
           this.logExecutionStep(`Node Execution Failed - ${node.data.name}`, {
             nodeId: node.id,
-            error: error instanceof Error ? error.message : '알 수 없는 오류',
+            error: error instanceof Error ? error.message : 'Unknown error',
           })
 
           sendStreamMessage(executionContext.response, {
@@ -373,7 +373,7 @@ export class PipelineExecutionService {
             nodeName: node.data.name,
             nodeType: node.type,
             status: 'error',
-            message: error instanceof Error ? error.message : '알 수 없는 오류',
+            message: error instanceof Error ? error.message : 'Unknown error',
             timestamp: new Date(),
           })
           throw error
@@ -383,7 +383,7 @@ export class PipelineExecutionService {
 
     this.logExecutionStep(`Node Execution Failed - ${node.data.name}`, {
       nodeId: node.id,
-      error: '의존성 문제로 인해 실행할 수 없습니다',
+      error: 'Dependency issue preventing execution',
     })
 
     sendStreamMessage(executionContext.response, {
@@ -392,10 +392,10 @@ export class PipelineExecutionService {
       nodeName: node.data.name,
       nodeType: node.type,
       status: 'error',
-      message: '의존성 문제로 인해 실행할 수 없습니다',
+      message: 'Dependency issue preventing execution',
       timestamp: new Date(),
     })
-    throw new Error('의존성 문제로 인해 실행할 수 없습니다')
+    throw new Error('Dependency issue preventing execution')
   }
 
   // 파이프라인 실행 스트리밍
@@ -563,7 +563,7 @@ export class PipelineExecutionService {
       })
     } catch (error) {
       this.logExecutionStep('Pipeline Execution Failed', {
-        error: error instanceof Error ? error.message : '알 수 없는 오류',
+        error: error instanceof Error ? error.message : 'Unknown error',
       })
 
       // 실행 실패 기록
@@ -571,8 +571,7 @@ export class PipelineExecutionService {
       if (record) {
         record.status = 'failed'
         record.endTime = new Date()
-        record.error =
-          error instanceof Error ? error.message : '알 수 없는 오류'
+        record.error = error instanceof Error ? error.message : 'Unknown error'
         await this.repository.save(record)
       }
 

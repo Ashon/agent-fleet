@@ -287,16 +287,22 @@ describe('PipelineExecutionService', () => {
       })
 
       // 각 노드의 출력 검증
-      expect(nodeOutputs[0].output.value).toBe(`프롬프트 처리: "${testInput}"`)
-      expect(nodeOutputs[1].output.value).toBe(`프롬프트 처리: "${testInput}"`)
-      expect(nodeOutputs[2].output.value).toBe(`프롬프트 처리: "${testInput}"`)
+      expect(nodeOutputs[0].output.value).toBe(
+        `Prompt processing: "${testInput}"`,
+      )
+      expect(nodeOutputs[1].output.value).toBe(
+        `Prompt processing: "${testInput}"`,
+      )
+      expect(nodeOutputs[2].output.value).toBe(
+        `Prompt processing: "${testInput}"`,
+      )
 
       // 이전 결과 전파 검증
       expect(nodeOutputs[1].output.prevResults).toEqual({
-        '입력 노드': `프롬프트 처리: "${testInput}"`,
+        '입력 노드': `Prompt processing: "${testInput}"`,
       })
       expect(nodeOutputs[2].output.prevResults).toEqual({
-        '계획 노드': `프롬프트 처리: "${testInput}"`,
+        '계획 노드': `Prompt processing: "${testInput}"`,
       })
 
       // 글로벌 값 전파 검증

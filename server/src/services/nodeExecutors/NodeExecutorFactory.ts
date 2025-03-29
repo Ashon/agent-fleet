@@ -11,9 +11,7 @@ export class NodeExecutorFactory {
   getExecutor(node: PipelineNode): NodeExecutor {
     const executor = this.executors.find((e) => e.canExecute(node))
     if (!executor) {
-      throw new Error(
-        `${node.type} 타입의 노드를 실행할 수 있는 실행기가 없습니다.`,
-      )
+      throw new Error(`${node.type} type node executor not found`)
     }
     return executor
   }

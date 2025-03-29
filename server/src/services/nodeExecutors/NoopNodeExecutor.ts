@@ -44,7 +44,7 @@ export class MockNodeExecutor implements NodeExecutor {
 
       // 현재 노드의 출력 생성
       const output = {
-        value: `프롬프트 처리: "${args.__input__ || ''}"`,
+        value: `Prompt processing: "${args.__input__ || ''}"`,
         prevResults: prevNodeResults,
       }
 

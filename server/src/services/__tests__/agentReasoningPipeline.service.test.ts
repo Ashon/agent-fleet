@@ -300,14 +300,14 @@ describe('PipelineService', () => {
       mockRepository.findById.mockResolvedValueOnce(invalidPipeline)
       const result = await pipelineService.validatePipeline(invalidPipeline.id)
       expect(result.isValid).toBe(false)
-      expect(result.message).toBe('유효하지 않은 엣지가 있습니다.')
+      expect(result.message).toBe('Invalid edge found')
     })
 
     it('존재하지 않는 파이프라인은 false를 반환해야 합니다', async () => {
       mockRepository.findById.mockResolvedValueOnce(null)
       const result = await pipelineService.validatePipeline('non-existent')
       expect(result.isValid).toBe(false)
-      expect(result.message).toBe('파이프라인을 찾을 수 없습니다.')
+      expect(result.message).toBe('Pipeline not found')
     })
   })
 })

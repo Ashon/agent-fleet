@@ -212,7 +212,7 @@ export default function General({ agent }: { agent: Agent }) {
               )}
             </ResizablePanel>
             <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={30}>
+            <ResizablePanel defaultSize={30} minSize={20}>
               {selectedNode ? (
                 <ReasoningPipelineConfig
                   selectedNode={selectedNode}
